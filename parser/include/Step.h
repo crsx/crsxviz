@@ -15,30 +15,30 @@ public:
 	/** Prints an overview of the step data to stdout
 	*/
 	void print();
-	
-	/** Inserts the step into the sqlite3 DB <br />
-	*   Clears and populates the entries in the prepared statement then runs the command
-	*   @param stmt The prepared statement to populate with data and insert on
-	*	@throws runtime_error when there is an error inserting the row
+
+	/** Chooses the proper statement to run and executes it
+	*   @throws runtime_error There was an error inserting the DB into the database
 	*/
-	void insert(sqlite3_stmt *stmt);
+	inline void pushToDB() {
+		if (begin) {
+			stepInsert();
+		}
+		else {
+			stepUpdate();
+		}
+	}
 	
-	/** Creates a preparedStatement for use by 
-	*   @param db the database to use when creating the prepared statement
-	*   @return A prepared statement for use in future step processing
+	/** Initializes Step static prepared statements for use with the DB
+	*   @param db the database to use when creating the prepared statements
 	*   @throws invalid_argument The db was not opened or was null
 	*   @throws runtime_error There was an error creating the prepared statement
 	*/
-	static sqlite3_stmt* prepareStatement(sqlite3* db);
+	static void initPreparedStatements(sqlite3* db);
 
 	/** The indentation level of the step
 	*/
 	int indent;
-	
-	/** Begin or Complete 
-	*/
-	std::string type; //TODO:add support for FAIL
-	
+
 	/** Flag for if the step is a begin or complete
 	*/
 	bool begin;
@@ -69,13 +69,36 @@ public:
 	std::string cookies;
 	
 private:
-	/** The template for the prepared statement used for inserting entries
+
+	/** Static class internal storage of prepared statement for Step table inserts
 	*/
-	static constexpr const char * statementTemplate = R"(INSERT INTO `Raw`(`StepNum`,`Indentation`,`Begin`,`ActiveTerm`,`Allocs`,`Frees`,`Data`,`Cookies`) VALUES (?,?,?,?,?,?,?,?);)";
+	static sqlite3_stmt* StepsInsertStmt;
+
+	/** Static class internal storage of prepared statement for completing step stages
+	*/
+	static sqlite3_stmt* StepsUpdateStmt;
+
+	/** Prepared statement template for inserting a start into the correlated table
+	*/
+	static constexpr const char * StepInsertTemplate = R"(INSERT INTO `Steps`(`StepNum`,`Indentation`,`ActiveTerm`,`StartAllocs`,`StartFrees`,`StartData`,`Cookies`) VALUES (?,?,?,?,?,?,?);)";
+
+	/** Prepared statement template for adding the Step Complete information to the correlated table
+	*/
+	static constexpr const char * StepUpdateTemplate = R"(UPDATE Steps SET CompleteAllocs = ?, CompleteFrees = ?, CompleteData = ? WHERE StepNum = ?)";
+
+	/** Uses StepsInsertStmt to add the Step to the database
+	*   @throws runtime_error There was an error inserting into the database
+	*/
+	void stepInsert();
+
+	/** Uses StepsUpdateStmt to add the Step complete entry to the database
+	*   @throws runtime_error There was an error inserting into the database
+	*/
+	void stepUpdate();
 
 	/** Initializes components of the step from the first line of data
 	*   @param s The line to parse
 	*   @throws runtime_error when the string does not match the expected format
 	*/
-	void init (std::string s);
+	void parseStepHeader (std::string &s);
 };

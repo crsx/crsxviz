@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 	
 	int rc = remove(dbpath);
 	if (rc != 0 && errno != 2) {
-		cout << "Error " << errno << " creating database" << endl;
+		cout << "Error " << errno << " deleting existing database" << endl;
 		exit(rc);
 	}
 	
@@ -87,26 +87,27 @@ int main(int argc, char* argv[]) {
 
 	cout << "Database " << dbpath << " opened OK" << endl;
 
-	constexpr const char* sql = R"(CREATE TABLE `Raw` (
-	`UUID`	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-	`StepNum`	INTEGER,
-	`Indentation`	INTEGER,
-	`Begin`	INTEGER,
-	`ActiveTerm`	TEXT,
-	`Allocs`	INTEGER,
-	`Frees`	INTEGER,
-	`Data`	TEXT,
-	`Cookies`	TEXT
+	const char* sql = R"(CREATE TABLE `Steps` (
+	`StepNum`        INTEGER NOT NULL PRIMARY KEY UNIQUE,
+	`Indentation`    INTEGER,
+	`ActiveTerm`     TEXT,
+	`StartAllocs`    INTEGER,
+	`StartFrees`	 INTEGER,
+	`CompleteAllocs` INTEGER,
+	`CompleteFrees`  INTEGER,
+	`StartData`	     TEXT,
+	`CompleteData`   TEXT,
+	`Cookies`	     TEXT
 	);)";
-	
+
 	rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
-	if( rc != SQLITE_OK ){
+	if (rc != SQLITE_OK){
 		fprintf(stderr, "SQL error: %s\n", errMsg);
 		sqlite3_free(errMsg);
 	}
 
 	optimizeDB(db);
-	sqlite3_stmt *stmt = Step::prepareStatement(db);
+	Step::initPreparedStatements(db);
 
 	istream * src;
 	if (argc == 3) {
@@ -138,7 +139,7 @@ int main(int argc, char* argv[]) {
 		if ((s[0] != '/' && s[0] != ' ') || s.find("STEP", 2) != string::npos) {
 			if (state) {
 				Step r = Step(buf);
-				r.insert(stmt);
+				r.pushToDB();
 				buf.clear();
 				state = false;
 			}

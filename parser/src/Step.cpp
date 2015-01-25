@@ -6,6 +6,9 @@ using namespace std;
 
 #define assert(x) if(!(x)) throw runtime_error(string("Assertion failed at ") + string(__FILE__) + string(":") + to_string(__LINE__)); 
 
+sqlite3_stmt* Step::StepsInsertStmt = NULL;
+sqlite3_stmt* Step::StepsUpdateStmt = NULL;
+
 /** Removes all content before the last space
 *   @param s The string to strip
 *   @return the string without any leading spaces
@@ -16,7 +19,7 @@ string lstrip(string &s) {
 
 Step::Step(vector<string> &buf) {
 	assert(buf.size() > 0);
-	init(buf[0]);
+	parseStepHeader(buf[0]);
 	unsigned int ln = 0;
 	
 	while (++ln < buf.size() && buf[ln].length() != 0){
@@ -38,7 +41,7 @@ Step::Step(vector<string> &buf) {
 void Step::print() {
 	cout << "Step:\n";
 	cout << "\tIndent:      " << indent << endl;
-	cout << "\tType:        " << type << endl;
+	cout << "\tBegin:       " << begin << endl;
 	cout << "\tStep Number: " << stepNum << endl;
 	cout << "\tVerb:        " << activeTerm << endl;
 	cout << "\tAllocs:      " << allocs << endl;
@@ -47,51 +50,77 @@ void Step::print() {
 	cout << "\tCookies:     " << cookies << endl;
 }
 
-void Step::insert(sqlite3_stmt *stmt) {
-	assert(stmt);
+void Step::stepInsert() {
+	assert(StepsInsertStmt);
 	int rc;
 
-	rc = sqlite3_reset(stmt);
-	if( rc != SQLITE_OK ) {
+	rc = sqlite3_reset(StepsInsertStmt);
+	if (rc != SQLITE_OK) {
 		cout << "Error " << rc << " resetting statement" << endl;
-		assert(false);
+		throw runtime_error("Error resetting statement");
 	}
-	
-	sqlite3_bind_int64(stmt, 1, stepNum);
-	sqlite3_bind_int(stmt, 2, indent);
-	sqlite3_bind_int(stmt, 3, (int)begin);
+
+	sqlite3_bind_int64(StepsInsertStmt, 1, stepNum);
+	sqlite3_bind_int(StepsInsertStmt, 2, indent);
 	if (begin) {
-		sqlite3_bind_text(stmt, 4, activeTerm.c_str(), activeTerm.length(), SQLITE_STATIC);
-	} else {
-		sqlite3_bind_null(stmt, 4);
+		sqlite3_bind_text(StepsInsertStmt, 3, activeTerm.c_str(), activeTerm.length(), SQLITE_STATIC);
 	}
-	sqlite3_bind_int64(stmt, 5, allocs);
-	sqlite3_bind_int64(stmt, 6, frees);
+	else {
+		sqlite3_bind_null(StepsInsertStmt, 3);
+	}
+	sqlite3_bind_int64(StepsInsertStmt, 4, allocs);
+	sqlite3_bind_int64(StepsInsertStmt, 5, frees);
 	if (data.length() == 0) {
-		sqlite3_bind_null(stmt, 7);
-	} else {
-		sqlite3_bind_text(stmt, 7, data.c_str(), data.length(), SQLITE_STATIC);
+		sqlite3_bind_null(StepsInsertStmt, 6);
+	}
+	else {
+		sqlite3_bind_text(StepsInsertStmt, 6, data.c_str(), data.length(), SQLITE_STATIC);
 	}
 	if (cookies.length() == 0) {
-		sqlite3_bind_null(stmt, 8);
-	} else {
-		sqlite3_bind_text(stmt, 8, cookies.c_str(), cookies.length(), SQLITE_STATIC);
+		sqlite3_bind_null(StepsInsertStmt, 7);
+	}
+	else {
+		sqlite3_bind_text(StepsInsertStmt, 7, cookies.c_str(), cookies.length(), SQLITE_STATIC);
 	}
 
-	assert(sqlite3_step(stmt) == SQLITE_DONE);
+	assert(sqlite3_step(StepsInsertStmt) == SQLITE_DONE);
 }
 
-void Step::init (string s) {
+void Step::stepUpdate() {
+	assert(StepsUpdateStmt);
+	int rc;
+
+	rc = sqlite3_reset(StepsUpdateStmt);
+	if (rc != SQLITE_OK) {
+		cout << "Error " << rc << " resetting statement" << endl;
+		throw runtime_error("Error resetting statement");
+	}
+
+	sqlite3_bind_int64(StepsUpdateStmt, 1, allocs);
+	sqlite3_bind_int64(StepsUpdateStmt, 2, frees);
+
+	if (data.length() == 0) {
+		sqlite3_bind_null(StepsUpdateStmt, 3);
+	}
+	else {
+		sqlite3_bind_text(StepsUpdateStmt, 3, data.c_str(), data.length(), SQLITE_STATIC);
+	}
+
+	sqlite3_bind_int64(StepsUpdateStmt, 4, stepNum);
+
+	assert(sqlite3_step(StepsUpdateStmt) == SQLITE_DONE);
+}
+
+void Step::parseStepHeader(string &s) {
 	bool complete = false;
 	size_t offset = s.find("STEP", 2); //Skip to the location of the beginning of 'STEP'
 	assert(offset != string::npos); //Fail if not matching the first match
 	indent = offset - 2; //store the number of spaces (offset - len('//'))
 	
 	if (s[offset += 4] == '(') { //Skip to the char after the 'STEP'
-		type = "BEGIN";
+		complete = false;
 	} else {
 		complete = true;
-		type = "COMPLETE";
 		offset += 3; //Skip the '-OK'
 	}
 	offset++;
@@ -130,14 +159,19 @@ void Step::init (string s) {
 	begin = !complete;
 }
 
-sqlite3_stmt* Step::prepareStatement(sqlite3* db) {
+void Step::initPreparedStatements(sqlite3* db) {
 	if (!db)
 		throw invalid_argument("Database cannot be NULL");
-	
-	sqlite3_stmt *stmt;
-	int rc = sqlite3_prepare(db, statementTemplate, -1, &stmt, 0);
-	if ( rc != SQLITE_OK ){
-		throw runtime_error("Error creating prepared statement");
+
+	int rc = sqlite3_prepare(db, StepInsertTemplate, -1, &StepsInsertStmt, 0);
+	if (rc != SQLITE_OK){
+		cout << "Error " << rc << " creating steps insert statement" << endl << StepInsertTemplate;
+		throw runtime_error("Error creating steps insert statement");
 	}
-	return stmt;
+
+	rc = sqlite3_prepare(db, StepUpdateTemplate, -1, &StepsUpdateStmt, 0);
+	if (rc != SQLITE_OK){
+		cout << "Error " << rc << " creating steps update statement" << endl << StepUpdateTemplate;
+		throw runtime_error("Error creating steps update statement");
+	}
 }
