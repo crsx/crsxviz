@@ -19,13 +19,14 @@ Sample usage:
 	crsx/samples/factorial/fact wrapper=Fact term=75 crsxviz | crsx_parse /tmp/factorial75.db
 
 Database format:
-	TABLE `Raw` (
-	`UUID`			INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-	`StepNum`		INTEGER,
-	`Indentation`	INTEGER,
-	`Begin`			INTEGER,
-	`ActiveTerm`	TEXT,
-	`Allocs`		INTEGER,
-	`Frees`			INTEGER,
-	`Data`			TEXT,
-	`Cookies`		TEXT )
+    TABLE `Steps` (
+	`StepNum`        INTEGER NOT NULL PRIMARY KEY UNIQUE,
+	`Indentation`    INTEGER,
+	`ActiveTerm`     TEXT,
+	`StartAllocs`    INTEGER,
+	`StartFrees`	 INTEGER,
+	`CompleteAllocs` INTEGER,
+	`CompleteFrees`  INTEGER,
+	`StartData`      TEXT,
+	`CompleteData`   TEXT,
+	`Cookies`        TEXT)
