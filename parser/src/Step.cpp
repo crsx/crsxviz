@@ -10,8 +10,8 @@ sqlite3_stmt* Step::StepsInsertStmt = NULL;
 sqlite3_stmt* Step::StepsUpdateStmt = NULL;
 
 /** Removes all content before the last space
-*   @param s The string to strip
-*   @return the string without any leading spaces
+* @param s The string to strip
+* @return the string without any leading spaces
 */
 string lstrip(string &s) {
 	return s.substr(s.find_last_of(' ') + 1, s.length());
@@ -23,7 +23,7 @@ Step::Step(vector<string> &buf) {
 	unsigned int ln = 0;
 	
 	while (++ln < buf.size() && buf[ln].length() != 0){
-		data.append(lstrip(buf[ln]));
+		data.append(buf[ln].append("\n"));
 	}
 	while (++ln < buf.size() && buf[ln].length() == 0);
 	
@@ -114,6 +114,9 @@ void Step::stepUpdate() {
 void Step::parseStepHeader(string &s) {
 	bool complete = false;
 	size_t offset = s.find("STEP", 2); //Skip to the location of the beginning of 'STEP'
+	if (offset == string::npos) {
+		cout << "Failed to parse header " << s << endl;
+	}
 	assert(offset != string::npos); //Fail if not matching the first match
 	indent = offset - 2; //store the number of spaces (offset - len('//'))
 	

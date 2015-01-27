@@ -95,9 +95,9 @@ int main(int argc, char* argv[]) {
 	`StartFrees`	 INTEGER,
 	`CompleteAllocs` INTEGER,
 	`CompleteFrees`  INTEGER,
-	`StartData`	     TEXT,
+	`StartData`      TEXT,
 	`CompleteData`   TEXT,
-	`Cookies`	     TEXT
+	`Cookies`        TEXT
 	);)";
 
 	rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
@@ -122,7 +122,6 @@ int main(int argc, char* argv[]) {
 	string s;
 	string lastLine;
 	bool prevBlank = false;
-	bool state = false;
 	do {
 		getline(*src, s);
 		if (src->eof())
@@ -136,18 +135,21 @@ int main(int argc, char* argv[]) {
 			prevBlank = false;
 			lastLine = s;
 		}
-		if ((s[0] != '/' && s[0] != ' ') || s.find("STEP", 2) != string::npos) {
-			if (state) {
-				Step r = Step(buf);
-				r.pushToDB();
-				buf.clear();
-				state = false;
-			}
-			state = true;
+
+		if (buf.size() > 0 && s.find("STEP", 2) != string::npos) {
+                        Step r = Step(buf);
+                        r.pushToDB();
+                        buf.clear();
 		}
 		buf.push_back(s);
 	} while (true);
 
+	if (buf.size() > 1){
+		buf.pop_back(); //remove result line
+		Step r = Step(buf);
+                r.pushToDB();
+                buf.clear();
+	}
 	cout << "Result: " << lastLine << endl;
 
 	sqlite3_close(db);
