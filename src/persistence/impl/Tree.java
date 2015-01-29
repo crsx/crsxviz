@@ -35,7 +35,7 @@ public abstract class Tree {
     		LogicMatcher arg = (LogicMatcher) constraint;
     		return new Internal(allBeanProperties,arg);
         } catch (Exception e) {
-        	TranImpl.rollbackAndThrow(e);
+        	TranImp.rollbackAndThrow(e);
         	throw new AssertionError("rollbackAndThrow returned (can't happen)");
         }
 	}

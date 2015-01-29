@@ -10,9 +10,9 @@ import persistence.Manager;
 import persistence.impl.matcharg.Leaf;
 import persistence.impl.matcharg.MatchOp;
 
-public class SqliteImpl<B> extends GenericDaoImpl<B> {
+public class SqliteImp<B> extends BasicDaoImp<B> {
 
-    public SqliteImpl(Class<B> beanClass, String tableName, Manager manager) throws DaoException{
+    public SqliteImp(Class<B> beanClass, String tableName, Manager manager) throws DaoException{
 		super(beanClass, tableName, manager);
     }
 

@@ -167,23 +167,23 @@ public class Property implements Comparable<Property> {
 			getter = beanClass.getMethod("get"+capName);
 		} catch (NoSuchMethodException e) {
 			if (type != boolean.class) {
-				throw new DaoException(beanClass.getName()+" doesn't match table: no get"+capName+"() method.  Drop the table and let GenericDao recreate it.");
+				throw new DaoException(beanClass.getName()+" doesn't match table: no get"+capName+"() method.  Drop the table and let BasicDao recreate it.");
 			}
 			try {
 				getter = beanClass.getMethod("is" + capName);
 			} catch (NoSuchMethodException e2) {
-				throw new DaoException(beanClass.getName()+" doesn't match table: no get"+capName+"() or is"+capName+"() method.  Drop the table and let GenericDao recreate it.");
+				throw new DaoException(beanClass.getName()+" doesn't match table: no get"+capName+"() or is"+capName+"() method.  Drop the table and let BasicDao recreate it.");
 			}
 		}
 
 		if (getter.getReturnType() != type) {
-			throw new DaoException(beanClass.getName()+" doesn't match table: get"+capName+"() returns "+getter.getReturnType().getCanonicalName()+" (not "+type.getCanonicalName()+", which is the table's type).  Drop the table and let GenericDao recreate it.");
+			throw new DaoException(beanClass.getName()+" doesn't match table: get"+capName+"() returns "+getter.getReturnType().getCanonicalName()+" (not "+type.getCanonicalName()+", which is the table's type).  Drop the table and let BasicDao recreate it.");
 		}
 
 		try {
 			setter = beanClass.getMethod("set" + capName,type);
 		} catch (NoSuchMethodException e) {
-			throw new DaoException(beanClass.getName()+" doesn't match table: no set"+capName+"("+type.getCanonicalName()+") method.  Drop the table and let GenericDao recreate it.");
+			throw new DaoException(beanClass.getName()+" doesn't match table: no set"+capName+"("+type.getCanonicalName()+") method.  Drop the table and let BasicDao recreate it.");
 		}
 
         columnMaxStrLen = MAX_STR_LEN;

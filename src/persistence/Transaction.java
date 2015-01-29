@@ -1,6 +1,6 @@
 package persistence;
 
-import persistence.impl.TranImpl;
+import persistence.impl.TranImp;
 
 /**
  * This class is used to begin and end transactions.
@@ -18,7 +18,7 @@ public class Transaction {
 	 * One reason is if you are already in a transaction.
 	 */
 	public static void begin() throws RollbackException {
-		TranImpl.begin();
+		TranImp.begin();
 	}
 
 	/**
@@ -26,7 +26,7 @@ public class Transaction {
 	 * @throws RollbackException if there is some reason the transaction could not be committed.
 	 */
 	public static void commit() throws RollbackException {
-        TranImpl.commit();
+        TranImp.commit();
 	}
 	
 	/**
@@ -34,7 +34,7 @@ public class Transaction {
 	 * @return true if this thread is in a transaction.
 	 */
 	public static boolean isActive() {
-        return TranImpl.isActive();
+        return TranImp.isActive();
 	}
 
 	/**
@@ -42,6 +42,6 @@ public class Transaction {
 	 * @throws AssertionError if not in a transaction.
 	 */
 	public static void rollback() {
-        TranImpl.rollback();
+        TranImp.rollback();
 	}
 }

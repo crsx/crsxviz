@@ -6,7 +6,7 @@ import persistence.impl.matcharg.MatchOp;
 import persistence.impl.matcharg.UnaryMatcher;
 
 /**
- * A class to specify constraints when matching beans.  Use with the GenericDao.match() method, which generates
+ * A class to specify constraints when matching beans.  Use with the BasicDao.match() method, which generates
  * a SQL SELECT call on the underlying table.  The Matcher parameters are converted into the WHERE clause
  * for the SELECT so as to constrain which rows are returned.
  * 
@@ -21,9 +21,9 @@ public abstract class Matcher {
 	protected abstract MatchOp getOp();
 
 	/**
-	 * Logical AND operator for use with the GenericDao.match() method.
+	 * Logical AND operator for use with the BasicDao.match() method.
 	 * Takes as parameters a variable number of Matcher constraints,
-	 * all of which must evaluate to true for a row to be returned by GenericDao.match().
+	 * all of which must evaluate to true for a row to be returned by BasicDao.match().
 	 * For example, using the User bean defined above,
 	 * this match call would return all users with first name George and last name Bush
 	 *     User[] array = dao.match(

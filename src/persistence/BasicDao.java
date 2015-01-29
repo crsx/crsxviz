@@ -1,6 +1,6 @@
 package persistence;
 
-import persistence.impl.GenericDaoImpl;
+import persistence.impl.BasicDaoImp;
 
 /**
  * This class is used to read and write rows of a database table that correspond
@@ -12,11 +12,11 @@ import persistence.impl.GenericDaoImpl;
  * The properties that comprise the primary key (for the table that backs the beans)
  * must be specified with the @PrimaryKey annotation.
  */
-public class GenericDao<T> {
-	private GenericDaoImpl<T> impl;
+public class BasicDao<T> {
+	private BasicDaoImp<T> impl;
 
 	/**
-	 * Creates a new GenericDao object.
+	 * Creates a new BasicDao object.
 	 *
 	 * The constructor will
 	 * (1) analyze your bean (to make sure it has all the parts it needs to read and write it),
@@ -29,8 +29,8 @@ public class GenericDao<T> {
 	 * @throws DaoException if there are any problems, including problems accessing the database, problems with the bean class, etc.
 	 * @throws RollbackException 
 	 */
-	public GenericDao(Class<T> beanClass, String tableName, Manager manager) throws DaoException, RollbackException {
-		impl = GenericDaoImpl.getInstance(beanClass, tableName, manager);
+	public BasicDao(Class<T> beanClass, String tableName, Manager manager) throws DaoException, RollbackException {
+		impl = BasicDaoImp.getInstance(beanClass, tableName, manager);
 		if (!impl.tableExists()) {
 			impl.createTable();
 		}

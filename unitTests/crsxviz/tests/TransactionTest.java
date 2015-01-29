@@ -7,7 +7,7 @@ import org.junit.Test;
 import persistence.Manager;
 import persistence.RollbackException;
 import persistence.Transaction;
-import persistence.impl.TranImpl;
+import persistence.impl.TranImp;
 
 public class TransactionTest {
 
@@ -34,14 +34,14 @@ public class TransactionTest {
 	@Test
 	public void joinTransactionToTheManager() throws RollbackException {
 		Transaction.begin();
-		TranImpl.join(Manager.getInstance());
+		TranImp.join(Manager.getInstance());
 		Transaction.rollback();
 	}
 
 	@Test(expected=RollbackException.class)
 	public void nullManagerPassedToJoin() throws RollbackException {
 		Transaction.begin();
-		TranImpl.join(null);
+		TranImp.join(null);
 		Transaction.rollback();
 	}
 }

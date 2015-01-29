@@ -1,6 +1,8 @@
 package persistence.impl;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -23,10 +25,11 @@ import persistence.impl.matcharg.MatchOp;
 import persistence.impl.matcharg.Internal;
 import persistence.impl.matcharg.Leaf;
 
-public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
-	
-    public static <T> GenericDaoImpl<T> getInstance(Class<T> beanClass, String tableName, Manager manager) throws DaoException {
-    	return new SqliteImpl<T>(beanClass, tableName, manager);
+//public abstract class BasicDaoImp<T> extends GenericViewDaoImpl<T> {
+public abstract class BasicDaoImp<T> {
+
+    public static <T> BasicDaoImp<T> getInstance(Class<T> beanClass, String tableName, Manager manager) throws DaoException {
+    	return new SqliteImp<T>(beanClass, tableName, manager);
     }
 
 	protected abstract Object findExtremeValue(Connection con, Leaf arg, String tableName) throws SQLException;
@@ -42,6 +45,9 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
  
     
     // Initialized by constructor
+	protected Class<T>   beanClass;
+	protected Manager	 manager;
+	protected Property[] properties;
     private   Property[] primaryKeyProperties;
     private   Property[] nonPrimaryKeyProperties;
 
@@ -57,14 +63,19 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
     private   String     primaryKeyColumnNamesCommaSeparated;
 
 
-	protected GenericDaoImpl(Class<T> beanClass, String tableName, Manager manager) throws DaoException {
-		super(beanClass, manager);
+	protected BasicDaoImp(Class<T> beanClass, String tableName, Manager manager) throws DaoException {
+		//super(beanClass, manager);
 
 		// Check for null values and throw here (it's less confusing for the caller)
 		if (tableName == null) throw new NullPointerException("tableName");
+		if (manager == null) throw new NullPointerException("manager");
+		if (beanClass == null) throw new NullPointerException("beanClass");
 		
         this.tableName = tableName.toLowerCase();
+        this.manager = manager;
+        this.beanClass = beanClass;
         
+        properties = Property.findProperties(beanClass, manager.getLowerCaseColumnNames());
     	primaryKeyProperties    = getProperties(true);
     	nonPrimaryKeyProperties = getProperties(false);
 		
@@ -225,9 +236,9 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
 
         } catch (SQLException e) {
             if (e.getMessage().startsWith("Duplicate")) {
-                TranImpl.rollbackAndThrow(con, new DaoException(e.getMessage()));
+                TranImp.rollbackAndThrow(con, new DaoException(e.getMessage()));
             }
-            TranImpl.rollbackAndThrow(con, e);
+            TranImp.rollbackAndThrow(con, e);
             throw new AssertionError("executeRollback returned");
         } 
     }
@@ -260,7 +271,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
             }
 
         } catch (Exception e) {
-        	TranImpl.rollbackAndThrow(con, e);
+        	TranImp.rollbackAndThrow(con, e);
         }
     }
 	
@@ -278,14 +289,14 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
 
             return answer;
         } catch (Exception e) {
-			TranImpl.rollbackAndThrow(con, e);
+			TranImp.rollbackAndThrow(con, e);
 			throw new AssertionError("rollbackAndThrow returned (can't happen)");
         }
     }
     
     public T[] match(Matcher...constraints) throws RollbackException {
         Tree sepMatchArgs = Tree.createTree(properties,Matcher.and(constraints)); // throws RollbackException in case of problems
-        if (!TranImpl.isActive() && sepMatchArgs.containsMaxOrMin()) {
+        if (!TranImp.isActive() && sepMatchArgs.containsMaxOrMin()) {
             Transaction.begin();
             T[] answer = sqlMatch(sepMatchArgs);  // throws RollbackException in case of problems
             Transaction.commit();
@@ -315,7 +326,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
 	        }
 	        throw new RollbackException("AssertionError: "+list.length+" records with same primary key: "+b);
         } catch (Exception e) {
-	        TranImpl.rollbackAndThrow(e);
+	        TranImp.rollbackAndThrow(e);
 	        throw new AssertionError("rollbackAndThrow returned");
         }
     }
@@ -348,7 +359,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
             if (count != 1) throw new RollbackException("AssertionError: Incorrect number of rows updated: " + count);
 
         } catch (Exception e) {
-            TranImpl.rollbackAndThrow(con, e);
+            TranImp.rollbackAndThrow(con, e);
         }
     }
     
@@ -428,7 +439,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
 	}
 	
     private void standardizeMaxMin(Tree argTree) throws RollbackException {
-    	if (!TranImpl.isActive()) throw new AssertionError("Caller should have started a transaction");
+    	if (!TranImp.isActive()) throw new AssertionError("Caller should have started a transaction");
 
     	Iterator<Leaf> iter = argTree.leafIterator();
     	while (iter.hasNext()) {
@@ -447,7 +458,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
         	        	arg.fixConstraint(MatchOp.EQUALS,matchValue);
         	        }
     	        } catch (SQLException e) {
-    	            TranImpl.rollbackAndThrow(con, e);
+    	            TranImp.rollbackAndThrow(con, e);
     	        }
     		}
     	}
@@ -557,7 +568,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
 	        fixPartialMatch(argTree);
 	        return executeQuery(sql, (Object[]) argTree.getValues());
     	} catch (Exception e) {
-    		TranImpl.rollbackAndThrow(e);
+    		TranImp.rollbackAndThrow(e);
     		throw new AssertionError("rollbackAndThrow() returned");
     	}
     }
@@ -582,7 +593,7 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
                 }
             }
         } catch (Exception e) {
-            TranImpl.rollbackAndThrow(e);
+            TranImp.rollbackAndThrow(e);
         }
     }
 
@@ -636,6 +647,89 @@ public abstract class GenericDaoImpl<T> extends GenericViewDaoImpl<T> {
             throw e;
         }
     }
+    
+    //TODO Check feasibility of pulling GenericDaoView in here
+    
+    public T[] executeQuery(String sql, Object... args) throws RollbackException {
+		Connection con = null;
+		try {
+			con = transJoin();
+			
+			PreparedStatement pstmt = con.prepareStatement(sql);
+			for (int i = 0; i < args.length; i++) {
+				pstmt.setObject(i+1, args[i]);
+			}
+			
+			ResultSet rs = pstmt.executeQuery();
+			
+			List<T> beanList = new ArrayList<T>();
+			while (rs.next()) {
+				T bean = newBean();
+				for (Property prop : properties) {
+					Object value = rs.getObject(prop.getColumnName());
+					//value = fixDate(value);
+					setBeanValue(bean, prop, value);
+				}
+				beanList.add(bean);
+			}
+			
+			rs.close();
+			pstmt.close();
+			
+			T[] beanArray = newArray(beanList.size());
+			beanList.toArray(beanArray);
+			return beanArray;
+		} catch (SQLException e) {
+			TranImp.rollbackAndThrow(con, e);
+			throw new AssertionError("rollbackAndThrow returned (can't happen)");
+		}
+	}
+	
+	protected Connection transJoin() throws RollbackException, SQLException {
+		return (TranImp.isActive()) ? manager.getTransactionConnection() : manager.getConnection();
+	}
+
+    protected Object getBeanValue(Object bean, Property property) throws RollbackException {
+        Method getter = property.getGetter();
+        try {
+            return getter.invoke(bean);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            TranImp.rollbackAndThrow("Exception when getting "+
+                    property+" from bean="+bean,e);
+        } 
+
+        throw new AssertionError("Should not get here.");
+    }
+
+    @SuppressWarnings("unchecked")
+	protected T[] newArray(int size) {
+		Object array = java.lang.reflect.Array.newInstance(beanClass,size);
+		return (T[]) array;
+	}
+
+    protected T newBean() throws RollbackException {
+    	T bean = null;
+    	try {
+    		bean =  beanClass.newInstance();
+    	} catch (IllegalAccessException | InstantiationException e) {
+    		TranImp.rollbackAndThrow("Error instantiating " + beanClass.getName(), e);
+    	} 
+    	return bean;
+    }
+
+
+    protected void setBeanValue(T bean, Property property, Object value) throws RollbackException {
+		try {
+			Method setter = property.getSetter();
+			setter.invoke(bean,value);
+		} catch (NullPointerException | IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+			TranImp.rollbackAndThrow("Exception when setting "+
+                    property+" to value="+value+" for bean="+bean,e);
+		} 
+	}
+
+    
+    //TODO
     
     private static class Column {
         String  name;

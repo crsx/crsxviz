@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import persistence.DaoException;
-import persistence.GenericDao;
+import persistence.BasicDao;
 import persistence.Manager;
 import persistence.RollbackException;
 import persistence.beans.StepBean;
@@ -18,14 +18,14 @@ import crsxviz.TestManager;
 public class GenericDaoTest {
 	
 	private Manager instance;
-	private GenericDao<StepBean> genericDao;
+	private BasicDao<StepBean> basicDao;
 	private static final String table = "testTable";
 	
 	@Before
 	public void setUp() {
 		instance = TestManager.getTestInstance();
 		try {
-			genericDao = new GenericDao<StepBean>(StepBean.class, "steps", instance);
+			basicDao = new BasicDao<StepBean>(StepBean.class, "steps", instance);
 			TestDbUtils.setUpDb();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -39,21 +39,21 @@ public class GenericDaoTest {
 		} catch (SQLException e) {
 			// ignore it
 		}
-		new GenericDao<StepBean>(StepBean.class, table, instance); 
+		new BasicDao<StepBean>(StepBean.class, table, instance); 
 	}
 
 	@Test
 	public void basicHappyPathCrudOperations() {
 		try {
-			assertEquals(3, genericDao.getCount());
-			genericDao.create(new StepBean(4, 4, "activeTerm", 4, 4, 4, 4, "startData", "completeData", "cookies"));
-			assertEquals(4, genericDao.getCount());
+			assertEquals(3, basicDao.getCount());
+			basicDao.create(new StepBean(4, 4, "activeTerm", 4, 4, 4, 4, "startData", "completeData", "cookies"));
+			assertEquals(4, basicDao.getCount());
 			
-			genericDao.update(new StepBean(4, 5, "activeTerm", 5, 5, 5, 5, "startData", "completeData", "cookies"));
-			assertEquals(5, genericDao.read(4).getIndentation());
+			basicDao.update(new StepBean(4, 5, "activeTerm", 5, 5, 5, 5, "startData", "completeData", "cookies"));
+			assertEquals(5, basicDao.read(4).getIndentation());
 			
-			genericDao.delete(1);
-			assertEquals(3, genericDao.getCount());
+			basicDao.delete(1);
+			assertEquals(3, basicDao.getCount());
 			
 		} catch (RollbackException e) {
 			e.printStackTrace();
@@ -62,31 +62,31 @@ public class GenericDaoTest {
 	
 	@Test(expected=RollbackException.class)
 	public void duplicateBeanPassedToCreate() throws RollbackException {
-		genericDao.create(new StepBean(1));
+		basicDao.create(new StepBean(1));
 	}
 
 	@Test(expected=RollbackException.class)
 	public void improperArgumentPassedToRead() throws RollbackException {
-		genericDao.read("hat");
+		basicDao.read("hat");
 	}
 	
 	@Test(expected=RollbackException.class)
 	public void improperArgumentPassedToDelete() throws RollbackException {
-		genericDao.delete("hat");
+		basicDao.delete("hat");
 	}
 	
 	@Test(expected=RollbackException.class)
 	public void improperArgumentPassedToUpdate() throws RollbackException {
-		genericDao.update(new StepBean());
+		basicDao.update(new StepBean());
 	}
 	
 	@Test(expected=NullPointerException.class)
 	public void nullManagerPassedToConstructor() throws DaoException, RollbackException {
-		new GenericDao<StepBean>(StepBean.class, "steps", null);
+		new BasicDao<StepBean>(StepBean.class, "steps", null);
 	}
 	
 	@Test(expected=NullPointerException.class)
 	public void nullBeanClassPassedToConstructor() throws DaoException, RollbackException {
-		new GenericDao<StepBean>(null, "steps", instance);
+		new BasicDao<StepBean>(null, "steps", instance);
 	}
 }

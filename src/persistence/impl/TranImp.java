@@ -9,24 +9,24 @@ import persistence.Manager;
 import persistence.RollbackException;
 
 
-public class TranImpl {
-    private static ThreadLocal<TranImpl> myTran = new ThreadLocal<TranImpl>();
+public class TranImp {
+    private static ThreadLocal<TranImp> myTran = new ThreadLocal<TranImp>();
     
     private Connection connection = null;
     private Manager manager = null;
 
-    private TranImpl() {
-        /* Private constructor forces use of static factory (TranImpl.begin()) */
+    private TranImp() {
+        /* Private constructor forces use of static factory (TranImp.begin()) */
     }
     
     public static void begin() throws RollbackException {
-        TranImpl t = myTran.get();
+        TranImp t = myTran.get();
         if (t != null) rollbackAndThrow("Cannot begin twice without commit or rollback (i.e., you were already in a transaction)!");
-        myTran.set(new TranImpl());
+        myTran.set(new TranImp());
     }
 
     public static void commit() throws RollbackException {
-        TranImpl t = myTran.get();
+        TranImp t = myTran.get();
         if (t == null) rollbackAndThrow("Not in a transaction");
         t.executeCommit();
     }
@@ -37,7 +37,7 @@ public class TranImpl {
     }
 
     public static void rollback() {
-        TranImpl t = myTran.get();
+        TranImp t = myTran.get();
         if (t == null) throw new AssertionError("Not in a transaction");
         t.executeRollback();
     }
@@ -47,14 +47,14 @@ public class TranImpl {
     }
 
     static void rollbackAndThrow(Exception e) throws RollbackException {
-        TranImpl t = myTran.get();
+        TranImp t = myTran.get();
         if (t != null) t.executeRollback();
         if (e instanceof RollbackException) throw (RollbackException) e;
         throw new RollbackException(e);
     }
 
     static void rollbackAndThrow(String message, Exception e) throws RollbackException {
-        TranImpl t = myTran.get();
+        TranImp t = myTran.get();
         if (t != null) t.executeRollback();
         throw new RollbackException(message, e);
     }
@@ -82,7 +82,7 @@ public class TranImpl {
     }
     
 	public static Connection join(Manager manager) throws RollbackException {
-		TranImpl t = myTran.get();
+		TranImp t = myTran.get();
 		if (t == null) throw new RollbackException("Must be in a transaction.", new RollbackException("transaction null"));
 		
 		if (t.manager != null && t.manager != manager && manager != null) {

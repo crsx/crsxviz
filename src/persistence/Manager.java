@@ -2,7 +2,7 @@ package persistence;
 
 import java.sql.Connection;
 
-import persistence.impl.TranImpl;
+import persistence.impl.TranImp;
 
 public class Manager {
 
@@ -24,11 +24,11 @@ public class Manager {
 	
 	public Connection getTransactionConnection() throws RollbackException {
 		// If we're in a transaction, use the transaction's connection
-		if (!TranImpl.isActive()) {
+		if (!TranImp.isActive()) {
 			throw new RollbackException("Must be in a transaction");
 		}
 
-		return TranImpl.join(this);
+		return TranImp.join(this);
 	}
 	
 	public boolean getLowerCaseColumnNames() {
