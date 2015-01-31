@@ -7,30 +7,30 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import persistence.DaoException;
+import persistence.DataAccessException;
 import persistence.PrimaryKey;
 import persistence.impl.Property;
 
 public class PropertyTest {
 
 	@Test
-	public void newPropertyCreatedWithoutFault() throws DaoException {
+	public void newPropertyCreatedWithoutFault() throws DataAccessException {
 		new Property("id", int.class, true, false, TestBean.class );
 	}
 	
-	@Test(expected=DaoException.class)
-	public void improperArgumentsGivenToProperty() throws DaoException {
+	@Test(expected=DataAccessException.class)
+	public void improperArgumentsGivenToProperty() throws DataAccessException {
 		new Property("id", String.class, true, false, TestBean.class);
 	}
 	
 	@Test
-	public void correctPropertiesDerivedFromClass() throws DaoException {
+	public void correctPropertiesDerivedFromClass() throws DataAccessException {
 		Property props[] = Property.findProperties(TestBean.class, true);
 		assertEquals("id", props[0].getName());
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void noSuchProperty() throws DaoException {
+	public void noSuchProperty() throws DataAccessException {
 		Property props[] = Property.findProperties(TestBean.class, true);
 		assertEquals("id", props[0].getName());
 		
@@ -38,7 +38,7 @@ public class PropertyTest {
 	}
 	
 	@Test
-	public void retrieveCorrectPropertyType() throws DaoException {
+	public void retrieveCorrectPropertyType() throws DataAccessException {
 		Property props[] = Property.findProperties(TestBean.class, true);
 		assertEquals(new Integer(0), props[0].defaultValue());
 		assertEquals(Boolean.FALSE, props[2].defaultValue());
@@ -49,7 +49,7 @@ public class PropertyTest {
 	}
 	
 	@Test
-	public void isItNullable() throws DaoException {
+	public void isItNullable() throws DataAccessException {
 		Property props[] = Property.findProperties(TestBean.class, true);
 		assertEquals(false, props[0].isNullable());
 		assertEquals(false, props[2].isNullable());
@@ -60,7 +60,7 @@ public class PropertyTest {
 	}
 	
 	@Test
-	public void isItAnInstanceOfWhatItShouldBe() throws DaoException {
+	public void isItAnInstanceOfWhatItShouldBe() throws DataAccessException {
 		Property props[] = Property.findProperties(TestBean.class, true);
 		assertEquals(true, props[0].isInstance(1));
 		assertEquals(false, props[2].isInstance(0l));

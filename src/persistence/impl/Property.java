@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import persistence.DaoException;
+import persistence.DataAccessException;
 import persistence.PrimaryKey;
 
 
@@ -35,17 +35,17 @@ public class Property implements Comparable<Property> {
         return null;
     }
 
-    private static void isDuplicateProperties(Property[] property) throws DaoException {
+    private static void isDuplicateProperties(Property[] property) throws DataAccessException {
         for (int i=0; i<property.length; i++) {
             if (indexOfProperty(property,property[i].getName()) != i) {
-                throw new DaoException("Duplicate property names: "+
+                throw new DataAccessException("Duplicate property names: "+
                         property[indexOfProperty(property,property[i].getName())]+
                         " and "+property[i]);
             }
         }
     }
     
-    private static <T> List<String> findPrimaryKeys(Class<T> beanClass) throws DaoException {
+    private static <T> List<String> findPrimaryKeys(Class<T> beanClass) throws DataAccessException {
     	List<String> nameList = new ArrayList<String>();
     	
     	PrimaryKey annotation = beanClass.getAnnotation(PrimaryKey.class);
@@ -57,7 +57,7 @@ public class Property implements Comparable<Property> {
     	return nameList;
     }
 
-    public static <T> Property[] findProperties(Class<T> beanClass, boolean lowerCaseColumnNames) throws DaoException {
+    public static <T> Property[] findProperties(Class<T> beanClass, boolean lowerCaseColumnNames) throws DataAccessException {
     	List<String> primaryKeyPropertyNames = findPrimaryKeys(beanClass);
         ArrayList<Property> list = new ArrayList<Property>();
 
@@ -88,9 +88,9 @@ public class Property implements Comparable<Property> {
     }
 
     private static Property findProperty(String propName, Class<?> propType, Class<?> beanClass,
-								    	   List<String> primaryKeyPropertyNames, boolean  lowerCaseColumnNames) throws DaoException {
+								    	   List<String> primaryKeyPropertyNames, boolean  lowerCaseColumnNames) throws DataAccessException {
         if (propType == void.class) {
-        	throw new DaoException("propType can not be null");
+        	throw new DataAccessException("propType can not be null");
         }
 
         String setterName = "set"+propName.substring(0,1).toUpperCase()+propName.substring(1);
@@ -103,7 +103,7 @@ public class Property implements Comparable<Property> {
     }
 
     private static Property getInstance(String   propertyName, Class<?> type, Class<?> beanClass,
-                                        boolean  isPrimaryKeyProperty, boolean  lowerCaseColumnNames) throws DaoException {
+                                        boolean  isPrimaryKeyProperty, boolean  lowerCaseColumnNames) throws DataAccessException {
         if (type == byte[].class) {
             return new Property(propertyName,type,isPrimaryKeyProperty,lowerCaseColumnNames,beanClass);
         }
@@ -112,7 +112,7 @@ public class Property implements Comparable<Property> {
             return new Property(propertyName,type,isPrimaryKeyProperty,lowerCaseColumnNames,beanClass);
         }
 
-        throw new DaoException("Cannot map this class type: "+type.getCanonicalName()+" (property name: "+propertyName+").");
+        throw new DataAccessException("Cannot map this class type: "+type.getCanonicalName()+" (property name: "+propertyName+").");
     }
 
     private static int indexOfProperty(Property[] properties, String name) {
@@ -130,7 +130,7 @@ public class Property implements Comparable<Property> {
         throw new IllegalArgumentException("No such property: "+propertyName);
     }
     
-    private static void setPrimaryKeys(Property[] properties, List<String> priKeyPropNames) throws DaoException {
+    private static void setPrimaryKeys(Property[] properties, List<String> priKeyPropNames) throws DataAccessException {
     	for (int i = 0; i < priKeyPropNames.size(); i++) {
     		boolean found = false;
     		for (Property prop : properties) {
@@ -140,7 +140,7 @@ public class Property implements Comparable<Property> {
     			}
     		}
     		if (!found) {
-    			throw new DaoException("Could not find getter/setter pair for primary key property: " + priKeyPropNames.get(i));
+    			throw new DataAccessException("Could not find getter/setter pair for primary key property: " + priKeyPropNames.get(i));
     		}
     	}
     }
@@ -156,7 +156,7 @@ public class Property implements Comparable<Property> {
     private int        propertyNum = -1;
 
 	public Property(String   name, Class<?> type, boolean  isPrimaryKeyProperty, boolean  lowerCaseColumnNames,
-                       Class<?> beanClass) throws DaoException {
+                       Class<?> beanClass) throws DataAccessException {
 		this.name      = name;
         this.type      = type;
         this.primaryKeyProperty = isPrimaryKeyProperty;
@@ -167,23 +167,23 @@ public class Property implements Comparable<Property> {
 			getter = beanClass.getMethod("get"+capName);
 		} catch (NoSuchMethodException e) {
 			if (type != boolean.class) {
-				throw new DaoException(beanClass.getName()+" doesn't match table: no get"+capName+"() method.  Drop the table and let BasicDao recreate it.");
+				throw new DataAccessException(beanClass.getName()+" doesn't match table: no get"+capName+"() method.  Drop the table and let BasicDao recreate it.");
 			}
 			try {
 				getter = beanClass.getMethod("is" + capName);
 			} catch (NoSuchMethodException e2) {
-				throw new DaoException(beanClass.getName()+" doesn't match table: no get"+capName+"() or is"+capName+"() method.  Drop the table and let BasicDao recreate it.");
+				throw new DataAccessException(beanClass.getName()+" doesn't match table: no get"+capName+"() or is"+capName+"() method.  Drop the table and let BasicDao recreate it.");
 			}
 		}
 
 		if (getter.getReturnType() != type) {
-			throw new DaoException(beanClass.getName()+" doesn't match table: get"+capName+"() returns "+getter.getReturnType().getCanonicalName()+" (not "+type.getCanonicalName()+", which is the table's type).  Drop the table and let BasicDao recreate it.");
+			throw new DataAccessException(beanClass.getName()+" doesn't match table: get"+capName+"() returns "+getter.getReturnType().getCanonicalName()+" (not "+type.getCanonicalName()+", which is the table's type).  Drop the table and let BasicDao recreate it.");
 		}
 
 		try {
 			setter = beanClass.getMethod("set" + capName,type);
 		} catch (NoSuchMethodException e) {
-			throw new DaoException(beanClass.getName()+" doesn't match table: no set"+capName+"("+type.getCanonicalName()+") method.  Drop the table and let BasicDao recreate it.");
+			throw new DataAccessException(beanClass.getName()+" doesn't match table: no set"+capName+"("+type.getCanonicalName()+") method.  Drop the table and let BasicDao recreate it.");
 		}
 
         columnMaxStrLen = MAX_STR_LEN;

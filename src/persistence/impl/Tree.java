@@ -51,7 +51,6 @@ public abstract class Tree {
     public abstract boolean containsNonPrimaryKeyProps();
     public abstract boolean containsMaxOrMin();
 
-    public abstract Property[] getProperties();
     public abstract Object[]   getValues();
 
     public abstract Iterator<Leaf> leafIterator();

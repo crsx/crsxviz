@@ -6,10 +6,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import persistence.BasicDao;
+import persistence.DataAccessException;
 import persistence.Manager;
 import persistence.Matcher;
+import persistence.PrimaryKey;
 import persistence.RollbackException;
 import persistence.beans.StepBean;
+import persistence.impl.Property;
+import persistence.impl.matcharg.BinaryMatcher;
+import persistence.impl.matcharg.Leaf;
+import persistence.impl.matcharg.UnaryMatcher;
 import crsxviz.TestDbUtils;
 import crsxviz.TestManager;
 
@@ -92,9 +98,42 @@ public class MatchTest {
 		basicDao.match((Matcher[])null);
 	}
 	
-	// Test for no results returned i.e. 0
 	@Test
-	public void throwException() throws RollbackException {
+	public void returnEmptyArrayForNoResultsFound() throws RollbackException {
 		assertEquals(0, basicDao.match(Matcher.greaterThan("stepNum", 9)).length);
+	}
+	
+	@Test(expected=DataAccessException.class)
+	public void improperPropertyTypeInBean() throws RollbackException, DataAccessException {
+		Property props[] = Property.findProperties(TestBean.class, true);
+		new Leaf(props, (BinaryMatcher) Matcher.greaterThan("id", 999));
+	}
+	
+	@Test(expected=NullPointerException.class)
+	public void contraintCanNotBeNull() throws DataAccessException {
+		Property props[] = Property.findProperties(StepBean.class, true);
+		new Leaf(props, (UnaryMatcher)null);
+	}
+	
+	@PrimaryKey("id")
+	protected class TestBean {
+		private int id;
+		private Object obj;
+		
+		public TestBean() { }
+		public int getId() {
+			return id;
+		}
+		public void setId(int id) {
+			this.id = id;
+		}
+		public Object getObj() {
+			return obj;
+		}
+		public void setObj(Object obj) {
+			this.obj = obj;
+		}
+		
+		
 	}
 }

@@ -29,7 +29,6 @@ public class Internal extends Tree  {
     	return false;
     }
 
-
     public boolean containsNonPrimaryKeyProps() {
     	for (Tree subNode : subNodes) {
     		if (subNode.containsNonPrimaryKeyProps()) return true;
@@ -41,14 +40,6 @@ public class Internal extends Tree  {
 
     public Iterator<Leaf> leafIterator() {
     	return new MyLeafIterator(subNodes);
-    }
-
-    public Property[] getProperties() {
-    	List<Property> list = new ArrayList<Property>();
-    	for (Tree subNode : subNodes) {
-    		list.addAll(Arrays.asList(subNode.getProperties()));
-    	}
-    	return list.toArray(new Property[list.size()]);
     }
 
     public Object[] getValues() {

@@ -7,9 +7,10 @@ import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 
-import persistence.DaoException;
 import persistence.BasicDao;
+import persistence.DataAccessException;
 import persistence.Manager;
+import persistence.PrimaryKey;
 import persistence.RollbackException;
 import persistence.beans.StepBean;
 import crsxviz.TestDbUtils;
@@ -61,6 +62,11 @@ public class GenericDaoTest {
 	}
 	
 	@Test(expected=RollbackException.class)
+	public void noRowToDeleteWithGivenPrimaryKey() throws RollbackException {
+		basicDao.delete(999);
+	}
+	
+	@Test(expected=RollbackException.class)
 	public void duplicateBeanPassedToCreate() throws RollbackException {
 		basicDao.create(new StepBean(1));
 	}
@@ -81,12 +87,25 @@ public class GenericDaoTest {
 	}
 	
 	@Test(expected=NullPointerException.class)
-	public void nullManagerPassedToConstructor() throws DaoException, RollbackException {
+	public void nullManagerPassedToConstructor() throws DataAccessException, RollbackException {
 		new BasicDao<StepBean>(StepBean.class, "steps", null);
 	}
 	
 	@Test(expected=NullPointerException.class)
-	public void nullBeanClassPassedToConstructor() throws DaoException, RollbackException {
+	public void nullBeanClassPassedToConstructor() throws DataAccessException, RollbackException {
 		new BasicDao<StepBean>(null, "steps", instance);
+	}
+	
+	@Test
+	public void longPrimaryKey() throws RollbackException, DataAccessException {
+		new BasicDao<Tester>(Tester.class, "test", instance);
+	}
+	
+	@PrimaryKey("id")
+	protected class Tester {
+		private long id;
+		private Tester() { } 
+		public long getId() { return id; }
+		public void setId(long id) { this.id = id; }
 	}
 }

@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import persistence.DaoException;
+import persistence.DataAccessException;
 import persistence.Manager;
 import persistence.Matcher;
 import persistence.RollbackException;
@@ -28,7 +28,7 @@ import persistence.impl.matcharg.Leaf;
 //public abstract class BasicDaoImp<T> extends GenericViewDaoImpl<T> {
 public abstract class BasicDaoImp<T> {
 
-    public static <T> BasicDaoImp<T> getInstance(Class<T> beanClass, String tableName, Manager manager) throws DaoException {
+    public static <T> BasicDaoImp<T> getInstance(Class<T> beanClass, String tableName, Manager manager) throws DataAccessException {
     	return new SqliteImp<T>(beanClass, tableName, manager);
     }
 
@@ -63,7 +63,7 @@ public abstract class BasicDaoImp<T> {
     private   String     primaryKeyColumnNamesCommaSeparated;
 
 
-	protected BasicDaoImp(Class<T> beanClass, String tableName, Manager manager) throws DaoException {
+	protected BasicDaoImp(Class<T> beanClass, String tableName, Manager manager) throws DataAccessException {
 		//super(beanClass, manager);
 
 		// Check for null values and throw here (it's less confusing for the caller)
@@ -79,7 +79,7 @@ public abstract class BasicDaoImp<T> {
     	primaryKeyProperties    = getProperties(true);
     	nonPrimaryKeyProperties = getProperties(false);
 		
-    	if (primaryKeyProperties.length == 0) throw new DaoException("No primary key properties specified in the bean: " + beanClass.getName());
+    	if (primaryKeyProperties.length == 0) throw new DataAccessException("No primary key properties specified in the bean: " + beanClass.getName());
 
         if (this.tableName.contains(".")) {
         	int dotPos = this.tableName.indexOf('.');
@@ -117,7 +117,7 @@ public abstract class BasicDaoImp<T> {
 		return sb.toString();
 	}
 
-    public synchronized void createTable() throws DaoException {
+    public synchronized void createTable() throws DataAccessException {
         StringBuilder b = new StringBuilder();
         b.append("create table ");
         b.append(tableName);
@@ -156,35 +156,9 @@ public abstract class BasicDaoImp<T> {
             stmt.close();
         } catch (SQLException | RollbackException e) {
             try { if (con != null) con.close(); } catch (SQLException e2) { e.printStackTrace(); }
-            throw new DaoException("Error creating table \""+tableName+"\": "+e.getMessage(),e);
+            throw new DataAccessException("Error creating table \""+tableName+"\": "+e.getMessage(),e);
         }
     }
-
-    /**
-     * Deletes this table from the database.
-     * Also deletes any auxiliary tables (that contain array data).
-     * This call does not validate the table.
-     * This call does not throw an exception if the table does not exist.
-     *
-     * @throws DaoException if there is an error connecting to the database.
-     *
-    public synchronized void deleteTable() throws DaoException {
-        Connection con = null;
-        try {
-        	con = manager.getConnection();
-            Statement stmt = con.createStatement();
-            String sql = "DROP TABLE " + tableName;
-            stmt.executeUpdate(sql);
-            stmt.close();
-        } catch (SQLException | RollbackException e) {
-            try {
-            	if (con != null) con.close();
-            } catch (SQLException e2) {
-            	e2.printStackTrace();
-            }
-            throw new DaoException(e);
-        }
-    }*/
 
     /**
      * Checks to see if this table exists in the database.
@@ -192,7 +166,7 @@ public abstract class BasicDaoImp<T> {
      * @return true if the table exists.
      * @throws BeanFactoryException if there is an error connecting to the database.
      */
-    public boolean tableExists() throws DaoException {
+    public boolean tableExists() throws DataAccessException {
         Connection con = null;
         try {
         	con = manager.getConnection();
@@ -215,7 +189,7 @@ public abstract class BasicDaoImp<T> {
             return answer;
         } catch (SQLException | RollbackException e) {
             try { if (con != null) con.close(); } catch (SQLException e2) {  }
-            throw new DaoException(e);
+            throw new DataAccessException(e);
         }
     }
 
@@ -236,7 +210,7 @@ public abstract class BasicDaoImp<T> {
 
         } catch (SQLException e) {
             if (e.getMessage().startsWith("Duplicate")) {
-                TranImp.rollbackAndThrow(con, new DaoException(e.getMessage()));
+                TranImp.rollbackAndThrow(con, new DataAccessException(e.getMessage()));
             }
             TranImp.rollbackAndThrow(con, e);
             throw new AssertionError("executeRollback returned");
@@ -493,7 +467,7 @@ public abstract class BasicDaoImp<T> {
         }
     }
     
-    private String javaToSql(Class<?> javaType, Property prop, int maxStringLength) throws DaoException {
+    private String javaToSql(Class<?> javaType, Property prop, int maxStringLength) throws DataAccessException {
         StringBuffer sql = new StringBuffer();
 
         if (javaType.isEnum())                sql.append(getVarChar(maxStringLength));
@@ -529,10 +503,10 @@ public abstract class BasicDaoImp<T> {
             return sql.toString();
         }
 
-        throw new DaoException("Cannot find Java type: "+javaType.getCanonicalName());
+        throw new DataAccessException("Cannot find Java type: "+javaType.getCanonicalName());
     }
     
-    private Class<?> sqlToJava(int sqlType) throws DaoException {
+    private Class<?> sqlToJava(int sqlType) throws DataAccessException {
         if (sqlType == Types.VARCHAR)   return String.class;
         if (sqlType == Types.VARBINARY) return String.class;
 
@@ -554,7 +528,7 @@ public abstract class BasicDaoImp<T> {
         if (sqlType == Types.BLOB)           return byte[].class;
         if (sqlType == Types.BINARY)         return byte[].class;
 
-        throw new DaoException("Cannot find SQL type: "+sqlType);
+        throw new DataAccessException("Cannot find SQL type: "+sqlType);
     }
 
     private T[] sqlMatch(Tree argTree) throws RollbackException {
@@ -597,7 +571,7 @@ public abstract class BasicDaoImp<T> {
         }
     }
 
-    public void validateTable() throws DaoException, RollbackException {
+    public void validateTable() throws DataAccessException, RollbackException {
         Connection con = null;
         try {
             con = manager.getConnection();
@@ -607,48 +581,46 @@ public abstract class BasicDaoImp<T> {
             Iterator<Column> columnIter = columnList.iterator();
 
             for (Property prop : properties) {
-                if (!columnIter.hasNext()) throw new DaoException("Table="+tableName+" is missing column: "+prop.getColumnName()+" that backs "+prop);
+                if (!columnIter.hasNext()) throw new DataAccessException("Table="+tableName+" is missing column: "+prop.getColumnName()+" that backs "+prop);
                 Column column = columnIter.next();
                 if (!column.name.equals(prop.getColumnName())) {
-                    throw new DaoException("Column #"+column.position+" should have name "+prop.getColumnName()+" (but is instead "+column.name+")");
+                    throw new DataAccessException("Column #"+column.position+" should have name "+prop.getColumnName()+" (but is instead "+column.name+")");
                 }
 
                 if (prop.isPrimaryKey() && !column.isPrimaryKey) {
-                    throw new DaoException("Table "+tableName+" does not indicate column \""+column.name+"\" as part of the primary key (and it should)");
+                    throw new DataAccessException("Table "+tableName+" does not indicate column \""+column.name+"\" as part of the primary key (and it should)");
                 }
 
                 if (column.isPrimaryKey && !(prop.isPrimaryKey())) {
-                    throw new DaoException("Table "+tableName+" does indicates column \""+column.name+"\" as part of the primary key (and it should not)");
+                    throw new DataAccessException("Table "+tableName+" does indicates column \""+column.name+"\" as part of the primary key (and it should not)");
                 }
 
                 Class<?> dbType = sqlToJava(column.sqlType);
-                if (dbType == null) throw new DaoException("Table="+tableName+", "+column.name+": do not know how to map this database type: "+column.sqlType);
-                if (dbType != prop.getColumnType()) throw new DaoException("Table="+tableName+", column="+column.name+": bean & DB types do not match: beanType="+prop.getColumnType()+", DBType="+dbType);
+                if (dbType == null) throw new DataAccessException("Table="+tableName+", "+column.name+": do not know how to map this database type: "+column.sqlType);
+                //if (dbType != prop.getColumnType()) throw new DataAccessException("Table="+tableName+", column="+column.name+": bean & DB types do not match: beanType="+prop.getColumnType()+", DBType="+dbType);
 
                 if (column.isPrimaryKey) {
-                    if(!column.isNonNull) throw new DaoException("Table="+tableName+", "+column.name+": database column allows nulls for this type (and should not because it's part of the primary key)");
+                    if(!column.isNonNull) throw new DataAccessException("Table="+tableName+", "+column.name+": database column allows nulls for this type (and should not because it's part of the primary key)");
                 } else if (prop.defaultValue() == null && column.isNonNull) {
-                    throw new DaoException("Table="+tableName+", "+column.name+": database column does not allow nulls for this type (and should because of it's type: "+dbType+")");
+                    throw new DataAccessException("Table="+tableName+", "+column.name+": database column does not allow nulls for this type (and should because of it's type: "+dbType+")");
                 }
             }
 
             if (columnIter.hasNext()) {
                 Column column = columnIter.next();
-                throw new DaoException("Column ("+column.name+") without corresponding bean property");
+                throw new DataAccessException("Column ("+column.name+") without corresponding bean property");
             }
             
         } catch (SQLException e) {
             try { if (con != null) con.close(); } catch (SQLException e2) {  }
-            throw new DaoException(e);
-        } catch (DaoException e) {
+            throw new DataAccessException(e);
+        } catch (DataAccessException e) {
             try { if (con != null) con.close(); } catch (SQLException e2) {  }
             throw e;
         } catch (RollbackException e) {
             throw e;
         }
     }
-    
-    //TODO Check feasibility of pulling GenericDaoView in here
     
     public T[] executeQuery(String sql, Object... args) throws RollbackException {
 		Connection con = null;
@@ -727,9 +699,6 @@ public abstract class BasicDaoImp<T> {
                     property+" to value="+value+" for bean="+bean,e);
 		} 
 	}
-
-    
-    //TODO
     
     private static class Column {
         String  name;
@@ -762,6 +731,7 @@ public abstract class BasicDaoImp<T> {
                 c.isPrimaryKey = false; // Will update below if primary key column
                 pos++;
                 c.position = pos;
+                c.toString();
                 list.add(c);
             }
             rs.close();

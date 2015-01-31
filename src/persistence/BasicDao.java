@@ -26,10 +26,10 @@ public class BasicDao<T> {
 	 * @param beanClass the class description of the bean.
 	 * @param tableName the name of the table in the database.
 	 * @param manaager the manager to use to manage connections to the database.
-	 * @throws DaoException if there are any problems, including problems accessing the database, problems with the bean class, etc.
+	 * @throws DataAccessException if there are any problems, including problems accessing the database, problems with the bean class, etc.
 	 * @throws RollbackException 
 	 */
-	public BasicDao(Class<T> beanClass, String tableName, Manager manager) throws DaoException, RollbackException {
+	public BasicDao(Class<T> beanClass, String tableName, Manager manager) throws DataAccessException, RollbackException {
 		impl = BasicDaoImp.getInstance(beanClass, tableName, manager);
 		if (!impl.tableExists()) {
 			impl.createTable();

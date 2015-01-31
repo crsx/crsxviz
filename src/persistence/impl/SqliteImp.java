@@ -5,14 +5,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import persistence.DaoException;
+import persistence.DataAccessException;
 import persistence.Manager;
 import persistence.impl.matcharg.Leaf;
 import persistence.impl.matcharg.MatchOp;
 
 public class SqliteImp<B> extends BasicDaoImp<B> {
 
-    public SqliteImp(Class<B> beanClass, String tableName, Manager manager) throws DaoException{
+    public SqliteImp(Class<B> beanClass, String tableName, Manager manager) throws DataAccessException{
 		super(beanClass, tableName, manager);
     }
 

@@ -28,8 +28,9 @@ public enum MatchOp {
         OR,
         AND;
 
-
+/*
     public String toString() {
     	return getClass().getSimpleName()+"."+super.toString();
     }
+*/
 }

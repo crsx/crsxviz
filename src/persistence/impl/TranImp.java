@@ -4,7 +4,7 @@ package persistence.impl;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import persistence.DaoException;
+import persistence.DataAccessException;
 import persistence.Manager;
 import persistence.RollbackException;
 
@@ -93,7 +93,7 @@ public class TranImp {
 		if (t.connection != null) return t.connection;
 		
 		try {
-			if (manager == null) throw new RollbackException(new DaoException("null manager"));
+			if (manager == null) throw new RollbackException(new DataAccessException("null manager"));
 			t.manager = manager;
 			t.connection = manager.getConnection();
 			t.connection.setAutoCommit(false);

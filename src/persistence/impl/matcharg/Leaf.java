@@ -16,10 +16,6 @@ public class Leaf extends Tree {
     	super(arg.getOp());
 
         property = Property.propertyForName(allBeanProperties,arg.getKeyName());
-
-		if (!isNumber() && !isDate() && !isString()) {
-    		throw new IllegalArgumentException(op+" cannot be applied to this property type: "+property);
-		}
     }
 
     public Leaf(Property[] allBeanProperties, BinaryMatcher arg) {
@@ -39,9 +35,6 @@ public class Leaf extends Tree {
         	case GREATER_OR_EQUALS:
         	case LESS:
         	case LESS_OR_EQUALS:
-        		if (!isNumber() && !isDate() && !isString()) {
-            		throw new IllegalArgumentException(op+" cannot be applied to this property type: "+property);
-        		}
         		break;
         	case CONTAINS:
         	case STARTS_WITH:
@@ -50,9 +43,6 @@ public class Leaf extends Tree {
         	case CONTAINS_IGNORE_CASE:
         	case STARTS_WITH_IGNORE_CASE:
         	case ENDS_WITH_IGNORE_CASE:
-        		if (!isString()) {
-            		throw new IllegalArgumentException(op+" cannot be applied to this property type: "+property);
-        		}
         		break;
         	default:
         		throw new AssertionError("Unknown op: "+op);
@@ -65,7 +55,6 @@ public class Leaf extends Tree {
     }
 
 	public Property   getProperty()   { return property; }
-	public Property[] getProperties() { return new Property[] { property }; }
 	public Object     getValue()      { return matchValue;    }
 	public Object[]   getValues()     { return new Object[]   { matchValue    }; }
 
@@ -74,34 +63,11 @@ public class Leaf extends Tree {
     }
 
     public boolean containsMaxOrMin() {
-    	if (op == MatchOp.MAX) return true;
-    	if (op == MatchOp.MIN) return true;
-    	return false;
+    	return (op == MatchOp.MAX || op == MatchOp.MIN);
     }
 
     public boolean containsNonPrimaryKeyProps() {
     	return !property.isPrimaryKey();
-    }
-
-    private boolean isDate() {
-    	Class<?> c = property.getType();
-    	if (c == java.util.Date.class) return true;
-    	if (c == java.sql.Date.class)  return true;
-    	if (c == java.sql.Time.class)  return true;
-    	return false;
-    }
-
-    private boolean isNumber() {
-    	Class<?> c = property.getType();
-    	if (c == float.class)  return true;
-    	if (c == int.class)    return true;
-    	if (c == double.class) return true;
-    	if (c == long.class)   return true;
-    	return false;
-    }
-
-    private boolean isString() {
-    	return property.getType() == String.class;
     }
 
     private void matchingTypeCheck() {
