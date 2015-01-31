@@ -1,17 +1,18 @@
 #include <include/Step.h>
 #include <stdexcept>
 #include <iostream>
+#include <include/Cookies.h>
+#include <include/ActiveRules.h>
+#include <include/RuntimeError.h>
 
 using namespace std;
-
-#define assert(x) if(!(x)) throw runtime_error(string("Assertion failed at ") + string(__FILE__) + string(":") + to_string(__LINE__)); 
 
 sqlite3_stmt* Step::StepsInsertStmt = NULL;
 sqlite3_stmt* Step::StepsUpdateStmt = NULL;
 
 /** Removes all content before the last space
-* @param s The string to strip
-* @return the string without any leading spaces
+*   @param s The string to strip
+*   @return the string without any leading spaces
 */
 string lstrip(string &s) {
 	return s.substr(s.find_last_of(' ') + 1, s.length());
@@ -19,6 +20,7 @@ string lstrip(string &s) {
 
 Step::Step(vector<string> &buf) {
 	assert(buf.size() > 0);
+	
 	parseStepHeader(buf[0]);
 	unsigned int ln = 0;
 	
@@ -30,24 +32,10 @@ Step::Step(vector<string> &buf) {
 	if (ln < buf.size()) {
 		if (buf[ln].find("Cookies") != string::npos) {
 			while (++ln < buf.size() && buf[ln].length() != 0){
-				if (cookies.length())
-					cookies.append(",");
-				cookies.append(lstrip(buf[ln]));
+				cookies.addCookie(lstrip(buf[ln]));
 			}
 		}
 	}
-}
-
-void Step::print() {
-	cout << "Step:\n";
-	cout << "\tIndent:      " << indent << endl;
-	cout << "\tBegin:       " << begin << endl;
-	cout << "\tStep Number: " << stepNum << endl;
-	cout << "\tVerb:        " << activeTerm << endl;
-	cout << "\tAllocs:      " << allocs << endl;
-	cout << "\tFrees:       " << frees << endl;
-	cout << "\tData:        " << data << endl;
-	cout << "\tCookies:     " << cookies << endl;
 }
 
 void Step::stepInsert() {
@@ -57,13 +45,13 @@ void Step::stepInsert() {
 	rc = sqlite3_reset(StepsInsertStmt);
 	if (rc != SQLITE_OK) {
 		cout << "Error " << rc << " resetting statement" << endl;
-		throw runtime_error("Error resetting statement");
+		RuntimeError("Error resetting statement");
 	}
 
 	sqlite3_bind_int64(StepsInsertStmt, 1, stepNum);
 	sqlite3_bind_int(StepsInsertStmt, 2, indent);
 	if (begin) {
-		sqlite3_bind_text(StepsInsertStmt, 3, activeTerm.c_str(), activeTerm.length(), SQLITE_STATIC);
+		sqlite3_bind_int(StepsInsertStmt, 3, ActiveRuleManager::GetActiveRuleID(activeRule));
 	}
 	else {
 		sqlite3_bind_null(StepsInsertStmt, 3);
@@ -80,7 +68,7 @@ void Step::stepInsert() {
 		sqlite3_bind_null(StepsInsertStmt, 7);
 	}
 	else {
-		sqlite3_bind_text(StepsInsertStmt, 7, cookies.c_str(), cookies.length(), SQLITE_STATIC);
+		sqlite3_bind_blob(StepsInsertStmt, 7, cookies.getBlob(), cookies.length(), SQLITE_TRANSIENT);
 	}
 
 	assert(sqlite3_step(StepsInsertStmt) == SQLITE_DONE);
@@ -93,7 +81,7 @@ void Step::stepUpdate() {
 	rc = sqlite3_reset(StepsUpdateStmt);
 	if (rc != SQLITE_OK) {
 		cout << "Error " << rc << " resetting statement" << endl;
-		throw runtime_error("Error resetting statement");
+		RuntimeError("Error resetting statement");
 	}
 
 	sqlite3_bind_int64(StepsUpdateStmt, 1, allocs);
@@ -138,10 +126,10 @@ void Step::parseStepHeader(string &s) {
 		tmp = offset += 3; //skip the leading space on the verb
 		offset = s.find_first_of(' ', tmp);  //assume verbs cannot have spaces
 		assert(offset != string::npos);
-		activeTerm = s.substr(tmp, offset - tmp); //get the verb (excluding tailing space)
+		activeRule = s.substr(tmp, offset - tmp); //get the verb (excluding tailing space)
 		offset += 2; //jump to the alloc first char
 	} else {
-		activeTerm = "";
+		activeRule = "";
 		offset += 4; //jump to alloc first char
 	}
 
@@ -164,17 +152,34 @@ void Step::parseStepHeader(string &s) {
 
 void Step::initPreparedStatements(sqlite3* db) {
 	if (!db)
-		throw invalid_argument("Database cannot be NULL");
+		throw invalid_argument("Database pointer cannot be NULL");
 
-	int rc = sqlite3_prepare(db, StepInsertTemplate, -1, &StepsInsertStmt, 0);
+	int rc = sqlite3_prepare_v2(db, StepInsertTemplate, -1, &StepsInsertStmt, 0);
 	if (rc != SQLITE_OK){
 		cout << "Error " << rc << " creating steps insert statement" << endl << StepInsertTemplate;
-		throw runtime_error("Error creating steps insert statement");
+		RuntimeError("Error creating steps insert statement");
 	}
 
-	rc = sqlite3_prepare(db, StepUpdateTemplate, -1, &StepsUpdateStmt, 0);
+	rc = sqlite3_prepare_v2(db, StepUpdateTemplate, -1, &StepsUpdateStmt, 0);
 	if (rc != SQLITE_OK){
 		cout << "Error " << rc << " creating steps update statement" << endl << StepUpdateTemplate;
-		throw runtime_error("Error creating steps update statement");
+		RuntimeError("Error creating steps update statement");
 	}
+}
+
+void Step::CreateStepTable(sqlite3* db) {
+	if (!db)
+		throw invalid_argument("Database pointer cannot be NULL");
+	
+	char *errMsg = NULL;
+	int rc = sqlite3_exec(db, TableSchema, NULL, 0, &errMsg);
+	if (rc != SQLITE_OK){
+		fprintf(stderr, "SQL error: %s\n", errMsg);
+		sqlite3_free(errMsg);
+		RuntimeError("Error creating table");
+	}
+	initPreparedStatements(db);
+	
+	ActiveRuleManager::CreateActiveRuleTable(db);
+	CookieManager::CreateCookieTable(db);
 }

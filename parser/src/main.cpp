@@ -6,27 +6,9 @@
 #include <sqlite3.h>
 #include <include/Step.h>
 #include <errno.h>
+#include <include/RuntimeError.h>
 
 using namespace std;
-
-#ifndef _ENABLE_CALLBACK_DBG
-	#define _ENABLE_CALLBACK_DBG true
-#endif
-
-#define assert(x) if(!(x)) { cout << "Assertion failed at " << __FILE__ << ":" << __LINE__ << endl; exit(-1); }
-
-/** Target for sqlite3_exec callback handling
-*/
-static int callback(void *NotUsed, int argc, char **argv, char **azColName){
-#if(_ENABLE_CALLBACK_DBG)
-	int i;
-	for(i=0; i<argc; i++){
-		printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
-	}
-	printf("\n");
-#endif
-	return 0;
-}
 
 /** Ensures correct PRAGMA settings are set up for db
 */
@@ -78,7 +60,6 @@ int main(int argc, char* argv[]) {
 	}
 	
 	sqlite3 * db = NULL;
-	char *errMsg = NULL;
 	rc = sqlite3_open(dbpath, &db);
 	if (rc) {
 		cout << "Error opening database: " << sqlite3_errmsg(db) << endl;
@@ -87,27 +68,9 @@ int main(int argc, char* argv[]) {
 
 	cout << "Database " << dbpath << " opened OK" << endl;
 
-	const char* sql = R"(CREATE TABLE `Steps` (
-	`StepNum`        INTEGER NOT NULL PRIMARY KEY UNIQUE,
-	`Indentation`    INTEGER,
-	`ActiveTerm`     TEXT,
-	`StartAllocs`    INTEGER,
-	`StartFrees`	 INTEGER,
-	`CompleteAllocs` INTEGER,
-	`CompleteFrees`  INTEGER,
-	`StartData`      TEXT,
-	`CompleteData`   TEXT,
-	`Cookies`        TEXT
-	);)";
-
-	rc = sqlite3_exec(db, sql, callback, 0, &errMsg);
-	if (rc != SQLITE_OK){
-		fprintf(stderr, "SQL error: %s\n", errMsg);
-		sqlite3_free(errMsg);
-	}
-
+	Step::CreateStepTable(db);
+	
 	optimizeDB(db);
-	Step::initPreparedStatements(db);
 
 	istream * src;
 	if (argc == 3) {
