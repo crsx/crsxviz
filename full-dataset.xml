@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+  <ActiveRules ActiveRuleID="0" Value="Multiply[0]"/>
+  <ActiveRules ActiveRuleID="1" Value="Plus[0]"/>
+  <ActiveRules ActiveRuleID="2" Value="Plus$1[0]"/>
+  <ActiveRules ActiveRuleID="3" Value="Multiply$1[0]"/>
+  <ActiveRules ActiveRuleID="4" Value="Plus$2[0]"/>
+  <ActiveRules ActiveRuleID="5" Value="Multiply$2[0]"/>
+  <Cookies CookieID="0" Value="Plus[S"/>
+  <Cookies CookieID="1" Value="Multiply[Plus"/>
+  <Cookies CookieID="2" Value="Plus$1[Z"/>
+  <Cookies CookieID="3" Value="Plus[Z"/>
+  <Cookies CookieID="4" Value="Multiply$1[Plus"/>
+  <Cookies CookieID="5" Value="Plus[Multiply"/>
+  <Cookies CookieID="6" Value="Plus$2[S"/>
+  <Cookies CookieID="7" Value="Multiply$1[Z"/>
+  <Cookies CookieID="8" Value="Multiply[Z"/>
+  <Cookies CookieID="9" Value="Multiply$2[S"/>
+  <Cookies CookieID="10" Value="Plus$1[S"/>
+  <Steps StepNum="1" Indentation="1" ActiveRuleID="0" StartAllocs="90" StartFrees="15" CompleteAllocs="108" CompleteFrees="20" StartData="     Multiply[&#xA;      Plus[&#xA;       S[Z],&#xA;       S[Z]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     Multiply$1[&#xA;      Plus[&#xA;       Z,&#xA;       S[Z]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="2" Indentation="2" ActiveRuleID="1" StartAllocs="96" StartFrees="16" CompleteAllocs="99" CompleteFrees="17" StartData="      Plus[&#xA;       S[Z],&#xA;       S[Z]]&#xA;" CompleteData="      Plus$1[&#xA;       Z,&#xA;       S[Z]]&#xA;" Cookies=""/>
+  <Steps StepNum="3" Indentation="2" ActiveRuleID="2" StartAllocs="102" StartFrees="18" CompleteAllocs="105" CompleteFrees="19" StartData="      Plus$1[&#xA;       Z,&#xA;       S[Z]]&#xA;" CompleteData="      S[&#xA;       Plus[&#xA;        Z,&#xA;        S[Z]]]&#xA;" Cookies=""/>
+  <Steps StepNum="4" Indentation="1" ActiveRuleID="3" StartAllocs="113" StartFrees="21" CompleteAllocs="119" CompleteFrees="22" StartData="     Multiply$1[&#xA;      Plus[&#xA;       Z,&#xA;       S[Z]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     Plus[&#xA;      Multiply[&#xA;       Plus[&#xA;        Z,&#xA;        S[Z]],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="5" Indentation="1" ActiveRuleID="1" StartAllocs="126" StartFrees="23" CompleteAllocs="182" CompleteFrees="40" StartData="     Plus[&#xA;      Multiply[&#xA;       Plus[&#xA;        Z,&#xA;        S[Z]],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     Plus$1[&#xA;      S[&#xA;       S[Z]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="6" Indentation="2" ActiveRuleID="0" StartAllocs="133" StartFrees="24" CompleteAllocs="149" CompleteFrees="29" StartData="      Multiply[&#xA;       Plus[&#xA;        Z,&#xA;        S[Z]],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" CompleteData="      Multiply$1[&#xA;       Z,&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="7" Indentation="3" ActiveRuleID="1" StartAllocs="139" StartFrees="25" CompleteAllocs="142" CompleteFrees="26" StartData="       Plus[&#xA;        Z,&#xA;        S[Z]]&#xA;" CompleteData="       Plus$2[&#xA;        S[Z]]&#xA;" Cookies=""/>
+  <Steps StepNum="8" Indentation="3" ActiveRuleID="4" StartAllocs="145" StartFrees="27" CompleteAllocs="148" CompleteFrees="28" StartData="       Plus$2[&#xA;        S[Z]]&#xA;" CompleteData="       S[Z]&#xA;" Cookies=""/>
+  <Steps StepNum="9" Indentation="2" ActiveRuleID="3" StartAllocs="152" StartFrees="30" CompleteAllocs="155" CompleteFrees="31" StartData="      Multiply$1[&#xA;       Z,&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" CompleteData="      Plus[&#xA;       Multiply[&#xA;        Z,&#xA;        S[&#xA;         S[&#xA;          S[Z]]]],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="10" Indentation="2" ActiveRuleID="1" StartAllocs="160" StartFrees="32" CompleteAllocs="175" CompleteFrees="37" StartData="      Plus[&#xA;       Multiply[&#xA;        Z,&#xA;        S[&#xA;         S[&#xA;          S[Z]]]],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" CompleteData="      Plus$2[&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="11" Indentation="3" ActiveRuleID="0" StartAllocs="165" StartFrees="33" CompleteAllocs="168" CompleteFrees="34" StartData="       Multiply[&#xA;        Z,&#xA;        S[&#xA;         S[&#xA;          S[Z]]]]&#xA;" CompleteData="       Multiply$2[&#xA;        S[&#xA;         S[&#xA;          S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="12" Indentation="3" ActiveRuleID="5" StartAllocs="171" StartFrees="35" CompleteAllocs="174" CompleteFrees="36" StartData="       Multiply$2[&#xA;        S[&#xA;         S[&#xA;          S[Z]]]]&#xA;" CompleteData="       Z&#xA;" Cookies=""/>
+  <Steps StepNum="13" Indentation="2" ActiveRuleID="4" StartAllocs="178" StartFrees="38" CompleteAllocs="181" CompleteFrees="39" StartData="      Plus$2[&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]&#xA;" CompleteData="      S[&#xA;       S[&#xA;        S[Z]]]&#xA;" Cookies=""/>
+  <Steps StepNum="14" Indentation="1" ActiveRuleID="2" StartAllocs="185" StartFrees="41" CompleteAllocs="188" CompleteFrees="42" StartData="     Plus$1[&#xA;      S[&#xA;       S[Z]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     S[&#xA;      Plus[&#xA;       S[&#xA;        S[Z]],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="15" Indentation="1" ActiveRuleID="1" StartAllocs="192" StartFrees="43" CompleteAllocs="195" CompleteFrees="44" StartData="     Plus[&#xA;      S[&#xA;       S[Z]],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     Plus$1[&#xA;      S[Z],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="16" Indentation="1" ActiveRuleID="2" StartAllocs="198" StartFrees="45" CompleteAllocs="201" CompleteFrees="46" StartData="     Plus$1[&#xA;      S[Z],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     S[&#xA;      Plus[&#xA;       S[Z],&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="17" Indentation="1" ActiveRuleID="1" StartAllocs="204" StartFrees="47" CompleteAllocs="207" CompleteFrees="48" StartData="     Plus[&#xA;      S[Z],&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     Plus$1[&#xA;      Z,&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="18" Indentation="1" ActiveRuleID="2" StartAllocs="210" StartFrees="49" CompleteAllocs="214" CompleteFrees="50" StartData="     Plus$1[&#xA;      Z,&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     S[&#xA;      Plus[&#xA;       Z,&#xA;       S[&#xA;        S[&#xA;         S[Z]]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="19" Indentation="1" ActiveRuleID="1" StartAllocs="217" StartFrees="51" CompleteAllocs="221" CompleteFrees="52" StartData="     Plus[&#xA;      Z,&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     Plus$2[&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" Cookies=""/>
+  <Steps StepNum="20" Indentation="1" ActiveRuleID="4" StartAllocs="224" StartFrees="53" CompleteAllocs="227" CompleteFrees="54" StartData="     Plus$2[&#xA;      S[&#xA;       S[&#xA;        S[Z]]]]&#xA;" CompleteData="     S[&#xA;      S[&#xA;       S[Z]]]&#xA;" Cookies=""/>
+</dataset>
