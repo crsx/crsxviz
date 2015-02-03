@@ -9,7 +9,7 @@ SRCDIR = ./src
 
 all: crsx_parse
 
-_OBJ = main.o Step.o
+_OBJ = main.o Step.o Cookies.o ActiveRules.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
