@@ -19,9 +19,11 @@ This project exists to work on this visualization effort.
 
 To build and test the database functionality complete the following
 
-```ant init```
-```ant build```
-```ant crsxviz.tests```
+```
+ant init
+ant build
+ant crsxviz.tests
+```
 
 or simply
 
