@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.sql.SQLException;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import persistence.BasicDao;
@@ -12,21 +13,34 @@ import persistence.DataAccessException;
 import persistence.Manager;
 import persistence.PrimaryKey;
 import persistence.RollbackException;
+import persistence.beans.ActiveRuleBean;
+import persistence.beans.CookieBean;
 import persistence.beans.StepBean;
 import crsxviz.TestDbUtils;
 import crsxviz.TestManager;
 
 public class GenericDaoTest {
 	
-	private Manager instance;
-	private BasicDao<StepBean> basicDao;
+	private static Manager instance;
+	private BasicDao<StepBean> stepsDao;
+	private BasicDao<ActiveRuleBean> activeRulesDao;
+	private BasicDao<CookieBean> cookiesDao;
 	private static final String table = "testTable";
+	
+	@BeforeClass
+	public static void classSetUp() throws Exception {
+		instance = TestManager.getTestInstance();
+		//TestDbUtils.extractData();    Uncomment when the database schema changes
+		//								This requires updating the database that 
+		//								data is extracted from in TestDbUtils
+	}
 	
 	@Before
 	public void setUp() {
-		instance = TestManager.getTestInstance();
 		try {
-			basicDao = new BasicDao<StepBean>(StepBean.class, "steps", instance);
+			stepsDao = new BasicDao<StepBean>(StepBean.class, "steps", instance);
+			activeRulesDao = new BasicDao<ActiveRuleBean>(ActiveRuleBean.class, "activeRules", instance);
+			cookiesDao = new BasicDao<CookieBean>(CookieBean.class, "cookies", instance);
 			TestDbUtils.setUpDb();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -46,15 +60,15 @@ public class GenericDaoTest {
 	@Test
 	public void basicHappyPathCrudOperations() {
 		try {
-			assertEquals(3, basicDao.getCount());
-			basicDao.create(new StepBean(4, 4, "activeTerm", 4, 4, 4, 4, "startData", "completeData", "cookies"));
-			assertEquals(4, basicDao.getCount());
+			assertEquals(20, stepsDao.getCount());
+			stepsDao.create(new StepBean());
+			assertEquals(21, stepsDao.getCount());
 			
-			basicDao.update(new StepBean(4, 5, "activeTerm", 5, 5, 5, 5, "startData", "completeData", "cookies"));
-			assertEquals(5, basicDao.read(4).getIndentation());
+			stepsDao.update(new StepBean(4, 5, 5, 5, 5, 5, 5, "startData", "completeData", "1 2 3 4 5"));
+			assertEquals(5, stepsDao.read(4).getIndentation());
 			
-			basicDao.delete(1);
-			assertEquals(3, basicDao.getCount());
+			stepsDao.delete(1);
+			assertEquals(20, stepsDao.getCount());
 			
 		} catch (RollbackException e) {
 			e.printStackTrace();
@@ -63,27 +77,27 @@ public class GenericDaoTest {
 	
 	@Test(expected=RollbackException.class)
 	public void noRowToDeleteWithGivenPrimaryKey() throws RollbackException {
-		basicDao.delete(999);
+		stepsDao.delete(999);
 	}
 	
 	@Test(expected=RollbackException.class)
 	public void duplicateBeanPassedToCreate() throws RollbackException {
-		basicDao.create(new StepBean(1));
+		stepsDao.create(new StepBean(1));
 	}
 
 	@Test(expected=RollbackException.class)
 	public void improperArgumentPassedToRead() throws RollbackException {
-		basicDao.read("hat");
+		stepsDao.read("hat");
 	}
 	
 	@Test(expected=RollbackException.class)
 	public void improperArgumentPassedToDelete() throws RollbackException {
-		basicDao.delete("hat");
+		stepsDao.delete("hat");
 	}
 	
 	@Test(expected=RollbackException.class)
 	public void improperArgumentPassedToUpdate() throws RollbackException {
-		basicDao.update(new StepBean());
+		stepsDao.update(new StepBean());
 	}
 	
 	@Test(expected=NullPointerException.class)
