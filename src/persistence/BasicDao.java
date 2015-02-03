@@ -4,7 +4,8 @@ import persistence.impl.BasicDaoImp;
 
 /**
  * This class is used to read and write rows of a database table that correspond
- * to instances of a JavaBean of type T.
+ * to instances of a JavaBean of type T. It serves as the single point of entry to
+ * interacting with the database.
  * 
  * The JavaBean must have a public, no-argument constructor
  * 
@@ -38,7 +39,9 @@ public class BasicDao<T> {
 	}
 
 	/**
-	 * Creates a new row in the table using the values provided the contents of the <tt>bean</tt>.
+	 * Creates a new row in the table using the values provided in the contents of the bean.
+	 * That is, any information that is in the Bean will be created in a new row in the table
+	 * managed by the current instance of BasicDao.
 	 *
 	 * @param bean an instance of type.
 	 * @throws RollbackException if the work cannot be completed for any one of a number of reasons,
@@ -51,7 +54,12 @@ public class BasicDao<T> {
 	}
 
     /**
-     * Deletes from the table the row with the given primary key.
+     * Deletes from the table the row with the given primary key. That is, if a given Bean has
+     * a primary Id of 1 then the following call will delete that entry
+     * 
+     * BasicDao<T> dao;
+     * 
+     * dao.delete(1);
      *
      * @param primaryKeyValues the values of the properties that comprise the primary key for
      * bean being deleted.
@@ -77,6 +85,12 @@ public class BasicDao<T> {
      * Searches the table for rows matching the given constraints.
      * Constraints are specified with Matchers which limit properties to
      * values or ranges, such as equals, less-than or greater-than a given value.
+     * 
+     * This allows us to make requests such as:
+     * (1) Give me all rows with a step number greater than 5
+     * (2) Give me all rows that contain a specific term
+     * (3) Give me all rows that do not equal a certain term
+     * 
      * Operators on strings also include starts-with, ends-with, and contains.
      * A bean is instantiated and returned to hold the values for each row that matches the constraints.
      *
