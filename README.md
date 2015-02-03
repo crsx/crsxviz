@@ -15,6 +15,18 @@ CRSXVIZ is a visualizer for those CRSX debug traces.
 
 This project exists to work on this visualization effort.
 
+## Build Instructions
+
+To build and test the database functionality complete the following
+
+```ant init```
+```ant build```
+```ant crsxviz.tests```
+
+or simply
+
+```ant init build crsxviz.tests```
+
 
 License
 =======

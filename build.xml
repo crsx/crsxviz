@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="crsxviz">
+    <property environment="env"/>
+    <property name="ECLIPSE_HOME" value="../../Desktop/nate/eclipse/"/>
+    <property name="junit.output.dir" value="junit"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="JUnit 4.libraryclasspath">
+        <pathelement location="${ECLIPSE_HOME}plugins/org.junit_4.11.0.v201303080030/junit.jar"/>
+        <pathelement location="${ECLIPSE_HOME}plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
+    </path>
+    <path id="crsxviz.classpath">
+        <pathelement location="bin"/>
+        <path refid="JUnit 4.libraryclasspath"/>
+        <pathelement location="lib/dbunit-2.4.9.jar"/>
+        <pathelement location="lib/mockito-all-1.9.5.jar"/>
+        <pathelement location="lib/slf4j-api-1.7.10.jar"/>
+        <pathelement location="lib/slf4j-simple-1.7.10.jar"/>
+        <pathelement location="lib/sqlite-jdbc-3.8.7.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.xtend"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="unitTests">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.xtend"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <src path="unitTests"/>
+            <classpath refid="crsxviz.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="crsxviz.tests">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.GenericDaoTest" todir="${junit.output.dir}"/>
+            <test name="crsxviz.tests.MatchTest" todir="${junit.output.dir}"/>
+            <test name="crsxviz.tests.PropertyTest" todir="${junit.output.dir}"/>
+            <test name="crsxviz.tests.TransactionTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
+    </target>
+    <target name="GenericDaoTest (1)">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.GenericDaoTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
+    </target>
+    <target name="MatchTest (1)">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.MatchTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+    </target>
+</project>
