@@ -19,7 +19,7 @@ import persistence.beans.StepBean;
 import crsxviz.TestDbUtils;
 import crsxviz.TestManager;
 
-public class GenericDaoTest {
+public class BasicDaoTest {
 	
 	private static Manager instance;
 	private BasicDao<StepBean> stepsDao;
@@ -30,7 +30,9 @@ public class GenericDaoTest {
 	@BeforeClass
 	public static void classSetUp() throws Exception {
 		instance = TestManager.getTestInstance();
-		//TestDbUtils.extractData();    Uncomment when the database schema changes
+		//TestDbUtils.extractData("let2.db", "test.xml");  
+		//								Uncomment if a new database to extra data from
+		//								is added or a new output xml file is needed
 		//								This requires updating the database that 
 		//								data is extracted from in TestDbUtils
 	}
@@ -45,6 +47,30 @@ public class GenericDaoTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void validCookiesStored() throws Exception {
+		CookieBean result = cookiesDao.read(1);
+		assertEquals(1, result.getCookieId());
+		assertEquals("Multiply[Plus", result.getValue());
+	}
+	
+	@Test
+	public void invalidCookieId() throws Exception {
+		assertEquals(null, cookiesDao.read(999));
+	}
+	
+	@Test
+	public void validActiveRulesStored() throws Exception {
+		ActiveRuleBean result = activeRulesDao.read(1);
+		assertEquals(1, result.getActiveRuleId());
+		assertEquals("Plus[0]", result.getValue());
+	}
+	
+	@Test
+	public void invalidActiveId() throws Exception {
+		assertEquals(null, activeRulesDao.read(999));
 	}
 	
 	@Test 

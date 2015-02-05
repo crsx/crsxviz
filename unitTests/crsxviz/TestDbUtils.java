@@ -31,13 +31,13 @@ public class TestDbUtils {
 		}
 	}
 	
-	public static void extractData() throws Exception {
+	public static void extractData(String db, String file) throws Exception {
         Class.forName("org.sqlite.JDBC");
-        Connection jdbcConnection = DriverManager.getConnection("jdbc:sqlite:out.db");
+        Connection jdbcConnection = DriverManager.getConnection("jdbc:sqlite:" + db);
         IDatabaseConnection connection = new DatabaseConnection(jdbcConnection);
         
         IDataSet fullDataSet = connection.createDataSet();
-        FlatXmlDataSet.write(fullDataSet, new FileOutputStream("full-dataset.xml"));
+        FlatXmlDataSet.write(fullDataSet, new FileOutputStream(file));
 	}
 	
 	public static void removeTable(Connection con, String table) throws Exception {
