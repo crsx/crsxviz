@@ -1,4 +1,4 @@
-package persistence.impl;
+package persistence;
 
 import java.io.File;
 import java.io.FileInputStream;

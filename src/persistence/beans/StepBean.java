@@ -1,8 +1,11 @@
 package persistence.beans;
 
-import persistence.PrimaryKey;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-@PrimaryKey("stepNum")
 public class StepBean {
 	private int stepNum;
 	private int indentation;
@@ -13,29 +16,9 @@ public class StepBean {
 	private int completeFrees;
 	private String startData;
 	private String completeData;
-	private String cookies;
+	private List<Integer> cookies;
 	
-	public StepBean() { }
-	
-	public StepBean(int stepNum) {
-		this.stepNum = stepNum;
-	}
-
-	public StepBean(int stepNum, int indentation, int activeRuleId,
-			int startAllocs, int startFrees, int completeAllocs,
-			int completeFrees, String startData, String completeData,
-			String cookies) {
-		super();
-		this.stepNum = stepNum;
-		this.indentation = indentation;
-		this.activeRuleId = activeRuleId;
-		this.startAllocs = startAllocs;
-		this.startFrees = startFrees;
-		this.completeAllocs = completeAllocs;
-		this.completeFrees = completeFrees;
-		this.startData = startData;
-		this.completeData = completeData;
-		this.cookies = cookies;
+	public StepBean() { 
 	}
 
 	public int getStepNum() {
@@ -110,11 +93,19 @@ public class StepBean {
 		this.completeData = completeData;
 	}
 
-	public String getCookies() {
-		return cookies;
+	public List<Integer> getCookies() {
+		return this.cookies;
 	}
 
-	public void setCookies(String cookies) {
-		this.cookies = cookies;
-	}
+	public void setCookies(byte[] array) {
+		if (array == null) 
+			return;
+		cookies = new ArrayList<Integer>();
+		
+		IntBuffer buf = ByteBuffer.wrap(array).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+		int[] tmp = new int[buf.remaining()];
+		buf.get(tmp);
+		for (int i : tmp)
+			cookies.add(i);
+   	}
 }

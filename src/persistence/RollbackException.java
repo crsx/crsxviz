@@ -15,8 +15,4 @@ public class RollbackException extends Exception {
 	public RollbackException(Exception e) {
 		super(e);
 	}
-
-    public RollbackException(String message, Exception e) {
-        super(message,e);
-    }
 }

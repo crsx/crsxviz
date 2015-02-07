@@ -1,8 +1,6 @@
 package persistence.beans;
 
-import persistence.PrimaryKey;
 
-@PrimaryKey("cookieId")
 public class CookieBean {
 	private int cookieId;
 	private String value;

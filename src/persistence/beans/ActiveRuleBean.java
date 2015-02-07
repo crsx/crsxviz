@@ -1,8 +1,6 @@
 package persistence.beans;
 
-import persistence.PrimaryKey;
 
-@PrimaryKey("activeRuleId")
 public class ActiveRuleBean {
 	private int activeRuleId;
 	private String value;

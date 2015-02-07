@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import persistence.impl.DbProperties;
-
 public class Driver implements IDriver {
 
 	private DbProperties dbInfo;

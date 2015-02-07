@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import persistence.DbProperties;
 import persistence.IDriver;
 import persistence.Manager;
-import persistence.impl.DbProperties;
 
 public class TestManager extends Manager implements IDriver {
 	
