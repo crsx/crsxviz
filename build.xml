@@ -5,18 +5,12 @@
               directory with the processing instruction <?eclipse.ant.import?>
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="crsxviz">
     <property environment="env"/>
-    <property name="ECLIPSE_HOME" value="../../Desktop/nate/eclipse/"/>
     <property name="junit.output.dir" value="junit"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
-    <path id="JUnit 4.libraryclasspath">
-        <pathelement location="${ECLIPSE_HOME}plugins/org.junit_4.11.0.v201303080030/junit.jar"/>
-        <pathelement location="${ECLIPSE_HOME}plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/>
-    </path>
     <path id="crsxviz.classpath">
         <pathelement location="bin"/>
-        <path refid="JUnit 4.libraryclasspath"/>
         <pathelement location="lib/dbunit-2.4.9.jar"/>
         <pathelement location="lib/mockito-all-1.9.5.jar"/>
         <pathelement location="lib/slf4j-api-1.7.10.jar"/>
@@ -41,7 +35,10 @@
         </copy>
     </target>
     <target name="clean">
-        <delete dir="bin"/>
+        <echo>=====CLEAN======</echo>
+    	<delete failonerror="false">
+    		<fileset dir="bin" includes="**/*" excludes=".gitignore"/>
+    	</delete>
     </target>
     <target depends="clean" name="cleanall"/>
     <target depends="build-subprojects,build-project" name="build"/>
@@ -54,44 +51,58 @@
             <classpath refid="crsxviz.classpath"/>
         </javac>
     </target>
-    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
-        <copy todir="${ant.library.dir}">
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </copy>
-        <unzip dest="${ant.library.dir}">
-            <patternset includes="jdtCompilerAdapter.jar"/>
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </unzip>
+    <target name="ActiveRulesAccessTest">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.ActiveRulesAccessTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
     </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
-        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-        <antcall target="build"/>
+    <target name="CookiesAccessTest">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.CookiesAccessTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
     </target>
     <target name="crsxviz.tests">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
             <formatter type="xml"/>
-            <test name="crsxviz.tests.GenericDaoTest" todir="${junit.output.dir}"/>
-            <test name="crsxviz.tests.MatchTest" todir="${junit.output.dir}"/>
-            <test name="crsxviz.tests.PropertyTest" todir="${junit.output.dir}"/>
-            <test name="crsxviz.tests.TransactionTest" todir="${junit.output.dir}"/>
+            <test name="crsxviz.tests.ActiveRulesAccessTest" todir="${junit.output.dir}"/>
+            <test name="crsxviz.tests.CookiesAccessTest" todir="${junit.output.dir}"/>
+            <test name="crsxviz.tests.StepsAccessTest" todir="${junit.output.dir}"/>
             <classpath refid="crsxviz.classpath"/>
         </junit>
     </target>
-    <target name="GenericDaoTest (1)">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="crsxviz.tests.GenericDaoTest" todir="${junit.output.dir}"/>
+    <target name="Main (3)">
+        <java classname="ui.Main" failonerror="true" fork="yes">
             <classpath refid="crsxviz.classpath"/>
-        </junit>
+        </java>
     </target>
     <target name="MatchTest (1)">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
             <formatter type="xml"/>
             <test name="crsxviz.tests.MatchTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
+    </target>
+    <target name="StepsAccessTest">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.StepsAccessTest" todir="${junit.output.dir}"/>
+            <classpath refid="crsxviz.classpath"/>
+        </junit>
+    </target>
+    <target name="TransactionTest (1)">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="crsxviz.tests.TransactionTest" todir="${junit.output.dir}"/>
             <classpath refid="crsxviz.classpath"/>
         </junit>
     </target>
