@@ -87,7 +87,7 @@ public class Controller {
     private MenuItem open; // Value injected by FXMLLoader
     
 
-    int lastIndent = 0, steps = 1;
+    private int lastIndent = 0, currentStep = 1, totalSteps;
     Stack<TreeItem<String>> stepNodes = new Stack<TreeItem<String>>();
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
@@ -144,7 +144,8 @@ public class Controller {
     	StepManager.Initialize(c);
     	stop = System.nanoTime();
     	
-    	System.out.println("Loaded StepManager with " + StepManager.numSteps() + " steps in table in " + ((stop - start) / 1000000.0) + " ms.");
+    	totalSteps = StepManager.numSteps();
+    	System.out.println("Loaded StepManager with " + totalSteps + " currentStep in table in " + ((stop - start) / 1000000.0) + " ms.");
     	
     	System.out.println("--Cookies------------------------------------------");
     	for (int i = 0; i < CookieManager.numCookies(); i++) {
@@ -159,7 +160,7 @@ public class Controller {
     	System.out.println("---------------------------------------------------");
     	
     	System.out.println("--Steps--------------------------------------------");
-    	for (int i = 1; i <= StepManager.numSteps(); i++) {
+    	for (int i = 1; i <= totalSteps; i++) {
     		StepBean s = StepManager.getStep(i);
     		System.out.printf("| %4d | %4d | %4d | %4d | %4d | %4d | %4d | Cookies: ",
     				s.stepNum,
@@ -235,7 +236,7 @@ public class Controller {
     
     @FXML
     void onStepInto(ActionEvent event){
-    	if (steps <= StepManager.numSteps()) {
+    	if (currentStep <= totalSteps) {
     		step();
     		System.out.println("stepping into...");
     	}
@@ -243,16 +244,16 @@ public class Controller {
     
     @FXML
     void onStepOver(ActionEvent event){
-    	if (steps <= StepManager.numSteps()) {
+    	if (currentStep <= totalSteps) {
     		if(lastIndent == 0){
         		step();
         	}
     		else{
-    			StepBean s = StepManager.getStep(steps);
+    			StepBean s = StepManager.getStep(currentStep);
         		int currentIndent = lastIndent;
         		while(s.indentation > currentIndent){
         			step();
-        			s = StepManager.getStep(steps);
+        			s = StepManager.getStep(currentStep);
         		}
         		step();
     		}
@@ -262,16 +263,16 @@ public class Controller {
 
     @FXML
     void onStepReturn(ActionEvent event){
-    	if (steps <= StepManager.numSteps()) {
+    	if (currentStep <= totalSteps) {
     		if(lastIndent == 0){
     			step();
     		}
     		else{
-    			StepBean s = StepManager.getStep(steps);
+    			StepBean s = StepManager.getStep(currentStep);
     			int currentIndent = lastIndent;
     			while(s.indentation >= currentIndent){
     				step();
-    				s = StepManager.getStep(steps);
+    				s = StepManager.getStep(currentStep);
     			}
     			step();
     		}
@@ -280,14 +281,14 @@ public class Controller {
     }
     
     void step(){
-    	StepBean s = StepManager.getStep(steps);
-		System.out.println("Indentation level " + s.indentation + ":\n");
+    	StepBean s = StepManager.getStep(currentStep);
+		System.out.println("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n");
 		
 		
 		if(s.indentation > lastIndent){
 			// Next indentation level
 			lastIndent = s.indentation;
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\n" + s.startData);
+			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n" + s.startData);
 			TreeItem<String> currentNode = stepNodes.pop();
 			currentNode.getChildren().add(newNode);
 			stepNodes.push(currentNode);
@@ -307,7 +308,7 @@ public class Controller {
 		else if(s.indentation < lastIndent){
 			// Previous indentation level
 			lastIndent = s.indentation;
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\n" + s.startData);
+			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n" + s.startData);
 			stepNodes.pop();
 			TreeItem<String> currentNode = stepNodes.pop();
 			currentNode.getParent().getChildren().add(newNode);
@@ -326,7 +327,7 @@ public class Controller {
 		}
 		else{
 			// Same indentation level, new child of previous indentation level
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\n" + s.startData);
+			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n" + s.startData);
 			TreeItem<String> currentNode = stepNodes.pop();
 			currentNode.getParent().getChildren().add(newNode);
 			// New stack node is the NEXT child for this indentation level's parent, previous child shouldn't have any new children
@@ -342,20 +343,22 @@ public class Controller {
 			rules_list.getFocusModel().focus(s.activeRuleId);
 		}
 		
-		steps++;
+		currentStep++;
 		System.out.println("---------------------------------------------------");
-		s = StepManager.getStep(steps);
-		if(s.indentation > lastIndent){
-			step_into.setDisable(false);
-		}
-		else{
+		if (currentStep <= totalSteps) {
+			s = StepManager.getStep(currentStep);
+			if(s.indentation > lastIndent)
+				step_into.setDisable(false);
+			else
+				step_into.setDisable(true);
+			if(lastIndent > 1)
+				step_return.setDisable(false);
+			else
+				step_return.setDisable(true);
+		} else {
 			step_into.setDisable(true);
-		}
-		if(lastIndent > 1){
-			step_return.setDisable(false);
-		}
-		else{
 			step_return.setDisable(true);
+			step_over.setDisable(true);
 		}
     }
 }
