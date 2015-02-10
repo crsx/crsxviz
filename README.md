@@ -22,12 +22,12 @@ To build and test the database functionality complete the following
 ```
 ant init
 ant build
-ant crsxviz.tests
+ant Main
 ```
 
 or simply
 
-```ant init build crsxviz.tests```
+```ant init build Main```
 
 
 License
