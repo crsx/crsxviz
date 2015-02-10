@@ -38,7 +38,6 @@
         </copy>
     </target>
     <target name="clean">
-        <echo>=====CLEAN======</echo>
     	<delete failonerror="false">
     		<fileset dir="bin" includes="**/*" excludes=".gitignore"/>
     	</delete>
@@ -54,22 +53,6 @@
             <classpath refid="crsxviz.classpath"/>
         </javac>
     </target>
-    <target name="ActiveRulesAccessTest">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="crsxviz.tests.ActiveRulesAccessTest" todir="${junit.output.dir}"/>
-            <classpath refid="crsxviz.classpath"/>
-        </junit>
-    </target>
-    <target name="CookiesAccessTest">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="crsxviz.tests.CookiesAccessTest" todir="${junit.output.dir}"/>
-            <classpath refid="crsxviz.classpath"/>
-        </junit>
-    </target>
     <target name="crsxviz.tests">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
@@ -80,34 +63,10 @@
             <classpath refid="crsxviz.classpath"/>
         </junit>
     </target>
-    <target name="Main (3)">
-        <java classname="ui.Main" failonerror="true" fork="yes">
+    <target name="Main">
+        <java classname="application.Main" failonerror="true" fork="yes">
             <classpath refid="crsxviz.classpath"/>
         </java>
-    </target>
-    <target name="MatchTest (1)">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="crsxviz.tests.MatchTest" todir="${junit.output.dir}"/>
-            <classpath refid="crsxviz.classpath"/>
-        </junit>
-    </target>
-    <target name="StepsAccessTest">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="crsxviz.tests.StepsAccessTest" todir="${junit.output.dir}"/>
-            <classpath refid="crsxviz.classpath"/>
-        </junit>
-    </target>
-    <target name="TransactionTest (1)">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-            <formatter type="xml"/>
-            <test name="crsxviz.tests.TransactionTest" todir="${junit.output.dir}"/>
-            <classpath refid="crsxviz.classpath"/>
-        </junit>
     </target>
     <target name="junitreport">
         <junitreport todir="${junit.output.dir}">
