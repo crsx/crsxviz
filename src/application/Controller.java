@@ -7,25 +7,36 @@ package application;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Stack;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
-import contentmanager.ActiveRuleManager;
-import contentmanager.CookieManager;
-import contentmanager.StepManager;
-import contentmanager.beans.StepBean;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Menu;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.control.Label;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import contentmanager.ActiveRuleManager;
+import contentmanager.CookieManager;
+import contentmanager.StepManager;
+import contentmanager.beans.StepBean;
+
 
 public class Controller {
 
@@ -75,7 +86,7 @@ public class Controller {
     private Button terminate; // Value injected by FXMLLoader
 
     @FXML // fx:id="breakpoint_list"
-    private ListView<?> breakpoint_list; // Value injected by FXMLLoader
+    private ListView<String> breakpoint_list; // Value injected by FXMLLoader
 
     @FXML // fx:id="rules_list"
     private ListView<String> rules_list; // Value injected by FXMLLoader
@@ -86,6 +97,8 @@ public class Controller {
     @FXML // fx:id="open"
     private MenuItem open; // Value injected by FXMLLoader
     
+    @FXML // fx:id="bp_menu"
+    private MenuButton bp_menu;
 
     private int lastIndent = 0, currentStep = 1, totalSteps;
     Stack<TreeItem<String>> stepNodes = new Stack<TreeItem<String>>();
@@ -195,6 +208,80 @@ public class Controller {
     	}
         rules_list.setItems((ObservableList<String>) rules);
         
+        // Populate BreakPoint List View
+        ObservableList<String> breakpoints = FXCollections.observableArrayList();
+        breakpoint_list.setItems((ObservableList<String>) breakpoints);
+        
+        // Generate Context Menu for Rules
+        final ContextMenu cMenu = new ContextMenu();
+        MenuItem cmItem = new MenuItem("Set Breakpoint");
+        cmItem.setOnAction(
+        		(event) -> {
+        			String breakpoint = rules_list.getSelectionModel().getSelectedItem();
+        			breakpoints.add(breakpoint);
+        			System.out.println("Breakpoint set on: " + breakpoint);
+        		}
+        );
+        
+        cMenu.getItems().add(cmItem);
+        rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED, 
+        		(event) -> {
+        			if (event.getButton() == MouseButton.SECONDARY)
+        				cMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
+        		});
+        
+        final ContextMenu bp_cmenu = new ContextMenu();
+        MenuItem bp_cmItem = new MenuItem("Remove Breakpoint");
+        bp_cmItem.setOnAction((event) ->{
+        	String breakpoint = breakpoint_list.getSelectionModel().getSelectedItem();
+        	breakpoints.remove(breakpoint);
+        	System.out.println("Removed breakpoint: " + breakpoint);
+        });
+        
+        bp_cmenu.getItems().add(bp_cmItem);
+        breakpoint_list.addEventHandler(MouseEvent.MOUSE_CLICKED, 
+        		(event) -> {
+        			if (event.getButton() == MouseButton.SECONDARY)
+        				bp_cmenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
+        		});
+        
+        // Generate Breakpoint Menu
+        MenuItem addBP = new MenuItem("Set New Breakpoint");
+        MenuItem removeAll = new MenuItem("Remove All Breakpoints");
+        addBP.setOnAction(
+        		(event) -> {
+        			TextInputDialog dialog = new TextInputDialog();
+        	    	dialog.setTitle("Set New Breakpoint by RegEx");
+        	    	dialog.setContentText("Enter your RegEx Rule: ");
+        	    	dialog.setHeaderText(null);
+        	    	Optional<String> result = dialog.showAndWait();
+        	    	
+        	    	result.ifPresent((exp) -> {
+        	    		try {
+        	    			Pattern p = Pattern.compile(exp);
+        	    			for (String rule : ActiveRuleManager.getActiveRules()) 
+        	    				if (p.matcher(rule).find() && !breakpoint_list.getItems().contains(rule))
+        	    					breakpoints.add(rule);
+        	    		} catch (PatternSyntaxException e) {
+        	    			Alert alert = new Alert(AlertType.WARNING);
+        	    			alert.setTitle("Invalid Regular Expression");
+        	    			alert.setHeaderText(null);
+        	    			alert.setContentText(e.getMessage());
+        	    			alert.showAndWait();
+        	    		}
+        	    	});
+        	    	
+        		}
+        	);
+        
+        removeAll.setOnAction(
+        		(event) -> {
+        			breakpoints.clear();
+        			System.out.println("All breakpoints removed");
+        		});
+        
+        bp_menu.getItems().addAll(addBP, removeAll);
+        
         step_return.setDisable(true);
         step_into.setDisable(true);
     }
@@ -283,7 +370,9 @@ public class Controller {
     void step(){
     	StepBean s = StepManager.getStep(currentStep);
 		System.out.println("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n");
-		
+		String currentRule = ActiveRuleManager.getActiveRule(s.activeRuleId);
+		if (breakpoint_list.getItems().contains(currentRule))
+			this.onPause(null);
 		
 		if(s.indentation > lastIndent){
 			// Next indentation level

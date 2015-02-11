@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
@@ -66,11 +67,12 @@
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                      <children>
                         <ListView fx:id="breakpoint_list" layoutX="81.0" layoutY="22.0" prefHeight="300.0" prefWidth="635.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="22.0" />
-                        <Label alignment="CENTER" layoutX="-1.0" layoutY="-2.0" prefHeight="25.0" prefWidth="635.0" text="Breakpoints" textAlignment="CENTER">
+                        <Label alignment="CENTER" layoutX="-1.0" layoutY="-2.0" prefHeight="26.0" prefWidth="635.0" text="Breakpoints" textAlignment="CENTER">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Label>
+                        <MenuButton fx:id="bp_menu" alignment="CENTER" graphicTextGap="0.0" layoutX="606.0" layoutY="2.0" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="18.0" prefWidth="30.0" scaleShape="false" style="-fx-border-color: rgba(255, 255, 255, .1); -fx-background-color: rgba(255, 255, 255, .1);" />
                      </children>
                   </AnchorPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">

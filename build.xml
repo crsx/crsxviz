@@ -12,6 +12,7 @@
     <path id="crsxviz.classpath">
         <pathelement location="bin"/>
     	<pathelement location="lib/junit.jar"/>
+    	<pathelement location="lib/openjfk-dialogs-1.0.2.jar"/>
         <pathelement location="lib/sqlite-jdbc-3.8.7.jar"/>
     </path>
     <target name="init">
