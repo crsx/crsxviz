@@ -12,8 +12,8 @@
     <path id="crsxviz.classpath">
         <pathelement location="bin"/>
     	<pathelement location="lib/junit.jar"/>
-    	<pathelement location="lib/openjfk-dialogs-1.0.2.jar"/>
         <pathelement location="lib/sqlite-jdbc-3.8.7.jar"/>
+		<pathelement location="lib/openjfx-dialogs-1.0.2.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -22,6 +22,7 @@
                 <exclude name="**/*.launch"/>
                 <exclude name="**/*.xtend"/>
                 <exclude name="**/*.java"/>
+				<exclude name="parser/**"/>
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
@@ -35,6 +36,7 @@
     <target name="clean">
     	<delete failonerror="false">
     		<fileset dir="bin" includes="**/*" excludes=".gitignore"/>
+			<file name="*.jar"/>
     	</delete>
     </target>
     <target depends="clean" name="cleanall"/>
@@ -58,7 +60,7 @@
             <classpath refid="crsxviz.classpath"/>
         </junit>
     </target>
-    <target name="Main">
+    <target name="Main" depends="build-project">
         <java classname="application.Main" failonerror="true" fork="yes">
             <classpath refid="crsxviz.classpath"/>
         </java>
@@ -70,5 +72,21 @@
             </fileset>
             <report format="frames" todir="${junit.output.dir}"/>
         </junitreport>
+    </target>
+
+	<!--this target was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="jar" depends="build-project">
+        <jar destfile="crsxviz.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="application.Main"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ sqlite-jdbc-3.8.7.jar openjfx-dialogs-1.0.2.jar"/>
+            </manifest>
+            <zipfileset src="lib/jar-in-jar-loader.zip"/>
+            <fileset dir="bin"/>
+            <zipfileset dir="lib" includes="sqlite-jdbc-3.8.7.jar openjfx-dialogs-1.0.2.jar LICENSE.**"/>
+        </jar>
     </target>
 </project>
