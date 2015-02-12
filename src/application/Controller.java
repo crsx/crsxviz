@@ -5,8 +5,7 @@
 package application;
 
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Stack;
@@ -32,14 +31,34 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import contentmanager.ActiveRuleManager;
-import contentmanager.CookieManager;
-import contentmanager.StepManager;
-import contentmanager.beans.StepBean;
+import persistence.ActiveRulesAccess;
+import persistence.BeanAccess;
+import persistence.CookiesAccess;
+import persistence.Manager;
+import persistence.RollbackException;
+import persistence.StepsAccess;
+import persistence.beans.ActiveRuleBean;
+import persistence.beans.CookieBean;
+import persistence.beans.StepBean;
 
 
 public class Controller {
-
+	
+	private Manager instance;
+	
+	private BeanAccess<StepBean> stepAccess;
+	private BeanAccess<CookieBean> cookieAccess;
+	private BeanAccess<ActiveRuleBean> ruleAccess;
+	
+	private List<StepBean> steps;
+	private List<CookieBean> cookies;
+	private List<ActiveRuleBean> rules;
+	
+	private int totalSteps, totalCookies, totalRules;
+	
+	private ObservableList<String> observableRules;
+	private ObservableList<String> observableBreakpoints;
+	
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
 
@@ -100,11 +119,11 @@ public class Controller {
     @FXML // fx:id="bp_menu"
     private MenuButton bp_menu;
 
-    private int lastIndent = 0, currentStep = 1, totalSteps;
+    private int lastIndent = 0, currentStep = 0;
     Stack<TreeItem<String>> stepNodes = new Stack<TreeItem<String>>();
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
-    void initialize() {
+    void initialize() throws RollbackException {
         assert resume != null : "fx:id=\"resume\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert step_return != null : "fx:id=\"step_return\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert about != null : "fx:id=\"about\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
@@ -122,18 +141,11 @@ public class Controller {
         assert rules_list != null : "fx:id=\"rules_list\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert close != null : "fx:id=\"close\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert open != null : "fx:id=\"open\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        
-        Connection c = null;
+       
     	String dbpath = "out.db";
     	
     	long start = System.nanoTime();
-    	try {
-    		Class.forName("org.sqlite.JDBC");
-    		c = DriverManager.getConnection("jdbc:sqlite:" + dbpath);
-    	} catch ( Exception e ) {
-    		System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-    		System.exit(0);
-    	}
+    	instance = Manager.getInstance();
     	long stop = System.nanoTime();
     	
     	System.out.println("Opened database " + dbpath + " successfully in " + ((stop - start) / 1000000.0) + " ms.");
@@ -142,55 +154,29 @@ public class Controller {
     	pause.setDisable(true);
     	
     	start = System.nanoTime();
-    	CookieManager.Initialize(c);
+    	cookieAccess = new CookiesAccess(instance);
+    	cookies = cookieAccess.getAll();
+    	totalCookies = cookies.size();
     	stop = System.nanoTime();
     	
-    	System.out.println("Loaded " + CookieManager.numCookies() + " cookies in " + ((stop - start) / 1000000.0) + " ms.");
+    	System.out.println("Loaded " + totalCookies + " cookies in " + ((stop - start) / 1000000.0) + " ms.");
     	
     	start = System.nanoTime();
-    	ActiveRuleManager.Initialize(c);
+    	ruleAccess = new ActiveRulesAccess(instance);
+    	rules = ruleAccess.getAll();
+    	totalRules = rules.size();
     	stop = System.nanoTime();
     	
-    	System.out.println("Loaded " + ActiveRuleManager.numActiveRules() + " active rules in " + ((stop - start) / 1000000.0) + " ms.");
+    	System.out.println("Loaded " + totalRules + " active rules in " + ((stop - start) / 1000000.0) + " ms.");
     	
     	start = System.nanoTime();
-    	StepManager.Initialize(c);
+    	stepAccess = new StepsAccess(instance);
+    	steps = stepAccess.getAll();
+    	totalSteps = steps.size();
     	stop = System.nanoTime();
     	
-    	totalSteps = StepManager.numSteps();
-    	System.out.println("Loaded StepManager with " + totalSteps + " currentStep in table in " + ((stop - start) / 1000000.0) + " ms.");
+    	System.out.println("Loaded " + totalSteps + " steps in " + ((stop - start) / 1000000.0) + " ms.");
     	
-    	System.out.println("--Cookies------------------------------------------");
-    	for (int i = 0; i < CookieManager.numCookies(); i++) {
-    		System.out.printf("| %4d | %40s |\n", i, CookieManager.getCookie(i));
-    	}
-    	System.out.println("---------------------------------------------------");
-    	
-    	System.out.println("--ActiveRules--------------------------------------");
-    	for (int i = 0; i < ActiveRuleManager.numActiveRules(); i++) {
-    		System.out.printf("| %4d | %40s |\n", i, ActiveRuleManager.getActiveRule(i));
-    	}
-    	System.out.println("---------------------------------------------------");
-    	
-    	System.out.println("--Steps--------------------------------------------");
-    	for (int i = 1; i <= totalSteps; i++) {
-    		StepBean s = StepManager.getStep(i);
-    		System.out.printf("| %4d | %4d | %4d | %4d | %4d | %4d | %4d | Cookies: ",
-    				s.stepNum,
-    				s.indentation,
-    				s.activeRuleId,
-    				s.startAllocs,
-    				s.startFrees,
-    				s.completeAllocs,
-    				s.completeFrees
-    			);
-    		
-    		for (int j : s.cookies) {
-    			System.out.print(CookieManager.getCookie(j) + ", ");
-    		}
-    		System.out.println();
-    	}
-    	System.out.println("---------------------------------------------------");
     	
     	// Initialize Terms Tree View
     	
@@ -202,15 +188,15 @@ public class Controller {
     	
     	//Populate Rules List View
     	
-        ObservableList<String> rules =FXCollections.observableArrayList ();
-        for (int i = 0; i < ActiveRuleManager.numActiveRules(); i++) {
-    		rules.add(ActiveRuleManager.getActiveRule(i));
+        observableRules =FXCollections.observableArrayList ();
+        for (ActiveRuleBean bean : rules) {
+    		observableRules.add(bean.getValue());
     	}
-        rules_list.setItems((ObservableList<String>) rules);
+        rules_list.setItems((ObservableList<String>) observableRules);
         
         // Populate BreakPoint List View
-        ObservableList<String> breakpoints = FXCollections.observableArrayList();
-        breakpoint_list.setItems((ObservableList<String>) breakpoints);
+        observableBreakpoints = FXCollections.observableArrayList();
+        breakpoint_list.setItems((ObservableList<String>) observableBreakpoints);
         
         // Generate Context Menu for Rules
         final ContextMenu cMenu = new ContextMenu();
@@ -218,7 +204,7 @@ public class Controller {
         cmItem.setOnAction(
         		(event) -> {
         			String breakpoint = rules_list.getSelectionModel().getSelectedItem();
-        			breakpoints.add(breakpoint);
+        			observableBreakpoints.add(breakpoint);
         			System.out.println("Breakpoint set on: " + breakpoint);
         		}
         );
@@ -234,7 +220,7 @@ public class Controller {
         MenuItem bp_cmItem = new MenuItem("Remove Breakpoint");
         bp_cmItem.setOnAction((event) ->{
         	String breakpoint = breakpoint_list.getSelectionModel().getSelectedItem();
-        	breakpoints.remove(breakpoint);
+        	observableBreakpoints.remove(breakpoint);
         	System.out.println("Removed breakpoint: " + breakpoint);
         });
         
@@ -259,9 +245,9 @@ public class Controller {
         	    	result.ifPresent((exp) -> {
         	    		try {
         	    			Pattern p = Pattern.compile(exp);
-        	    			for (String rule : ActiveRuleManager.getActiveRules()) 
-        	    				if (p.matcher(rule).find() && !breakpoint_list.getItems().contains(rule))
-        	    					breakpoints.add(rule);
+        	    			for (ActiveRuleBean rule : rules) 
+        	    				if (p.matcher(rule.getValue()).find() && !breakpoint_list.getItems().contains(rule.getValue()))
+        	    					observableBreakpoints.add(rule.getValue());
         	    		} catch (PatternSyntaxException e) {
         	    			Alert alert = new Alert(AlertType.WARNING);
         	    			alert.setTitle("Invalid Regular Expression");
@@ -276,7 +262,7 @@ public class Controller {
         
         removeAll.setOnAction(
         		(event) -> {
-        			breakpoints.clear();
+        			observableBreakpoints.clear();
         			System.out.println("All breakpoints removed");
         		});
         
@@ -336,11 +322,11 @@ public class Controller {
         		step();
         	}
     		else{
-    			StepBean s = StepManager.getStep(currentStep);
+    			StepBean s = steps.get(currentStep);
         		int currentIndent = lastIndent;
-        		while(s.indentation > currentIndent){
+        		while(s.getIndentation() > currentIndent){
         			step();
-        			s = StepManager.getStep(currentStep);
+        			s = steps.get(currentStep);
         		}
         		step();
     		}
@@ -355,11 +341,11 @@ public class Controller {
     			step();
     		}
     		else{
-    			StepBean s = StepManager.getStep(currentStep);
+    			StepBean s = steps.get(currentStep);
     			int currentIndent = lastIndent;
-    			while(s.indentation >= currentIndent){
+    			while(s.getIndentation() >= currentIndent){
     				step();
-    				s = StepManager.getStep(currentStep);
+    				s = steps.get(currentStep);
     			}
     			step();
     		}
@@ -368,16 +354,19 @@ public class Controller {
     }
     
     void step(){
-    	StepBean s = StepManager.getStep(currentStep);
-		System.out.println("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n");
-		String currentRule = ActiveRuleManager.getActiveRule(s.activeRuleId);
+    	StepBean s = steps.get(currentStep);
+		System.out.println("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n");
+		
+		
+		// TODO pull this out
+		String currentRule = rules.get(s.getActiveRuleId()).getValue();
 		if (breakpoint_list.getItems().contains(currentRule))
 			this.onPause(null);
 		
-		if(s.indentation > lastIndent){
+		if(s.getIndentation() > lastIndent){
 			// Next indentation level
-			lastIndent = s.indentation;
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n" + s.startData);
+			lastIndent = s.getIndentation();
+			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n" + s.getStartData());
 			TreeItem<String> currentNode = stepNodes.pop();
 			currentNode.getChildren().add(newNode);
 			stepNodes.push(currentNode);
@@ -390,14 +379,14 @@ public class Controller {
 			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
 			
 			//rules_list.requestFocus();
-			rules_list.getSelectionModel().select(s.activeRuleId);
-			rules_list.getFocusModel().focus(s.activeRuleId);
+			rules_list.getSelectionModel().select(s.getActiveRuleId());
+			rules_list.getFocusModel().focus(s.getActiveRuleId());
 			
 		}
-		else if(s.indentation < lastIndent){
+		else if(s.getIndentation() < lastIndent){
 			// Previous indentation level
-			lastIndent = s.indentation;
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n" + s.startData);
+			lastIndent = s.getIndentation();
+			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n" + s.getStartData());
 			stepNodes.pop();
 			TreeItem<String> currentNode = stepNodes.pop();
 			currentNode.getParent().getChildren().add(newNode);
@@ -411,12 +400,12 @@ public class Controller {
 			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
 			
 			//rules_list.requestFocus();
-			rules_list.getSelectionModel().select(s.activeRuleId);
-			rules_list.getFocusModel().focus(s.activeRuleId);
+			rules_list.getSelectionModel().select(s.getActiveRuleId());
+			rules_list.getFocusModel().focus(s.getActiveRuleId());
 		}
 		else{
 			// Same indentation level, new child of previous indentation level
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.indentation + ":\nStep " + s.stepNum + ":\n" + s.startData);
+			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n" + s.getStartData());
 			TreeItem<String> currentNode = stepNodes.pop();
 			currentNode.getParent().getChildren().add(newNode);
 			// New stack node is the NEXT child for this indentation level's parent, previous child shouldn't have any new children
@@ -428,15 +417,15 @@ public class Controller {
 			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
 			
 			//rules_list.requestFocus();
-			rules_list.getSelectionModel().select(s.activeRuleId);
-			rules_list.getFocusModel().focus(s.activeRuleId);
+			rules_list.getSelectionModel().select(s.getActiveRuleId());
+			rules_list.getFocusModel().focus(s.getActiveRuleId());
 		}
 		
 		currentStep++;
 		System.out.println("---------------------------------------------------");
-		if (currentStep <= totalSteps) {
-			s = StepManager.getStep(currentStep);
-			if(s.indentation > lastIndent)
+		if (currentStep < totalSteps) {
+			s = steps.get(currentStep);
+			if(s.getIndentation() > lastIndent)
 				step_into.setDisable(false);
 			else
 				step_into.setDisable(true);
