@@ -17,18 +17,15 @@ This project exists to work on this visualization effort.
 
 ## Build Instructions
 
-To build and test the database functionality complete the following
+To build and test the database functionality run the following command
 
-```
-ant init
-ant build
-ant Main
-```
+```ant Main```
 
-or simply
+To build an executable and distributable jar package use the following command
 
-```ant init build Main```
+```ant jar```
 
+The jar can be executed by running ```java -jar crsxviz.jar``` or just double click the jar.
 
 License
 =======
