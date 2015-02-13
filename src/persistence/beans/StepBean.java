@@ -82,7 +82,7 @@ public class StepBean {
 	}
 
 	public void setStartData(String startData) {
-		this.startData = startData;
+		this.startData = startData.replaceAll("\\s", "");
 	}
 
 	public String getCompleteData() {
@@ -90,7 +90,7 @@ public class StepBean {
 	}
 
 	public void setCompleteData(String completeData) {
-		this.completeData = completeData;
+		this.completeData = completeData.replaceAll("\\s", "");
 	}
 
 	public List<Integer> getCookies() {

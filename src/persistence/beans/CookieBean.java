@@ -20,7 +20,7 @@ public class CookieBean {
 	}
 
 	public void setValue(String value) {
-		this.value = value;
+		this.value = value.replaceAll("\\s", "");
 	}
 	
 }
