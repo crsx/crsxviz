@@ -84,7 +84,7 @@ public class Controller {
     private MenuItem about; // Value injected by FXMLLoader
 
     @FXML // fx:id="pause"
-    private Button pause; // Value injected by FXMLLoader
+    private Button run; // Value injected by FXMLLoader
 
     @FXML // fx:id="step_over"
     private Button step_over; // Value injected by FXMLLoader
@@ -129,14 +129,14 @@ public class Controller {
     private MenuButton bp_menu;
 
     private int lastIndent = 0, currentStep = 0;
-    Stack<TreeItem<String>> stepNodes = new Stack<TreeItem<String>>();
+    Stack<TreeItem<String>> stepNodes;
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() throws RollbackException {
         assert resume != null : "fx:id=\"resume\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert step_return != null : "fx:id=\"step_return\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert about != null : "fx:id=\"about\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert pause != null : "fx:id=\"pause\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert run != null : "fx:id=\"pause\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert step_over != null : "fx:id=\"step_over\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert help != null : "fx:id=\"help\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert file != null : "fx:id=\"file\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
@@ -160,7 +160,7 @@ public class Controller {
     	System.out.println("Opened database " + dbpath + " successfully in " + ((stop - start) / 1000000.0) + " ms.");
     	
     	trace_label.setText("Debugging " + dbpath);
-    	pause.setDisable(true);
+    	run.setDisable(true);
     	
     	start = System.nanoTime();
     	cookieAccess = new CookiesAccess(instance);
@@ -188,12 +188,14 @@ public class Controller {
     	
     	
     	// Initialize Terms Tree View
-    	
+    	/*
     	TreeItem<String> root = new TreeItem<String> ("Terms");
     	terms_tree.setRoot(root);
     	root.setExpanded(true);
     	stepNodes.push(root);
     	System.out.println("Term Tree:\n");
+    	*/
+    	stepNodes = initializeTree(new TreeItem<String>("Terms"));
     	
     	//Populate Rules List View
     	
@@ -305,9 +307,12 @@ public class Controller {
     }
     
     @FXML
-    void onPause(ActionEvent event){
-    	proceed = false;
-    	System.out.println("pausing debug...");
+    void onRun(ActionEvent event){
+    	run.setDisable(true);
+    	System.out.println("running debug...");
+    	
+    	// TODO start from the beginning and run
+    	stepNodes = initializeTree(new TreeItem<String>("Terms"));
     }
     
     @FXML
@@ -319,6 +324,7 @@ public class Controller {
     
     @FXML
     void onTerminate(ActionEvent event){
+    	run.setDisable(false);
     	System.out.println("terminating debug...");
     }
     
@@ -471,5 +477,21 @@ public class Controller {
     			proceed = (observableBreakpoints.contains(rule)) ? false : true;
     		}
     	}
+    }
+    
+    /**
+     * Create the term tree from a given root node. This root item
+     * serves to be a subheading within the terms list window.
+     * @param root Root node to build the term tree from
+     * @return
+     */
+    private Stack<TreeItem<String>> initializeTree(TreeItem<String> root) {
+    	stepNodes = new Stack<TreeItem<String>>();
+    	terms_tree.setRoot(root);
+    	root.setExpanded(true);
+    	stepNodes.push(root);
+    	currentStep = 0; lastIndent = 0;
+    	System.out.println("Term Tree:\n");
+    	return stepNodes;
     }
 }
