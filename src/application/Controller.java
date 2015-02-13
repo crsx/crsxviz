@@ -44,18 +44,27 @@ import persistence.beans.StepBean;
 
 public class Controller {
 	
+	// Controls progress through the trace by providing means to pause
+	// in a given location, used primarily to pause on breakpoints
+	private boolean proceed;
+	
+	// Manage the database interface for the visualizer
 	private Manager instance;
 	
+	// Database access objects
 	private BeanAccess<StepBean> stepAccess;
 	private BeanAccess<CookieBean> cookieAccess;
 	private BeanAccess<ActiveRuleBean> ruleAccess;
 	
+	// Backend data representing the database on launch
 	private List<StepBean> steps;
 	private List<CookieBean> cookies;
 	private List<ActiveRuleBean> rules;
 	
+	// Holds the respective row counts 
 	private int totalSteps, totalCookies, totalRules;
 	
+	// List of objects displayed in a given view
 	private ObservableList<String> observableRules;
 	private ObservableList<String> observableBreakpoints;
 	
@@ -188,7 +197,7 @@ public class Controller {
     	
     	//Populate Rules List View
     	
-        observableRules =FXCollections.observableArrayList ();
+        observableRules = FXCollections.observableArrayList();
         for (ActiveRuleBean bean : rules) {
     		observableRules.add(bean.getValue());
     	}
@@ -270,6 +279,9 @@ public class Controller {
         
         step_return.setDisable(true);
         step_into.setDisable(true);
+        
+        proceed = false;
+        jumpToNextStep();
     }
     
     @FXML
@@ -294,11 +306,14 @@ public class Controller {
     
     @FXML
     void onPause(ActionEvent event){
+    	proceed = false;
     	System.out.println("pausing debug...");
     }
     
     @FXML
     void onResume(ActionEvent event){
+    	proceed = true;
+    	jumpToNextStep();
     	System.out.println("resuming debug...");
     }
     
@@ -309,6 +324,7 @@ public class Controller {
     
     @FXML
     void onStepInto(ActionEvent event){
+    	proceed = true;
     	if (currentStep <= totalSteps) {
     		step();
     		System.out.println("stepping into...");
@@ -317,6 +333,7 @@ public class Controller {
     
     @FXML
     void onStepOver(ActionEvent event){
+    	proceed = true;
     	if (currentStep <= totalSteps) {
     		if(lastIndent == 0){
         		step();
@@ -336,6 +353,7 @@ public class Controller {
 
     @FXML
     void onStepReturn(ActionEvent event){
+    	proceed = true;
     	if (currentStep <= totalSteps) {
     		if(lastIndent == 0){
     			step();
@@ -354,89 +372,104 @@ public class Controller {
     }
     
     void step(){
-    	StepBean s = steps.get(currentStep);
-		System.out.println("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n");
-		
-		
-		// TODO pull this out
-		String currentRule = rules.get(s.getActiveRuleId()).getValue();
-		if (breakpoint_list.getItems().contains(currentRule))
-			this.onPause(null);
-		
-		if(s.getIndentation() > lastIndent){
-			// Next indentation level
-			lastIndent = s.getIndentation();
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n" + s.getStartData());
-			TreeItem<String> currentNode = stepNodes.pop();
-			currentNode.getChildren().add(newNode);
-			stepNodes.push(currentNode);
-			// New stack node is the first child of this indentation level for this node's parent
-			stepNodes.push(newNode);
-			System.out.println(newNode.getValue());
-			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-			terms_tree.requestFocus();
-			terms_tree.getSelectionModel().select(newNode);
-			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-			
-			//rules_list.requestFocus();
-			rules_list.getSelectionModel().select(s.getActiveRuleId());
-			rules_list.getFocusModel().focus(s.getActiveRuleId());
-			
-		}
-		else if(s.getIndentation() < lastIndent){
-			// Previous indentation level
-			lastIndent = s.getIndentation();
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n" + s.getStartData());
-			stepNodes.pop();
-			TreeItem<String> currentNode = stepNodes.pop();
-			currentNode.getParent().getChildren().add(newNode);
-			//stepNodes.push(currentNode);
-			// New stack node is the next child of the indentation level for the previous node's parent
-			stepNodes.push(newNode);
-			System.out.println(newNode.getValue());
-			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-			terms_tree.requestFocus();
-			terms_tree.getSelectionModel().select(newNode);
-			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-			
-			//rules_list.requestFocus();
-			rules_list.getSelectionModel().select(s.getActiveRuleId());
-			rules_list.getFocusModel().focus(s.getActiveRuleId());
-		}
-		else{
-			// Same indentation level, new child of previous indentation level
-			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ":\nStep " + s.getStepNum() + ":\n" + s.getStartData());
-			TreeItem<String> currentNode = stepNodes.pop();
-			currentNode.getParent().getChildren().add(newNode);
-			// New stack node is the NEXT child for this indentation level's parent, previous child shouldn't have any new children
-			stepNodes.push(newNode);
-			System.out.println(newNode.getValue());
-			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-			terms_tree.requestFocus();
-			terms_tree.getSelectionModel().select(newNode);
-			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-			
-			//rules_list.requestFocus();
-			rules_list.getSelectionModel().select(s.getActiveRuleId());
-			rules_list.getFocusModel().focus(s.getActiveRuleId());
-		}
-		
-		currentStep++;
-		System.out.println("---------------------------------------------------");
-		if (currentStep < totalSteps) {
-			s = steps.get(currentStep);
-			if(s.getIndentation() > lastIndent)
-				step_into.setDisable(false);
-			else
-				step_into.setDisable(true);
-			if(lastIndent > 1)
-				step_return.setDisable(false);
-			else
-				step_return.setDisable(true);
-		} else {
-			step_into.setDisable(true);
-			step_return.setDisable(true);
-			step_over.setDisable(true);
-		}
+    	if (currentStep < totalSteps && proceed) {
+    		StepBean s = steps.get(currentStep);
+
+    		if(s.getIndentation() > lastIndent){
+    			// Next indentation level
+    			lastIndent = s.getIndentation();
+    			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
+    			TreeItem<String> currentNode = stepNodes.pop();
+    			currentNode.getChildren().add(newNode);
+    			stepNodes.push(currentNode);
+    			// New stack node is the first child of this indentation level for this node's parent
+    			stepNodes.push(newNode);
+    			System.out.println(newNode.getValue());
+    			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    			terms_tree.requestFocus();
+    			terms_tree.getSelectionModel().select(newNode);
+    			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
+
+    			//rules_list.requestFocus();
+    			rules_list.getSelectionModel().select(s.getActiveRuleId());
+    			rules_list.getFocusModel().focus(s.getActiveRuleId());
+
+    		}
+    		else if(s.getIndentation() < lastIndent){
+    			// Previous indentation level
+    			lastIndent = s.getIndentation();
+    			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
+    			stepNodes.pop();
+    			TreeItem<String> currentNode = stepNodes.pop();
+    			currentNode.getParent().getChildren().add(newNode);
+    			//stepNodes.push(currentNode);
+    			// New stack node is the next child of the indentation level for the previous node's parent
+    			stepNodes.push(newNode);
+    			System.out.println(newNode.getValue());
+    			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    			terms_tree.requestFocus();
+    			terms_tree.getSelectionModel().select(newNode);
+    			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
+
+    			//rules_list.requestFocus();
+    			rules_list.getSelectionModel().select(s.getActiveRuleId());
+    			rules_list.getFocusModel().focus(s.getActiveRuleId());
+    		}
+    		else{
+    			// Same indentation level, new child of previous indentation level
+    			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
+    			TreeItem<String> currentNode = stepNodes.pop();
+    			currentNode.getParent().getChildren().add(newNode);
+    			// New stack node is the NEXT child for this indentation level's parent, previous child shouldn't have any new children
+    			stepNodes.push(newNode);
+    			System.out.println(newNode.getValue());
+    			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    			terms_tree.requestFocus();
+    			terms_tree.getSelectionModel().select(newNode);
+    			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
+
+    			//rules_list.requestFocus();
+    			rules_list.getSelectionModel().select(s.getActiveRuleId());
+    			rules_list.getFocusModel().focus(s.getActiveRuleId());
+    		}
+
+    		currentStep++;
+    		System.out.println("---------------------------------------------------");
+    		if (currentStep < totalSteps) {
+    			s = steps.get(currentStep);
+    			if(s.getIndentation() > lastIndent)
+    				step_into.setDisable(false);
+    			else
+    				step_into.setDisable(true);
+    			if(lastIndent > 1)
+    				step_return.setDisable(false);
+    			else
+    				step_return.setDisable(true);
+    		} else {
+    			step_into.setDisable(true);
+    			step_return.setDisable(true);
+    			step_over.setDisable(true);
+    		}
+    	}
+    }
+    
+    /**
+     * Jump to the first breakpoint. If there are no breakpoints
+     * set, then the program will step through each instruction
+     * per user input. That is with no breakpoints set then it is
+     * up to the user to step through the trace; the visualizer 
+     * will not run through on its own.
+     * 
+     */
+    void jumpToNextStep() {
+    	if (!observableBreakpoints.isEmpty()) {
+    		while ( currentStep < totalSteps && proceed ) {
+    			StepBean step = steps.get(currentStep);
+    			String rule = rules.get(step.getActiveRuleId()).getValue();
+    			
+    			step();
+    			proceed = (observableBreakpoints.contains(rule)) ? false : true;
+    		}
+    	}
     }
 }

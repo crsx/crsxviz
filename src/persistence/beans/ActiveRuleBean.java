@@ -10,5 +10,5 @@ public class ActiveRuleBean {
 	public int getActiveRuleId() { return this.activeRuleId; }
 	public void setActiveRuleId(int activeRuleId) { this.activeRuleId = activeRuleId; }
 	public String getValue() { return this.value; }
-	public void setValue(String value) { this.value = value; }
+	public void setValue(String value) { this.value = value.replaceAll("\\s", ""); }
 }
