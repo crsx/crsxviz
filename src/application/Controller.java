@@ -137,7 +137,8 @@ public class Controller {
     private MenuButton bp_menu;
 
     private int lastIndent = 0, currentStep = 0;
-    Stack<TreeItem<String>> stepNodes;
+    Stack<TreeItem<String>> nodeStack;
+    Stack<StepBean> stepStack;
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() throws RollbackException {
@@ -197,17 +198,10 @@ public class Controller {
     	
     	
     	// Initialize Terms Tree View
-    	/*
-    	TreeItem<String> root = new TreeItem<String> ("Terms");
-    	terms_tree.setRoot(root);
-    	root.setExpanded(true);
-    	stepNodes.push(root);
-    	System.out.println("Term Tree:\n");
-    	*/
-    	stepNodes = initializeTree(new TreeItem<String>("Terms"));
+    	nodeStack = initializeTree(new TreeItem<String>("Terms"));
+    	stepStack = new Stack<StepBean>();
     	
     	//Populate Rules List View
-    	
         observableRules = FXCollections.observableArrayList();
         for (ActiveRuleBean bean : rules) {
     		observableRules.add(bean.getValue());
@@ -346,10 +340,11 @@ public class Controller {
     @FXML
     void onRun(ActionEvent event){
     	run.setDisable(true);
+    	step_over.setDisable(false);
     	System.out.println("running debug...");
     	
     	// TODO start from the beginning and run
-    	stepNodes = initializeTree(new TreeItem<String>("Terms"));
+    	nodeStack = initializeTree(new TreeItem<String>("Terms"));
     }
     
     @FXML
@@ -362,6 +357,13 @@ public class Controller {
     @FXML
     void onTerminate(ActionEvent event){
     	run.setDisable(false);
+    	step_into.setDisable(true);
+		step_return.setDisable(true);
+		step_over.setDisable(true);
+		for(int i = 0; i < totalSteps; i++){
+			steps.get(i).setStartDataDisplayed(false);
+			steps.get(i).setCompleteDataDisplayed(false);
+		}
     	System.out.println("terminating debug...");
     }
     
@@ -419,67 +421,108 @@ public class Controller {
     		StepBean s = steps.get(currentStep);
 
     		if(s.getIndentation() > lastIndent){
-    			// Next indentation level
+    			// Next indentation level, should always be a new term/subterm
     			lastIndent = s.getIndentation();
     			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
-    			TreeItem<String> currentNode = stepNodes.pop();
+    			s.setStartDataDisplayed(true);
+    			TreeItem<String> currentNode = nodeStack.pop();
     			currentNode.getChildren().add(newNode);
-    			stepNodes.push(currentNode);
+    			nodeStack.push(currentNode);
     			// New stack node is the first child of this indentation level for this node's parent
-    			stepNodes.push(newNode);
-    			System.out.println(newNode.getValue());
+    			nodeStack.push(newNode);
+    			stepStack.push(s);
+    			
     			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     			terms_tree.requestFocus();
     			terms_tree.getSelectionModel().select(newNode);
     			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
 
-    			//rules_list.requestFocus();
     			rules_list.getSelectionModel().select(s.getActiveRuleId());
     			rules_list.getFocusModel().focus(s.getActiveRuleId());
-
+    			
+    			if(currentStep < totalSteps - 1){
+    				currentStep++;
+    			}
     		}
     		else if(s.getIndentation() < lastIndent){
-    			// Previous indentation level
+    			// Previous indentation level, startData should always be the completeData for the previous node at this indentation level
     			lastIndent = s.getIndentation();
-    			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
-    			stepNodes.pop();
-    			TreeItem<String> currentNode = stepNodes.pop();
-    			currentNode.getParent().getChildren().add(newNode);
-    			//stepNodes.push(currentNode);
+    			//TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
+    			nodeStack.pop();
+    			stepStack.pop();
+    			TreeItem<String> currentNode = nodeStack.pop();
+    			currentNode.setValue("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
+    			s.setStartDataDisplayed(true);
+				currentNode.getChildren().clear();
+				nodeStack.push(currentNode);
+				stepStack.pop();
+				stepStack.push(s);
     			// New stack node is the next child of the indentation level for the previous node's parent
-    			stepNodes.push(newNode);
-    			System.out.println(newNode.getValue());
+
     			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     			terms_tree.requestFocus();
-    			terms_tree.getSelectionModel().select(newNode);
+    			terms_tree.getSelectionModel().select(currentNode);
     			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
 
-    			//rules_list.requestFocus();
     			rules_list.getSelectionModel().select(s.getActiveRuleId());
     			rules_list.getFocusModel().focus(s.getActiveRuleId());
+    			
+    			if(currentStep < totalSteps - 1){
+    				if(currentStep + 1 < totalSteps && steps.get(currentStep + 1).getIndentation() < s.getIndentation() && s.isStartDataDisplayed() && !s.isCompleteDataDisplayed()){
+    				
+    				}
+    				else{
+    					currentStep++;
+    				}
+    			}
     		}
     		else{
     			// Same indentation level, new child of previous indentation level
-    			TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
-    			TreeItem<String> currentNode = stepNodes.pop();
-    			currentNode.getParent().getChildren().add(newNode);
-    			// New stack node is the NEXT child for this indentation level's parent, previous child shouldn't have any new children
-    			stepNodes.push(newNode);
-    			System.out.println(newNode.getValue());
-    			terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-    			terms_tree.requestFocus();
-    			terms_tree.getSelectionModel().select(newNode);
-    			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
+    			// If the next step is at a previous indentation level (or if this is the final step), display completeData for this step before moving to next step (or finishing the rewrite)
+    			if(((currentStep == totalSteps - 1) || (currentStep + 1 < totalSteps && steps.get(currentStep + 1).getIndentation() < s.getIndentation())) && s.isStartDataDisplayed() && !s.isCompleteDataDisplayed()){
+    				TreeItem<String> currentNode = nodeStack.pop();
+    				currentNode.setValue("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getCompleteData() + "\n");
+    				s.setCompleteDataDisplayed(true);
+    				currentNode.getChildren().clear();
+    				nodeStack.push(currentNode);
+    				
+    				terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        			terms_tree.requestFocus();
+        			terms_tree.getSelectionModel().select(currentNode);
+        			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
+        			
+        			currentStep++;
+    			}
+    			else{
+    				TreeItem<String> currentNode = nodeStack.pop();
+    				currentNode.setValue("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
+    				nodeStack.push(currentNode);
+    				
+    				if(currentStep + 1 < totalSteps && steps.get(currentStep + 1).getIndentation() < s.getIndentation() && !s.isStartDataDisplayed() && !s.isCompleteDataDisplayed()){
+    					
+    				}
+    				else if(stepStack.pop().isStartDataDisplayed() && currentStep < totalSteps - 1){
+    					currentStep++;
+    				}
+    				
+    				s.setStartDataDisplayed(true);
+    				stepStack.push(s);
+    				
 
-    			//rules_list.requestFocus();
+    				terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+    				terms_tree.requestFocus();
+    				terms_tree.getSelectionModel().select(currentNode);
+    				terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
+    			}    			
+
     			rules_list.getSelectionModel().select(s.getActiveRuleId());
     			rules_list.getFocusModel().focus(s.getActiveRuleId());
     		}
-
-    		currentStep++;
+    		
     		System.out.println("---------------------------------------------------");
     		if (currentStep < totalSteps) {
     			s = steps.get(currentStep);
+    			step_over.setDisable(false);
     			if(s.getIndentation() > lastIndent)
     				step_into.setDisable(false);
     			else
@@ -523,12 +566,12 @@ public class Controller {
      * @return
      */
     private Stack<TreeItem<String>> initializeTree(TreeItem<String> root) {
-    	stepNodes = new Stack<TreeItem<String>>();
+    	nodeStack = new Stack<TreeItem<String>>();
     	terms_tree.setRoot(root);
     	root.setExpanded(true);
-    	stepNodes.push(root);
+    	nodeStack.push(root);
     	currentStep = 0; lastIndent = 0;
     	System.out.println("Term Tree:\n");
-    	return stepNodes;
+    	return nodeStack;
     }
 }

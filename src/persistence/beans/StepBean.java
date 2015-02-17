@@ -17,7 +17,24 @@ public class StepBean {
 	private String startData;
 	private String completeData;
 	private List<Integer> cookies;
+	private boolean startDataDisplayed, completeDataDisplayed;
 	
+	public boolean isStartDataDisplayed() {
+		return startDataDisplayed;
+	}
+
+	public void setStartDataDisplayed(boolean startDataRead) {
+		this.startDataDisplayed = startDataRead;
+	}
+
+	public boolean isCompleteDataDisplayed() {
+		return completeDataDisplayed;
+	}
+
+	public void setCompleteDataDisplayed(boolean completeDataRead) {
+		this.completeDataDisplayed = completeDataRead;
+	}
+
 	public StepBean() { 
 	}
 
