@@ -14,6 +14,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -26,6 +27,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -118,6 +120,12 @@ public class Controller {
 
     @FXML // fx:id="rules_list"
     private ListView<String> rules_list; // Value injected by FXMLLoader
+    
+    @FXML // fx:id="filter_field"
+    private TextField filter_field; //Value injected by FXMLLoader
+    
+    @FXML // fx:id="rules_data"
+    private ObservableList<String> rules_data = FXCollections.observableArrayList();
 
     @FXML // fx:id="close"
     private MenuItem close; // Value injected by FXMLLoader
@@ -133,6 +141,7 @@ public class Controller {
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() throws RollbackException {
+    	assert filter_field != null : "fx:id=\"filter_field\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert resume != null : "fx:id=\"resume\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert step_return != null : "fx:id=\"step_return\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
         assert about != null : "fx:id=\"about\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
@@ -278,6 +287,34 @@ public class Controller {
         		});
         
         bp_menu.getItems().addAll(addBP, removeAll);
+        
+        FilteredList<String> filtered_rules = new FilteredList<>(observableRules, p -> true);
+        
+        
+        filter_field.textProperty().addListener((observable, oldValue, newValue) ->
+        {
+        	filtered_rules.setPredicate(String ->
+        	{
+        		//empty filter
+        		if (newValue == null || newValue.isEmpty())
+        		{
+        			return true;
+        		}
+        		
+        		String lowerCaseFilter = newValue.toLowerCase();
+        		
+        		//matching filter
+        		if (String.toLowerCase().indexOf(lowerCaseFilter) != -1)
+        		{
+        			return true;
+        		}
+        		
+        		//does not match filter
+        		return false;
+        	});
+        });
+                
+        rules_list.setItems((FilteredList<String>) filtered_rules);
         
         step_return.setDisable(true);
         step_into.setDisable(true);
