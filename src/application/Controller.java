@@ -487,6 +487,8 @@ public class Controller {
     
     void step(){
     	if (currentStep < totalSteps && proceed) {
+    		
+    		filter_field.clear();
     		StepBean s = steps.get(currentStep);
 
     		if(s.getIndentation() > lastIndent){
@@ -532,7 +534,7 @@ public class Controller {
     			terms_tree.requestFocus();
     			terms_tree.getSelectionModel().select(currentNode);
     			terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-
+    			
     			rules_list.getSelectionModel().select(s.getActiveRuleId());
     			rules_list.getFocusModel().focus(s.getActiveRuleId());
     			
