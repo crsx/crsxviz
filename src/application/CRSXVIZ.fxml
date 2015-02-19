@@ -15,6 +15,7 @@
                 <Menu fx:id="file" mnemonicParsing="false" text="File">
                   <items>
                     <MenuItem fx:id="open" mnemonicParsing="false" onAction="#onOpenFile" text="Open" />
+                        <MenuItem fx:id="miRunParser" mnemonicParsing="false" onAction="#onRunParser" text="Run Parser" />
                         <MenuItem fx:id="close" mnemonicParsing="false" onAction="#onCloseFile" text="Close" />
                   </items>
                 </Menu>

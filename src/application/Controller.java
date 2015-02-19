@@ -4,6 +4,8 @@
 
 package application;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +14,7 @@ import java.util.Stack;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import crsxrunner.RunnerDialog;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -33,6 +36,8 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import persistence.ActiveRulesAccess;
 import persistence.BeanAccess;
 import persistence.CookiesAccess;
@@ -130,6 +135,9 @@ public class Controller {
     @FXML // fx:id="close"
     private MenuItem close; // Value injected by FXMLLoader
 
+    @FXML // fx:id="miRunParser"
+    private MenuItem miRunParser; // Value injected by FXMLLoader
+    
     @FXML // fx:id="open"
     private MenuItem open; // Value injected by FXMLLoader
     
@@ -139,6 +147,14 @@ public class Controller {
     private int lastIndent = 0, currentStep = 0;
     Stack<TreeItem<String>> nodeStack;
     Stack<StepBean> stepStack;
+
+	private String dbpath;
+	
+	private Stage stage;
+	
+	public void setStage(Stage s) {
+		this.stage = s;
+	}
     
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() throws RollbackException {
@@ -319,12 +335,65 @@ public class Controller {
     
     @FXML
     void onOpenFile(ActionEvent event){
-    	System.out.println("opening file...");
+    	if (dbpath != null) {
+    		System.out.println("File already open");
+    	} else {
+	    	System.out.println("Opening file...");
+	    	FileChooser fileChooser = new FileChooser();
+	    	fileChooser.setTitle("Open Trace File");
+	    	fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SQLite3 Database Files", "*.db"));
+			fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All formats", "*"));
+			File selectedFile = fileChooser.showOpenDialog(stage);
+			if (selectedFile == null) {
+				dbpath = null;
+				System.out.println("Browse aborted");
+			} else {
+				if (selectedFile.exists() && selectedFile.canRead()) {
+					dbpath = selectedFile.getAbsolutePath();
+					System.out.println("File opened OK");
+				} else {
+					System.out.println("Specified file is not readable");
+				}
+			}
+    	}
+    }
+    
+    @FXML
+    void onRunParser(ActionEvent event){
+    	if (dbpath != null) {
+    		System.out.println("File already open");
+    	} else {
+	    	System.out.println("Running parser...");
+	    	RunnerDialog d = null;
+			try {
+				d = new RunnerDialog();
+				d.doModal();
+				if (d.processingRan()){
+		    		if (d.getOutFile() != null) {
+		    			System.out.println("Parser dialog returned database file " + d.getOutFile().getAbsolutePath());
+		    			dbpath = d.getOutFile().getAbsolutePath();
+		    		} else {
+		    			System.out.println("Error: RunnerDialog claims processingRan, but no file was returned.");
+		    		}
+		    	} else {
+		    		System.out.println("Processing was not run by RunnerDialog");
+		    	}
+			} catch (IOException e) {
+				System.out.println("IOError while starting RunnerDialog");
+				e.printStackTrace();
+			} catch (Exception e) {
+				System.out.println("Error while starting RunnerDialog");
+				e.printStackTrace();
+			}
+    	}
     }
     
     @FXML
     void onCloseFile(ActionEvent event){
-    	System.out.println("closing file...");
+    	System.out.println("Closing file...");
+    	if (dbpath == null)
+    		System.out.println("File already closed.");
+    	dbpath = null;
     }
     
     @FXML
