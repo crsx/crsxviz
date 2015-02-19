@@ -10,6 +10,16 @@ using namespace std;
 sqlite3_stmt* Step::StepsInsertStmt = NULL;
 sqlite3_stmt* Step::StepsUpdateStmt = NULL;
 
+/** Removes leading and trailing whitespace
+*   @param s The string to strip
+*   @return the string without any leading spaces
+*/
+string strip(string &s) {
+	size_t start = s.find_first_not_of(' ');
+	size_t finish = s.find_last_not_of(' ');
+	return s.substr(start, finish - start + 1);
+}
+
 /** Removes all content before the last space
 *   @param s The string to strip
 *   @return the string without any leading spaces
@@ -25,7 +35,7 @@ Step::Step(vector<string> &buf) {
 	unsigned int ln = 0;
 	
 	while (++ln < buf.size() && buf[ln].length() != 0){
-		data.append(buf[ln].append("\n"));
+		data.append(strip(buf[ln]));
 	}
 	while (++ln < buf.size() && buf[ln].length() == 0);
 	
