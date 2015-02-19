@@ -84,6 +84,8 @@ public class Controller {
     @FXML
     private Button btnBrowseOutPath;
 
+	private boolean processingRan;
+
     private String doBrowse(String[][] formats) {
     	FileChooser fileChooser = new FileChooser();
     	fileChooser.setTitle("Open Resource File");
@@ -177,6 +179,7 @@ public class Controller {
     }
     
     private void doStart() {
+    	processingRan = false;
     	File exeFile = new File(txtExecutable.getText());
     	File inFile = new File(txtInFilePath.getText());
     	File outFile = new File(txtOutPath.getText());
@@ -234,7 +237,8 @@ public class Controller {
     	try { 
 	    	Runner r = new Runner();
 	    	String output = r.run(exeFile.getAbsolutePath(), wrapper, inTerm, outFile.getAbsolutePath());
-	    	lblStatus.setText("Error!");
+	    	lblStatus.setText("Completed");
+	    	processingRan = true;
 	    	Alert alert = new Alert(AlertType.INFORMATION);
 	    	alert.setTitle("Processing Completed");
 	    	alert.setHeaderText(null);
@@ -283,4 +287,21 @@ public class Controller {
         assert btnBrowseOutPath != null : "fx:id=\"btnBrowseOutPath\" was not injected: check your FXML file 'ParserRunner.fxml'.";
 
     }
+
+	public File getOutFile() {
+		String path = txtOutPath.getText();
+		if (path.length() == 0) {
+			return null;
+		}
+		File outFile = new File(path);
+		if (outFile.exists() && outFile.canRead()) {
+			return outFile;
+		} else {
+			return null;
+		}
+	}
+
+	public boolean processingRan() {
+		return processingRan;
+	}
 }
