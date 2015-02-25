@@ -1,0 +1,8 @@
+Package: crsxviz
+Version: 1
+Section: base
+Priority: optional
+Architecture:amd64
+Depends: libsqlite3-0
+Maintainer: none
+Description: A debug visualizer for crsx traces

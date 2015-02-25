@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane fx:id="ParserRunnerPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="340.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxrunner.Controller">
+   <children>
+      <Button fx:id="btnBrowseExe" layoutX="530.0" layoutY="23.0" mnemonicParsing="false" onKeyReleased="#onExeBrowseKey" onMouseClicked="#onClickExeBrowse" text="Browse" />
+      <TextField fx:id="txtExecutable" layoutX="186.0" layoutY="23.0" prefHeight="25.0" prefWidth="338.0" />
+      <Label layoutX="14.0" layoutY="27.0" text="CRSX compiled program to run: " />
+      <Label layoutX="14.0" layoutY="60.0" text="Wrapper: " />
+      <TextField fx:id="txtWrapper" layoutX="66.0" layoutY="56.0" prefHeight="25.0" prefWidth="519.0" />
+      <Label layoutX="14.0" layoutY="89.0" text="Term: " />
+      <Accordion fx:id="acrdnTermPanel" layoutX="48.0" layoutY="89.0" prefHeight="125.0" prefWidth="537.0">
+        <panes>
+          <TitledPane fx:id="pnlFileBrowse" animated="false" text="Import from file">
+               <content>
+                  <Pane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="btnBrowseInFile" layoutX="466.0" layoutY="21.0" mnemonicParsing="false" onKeyReleased="#onBrowseInFileKey" onMouseClicked="#onInFileBrowseClicked" text="Browse" />
+                        <Label layoutX="14.0" layoutY="25.0" text="Path: " />
+                        <TextField fx:id="txtInFilePath" layoutX="44.0" layoutY="21.0" prefHeight="25.0" prefWidth="416.0" />
+                     </children>
+                  </Pane>
+               </content>
+            </TitledPane>
+          <TitledPane fx:id="pnlInputText" animated="false" prefHeight="64.0" prefWidth="504.0" text="Input as text">
+               <content>
+                  <Pane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <TextArea fx:id="txtaInTerm" prefHeight="75.0" prefWidth="537.0" />
+                     </children>
+                  </Pane>
+               </content>
+            </TitledPane>
+        </panes>
+      </Accordion>
+      <Label layoutX="14.0" layoutY="225.0" text="Output trace file path: " />
+      <TextField fx:id="txtOutPath" layoutX="134.0" layoutY="221.0" prefHeight="25.0" prefWidth="389.0" />
+      <Button fx:id="btnBrowseOutPath" layoutX="530.0" layoutY="221.0" mnemonicParsing="false" onKeyReleased="#onOutFileBrowseKey" onMouseClicked="#onOutFileBrowseClicked" text="Browse" />
+      <ProgressIndicator fx:id="statusIndicator" layoutX="532.0" layoutY="264.0" visible="false" />
+      <Button fx:id="btnStart" layoutX="16.0" layoutY="278.0" mnemonicParsing="false" onKeyPressed="#onStartKey" onMouseClicked="#onStartClicked" text="Start Processing" />
+      <Label layoutX="134.0" layoutY="282.0" text="Status: " />
+      <Label fx:id="lblStatus" layoutX="172.0" layoutY="282.0" prefHeight="17.0" prefWidth="347.0" text="Not Started" />
+   </children>
+   <cursor>
+      <Cursor fx:constant="DEFAULT" />
+   </cursor>
+</AnchorPane>

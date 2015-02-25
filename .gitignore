@@ -2,3 +2,7 @@ target/
 /dependency-reduced-pom.xml
 .DS_Store
 crsxviz-app.jar
+/obj/
+/bin/
+/*.jar
+/junit/
