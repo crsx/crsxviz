@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="662.0" prefWidth="635.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.terms.TermsPresenter">
+    <children>
+
+        <!-- Term Tree Controls -->
+        <HBox layoutY="25.0" prefHeight="722.0" prefWidth="1280.0" translateY="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <ToolBar layoutY="25.0" prefWidth="640.0" HBox.hgrow="ALWAYS">
+                    <items>
+                        <Button fx:id="run" mnemonicParsing="false" onAction="#onRun" text="Run" />
+                        <Button fx:id="resume" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onResume" text="Resume" />
+                        <Button fx:id="terminate" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onTerminate" text="Terminate" />
+                    </items>
+                </ToolBar>
+                <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefWidth="640.0" HBox.hgrow="ALWAYS">
+                    <items>
+                        <Button fx:id="step_return" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepReturn" text="Step Return" />
+                        <Button fx:id="step_over" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepOver" text="Step Over" />
+                        <Button fx:id="step_into" mnemonicParsing="false" onAction="#onStepInto" text="Step Into" />
+                    </items>
+                </ToolBar>
+            </children>
+        </HBox>
+
+        <!-- Term Tree -->
+
+        <TreeView fx:id="terms_tree" layoutY="63.0" prefHeight="599.0" prefWidth="635.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="63.0" />
+        <Label fx:id="trace_label" alignment="CENTER" layoutY="-2.0" prefHeight="25.0" prefWidth="635.0" textAlignment="CENTER">
+            <font>
+                <Font size="15.0" />
+            </font>
+        </Label>
+    </children>
+</AnchorPane>
