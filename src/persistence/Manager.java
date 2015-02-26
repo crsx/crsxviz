@@ -7,13 +7,18 @@ public class Manager {
 	private static Manager instance = null;
 	private IDriver driver = null;
 	
+	public static void globalInit(String dbpath, String driver) {
+		instance = new Manager(driver, dbpath);
+	}
+	
 	public static Manager getInstance() {
-		instance = new Manager();
+		if (instance == null)
+			throw new IllegalAccessError("Database settings must be setup first. Call globalInit() first!");
 		return instance;
 	}
 	
-	protected Manager() {
-		this.driver = new Driver();
+	protected Manager(String dbpath, String driver) {
+		this.driver = new Driver(dbpath, driver);
 	}
 	
 	public Connection getConnection() throws RollbackException {

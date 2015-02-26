@@ -8,8 +8,8 @@ public class Driver implements IDriver {
 
 	private DbProperties dbInfo;
 
-	public Driver() {
-		dbInfo = new DbProperties();
+	public Driver(String dbpath, String driver) {
+		dbInfo = new DbProperties(dbpath, driver);
 	}
 
 	public Connection getConnection() throws RollbackException {

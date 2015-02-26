@@ -20,6 +20,7 @@ public class TestManager extends Manager implements IDriver {
 	}
 	
 	protected TestManager() {
+		super("jdbc:sqlite:let2.db", "org.sqlite.JDBC");
 		dbInfo = new DbProperties();
 	}
 	
@@ -27,7 +28,7 @@ public class TestManager extends Manager implements IDriver {
 		Connection con = null;
 		try {
 			Class.forName(dbInfo.getJdbcDriver());
-			con = DriverManager.getConnection(dbInfo.getJdbcTestUrl());
+			con = DriverManager.getConnection("jdbc:sqlite:let2.db");
 		} catch (SQLException | ClassNotFoundException e) {
 			System.out.println("SQL Exception: " + e.getMessage());
 		}

@@ -12,9 +12,16 @@ public class DbProperties {
 	private static final String PROP_FILE = "properties.xml";
 	private Map<String, String> xml = null;
 	private String file;
+	private String driver;
+	private String dbpath;
 	
 	public DbProperties() {
 		this(PROP_FILE);
+	}
+	
+	public DbProperties(String dbpath, String driver) {
+		this.dbpath = dbpath;
+		this.driver = driver;
 	}
 	
 	public DbProperties(String file) {
@@ -41,14 +48,16 @@ public class DbProperties {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		dbpath = xml.get("jdbcUrl");
+		driver = xml.get("jdbcDriver");
 	}
 	
 	public String getJdbcDriver() {
-		return xml.get("jdbcDriver");
+		return dbpath;
 	}
 	
 	public String getJdbcUrl() {
-		return xml.get("jdbcUrl");
+		return driver;
 	}
 	
 	public String getJdbcTestUrl() {

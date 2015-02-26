@@ -59,9 +59,9 @@ public class Controller {
 	private Manager instance;
 	
 	// Database access objects
-	private BeanAccess<StepBean> stepAccess;
-	private BeanAccess<CookieBean> cookieAccess;
-	private BeanAccess<ActiveRuleBean> ruleAccess;
+	private StepsAccess stepAccess;
+	private CookiesAccess cookieAccess;
+	private ActiveRulesAccess ruleAccess;
 	
 	// Backend data representing the database on launch
 	private List<StepBean> steps;
@@ -155,68 +155,33 @@ public class Controller {
 	public void setStage(Stage s) {
 		this.stage = s;
 	}
-    
-    @FXML // This method is called by the FXMLLoader when initialization is complete
-    void initialize() throws RollbackException {
-    	assert filter_field != null : "fx:id=\"filter_field\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert resume != null : "fx:id=\"resume\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert step_return != null : "fx:id=\"step_return\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert about != null : "fx:id=\"about\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert run != null : "fx:id=\"pause\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert step_over != null : "fx:id=\"step_over\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert help != null : "fx:id=\"help\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert file != null : "fx:id=\"file\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert trace_label != null : "fx:id=\"trace_label\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert terms_tree != null : "fx:id=\"terms_tree\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert step_into != null : "fx:id=\"step_into\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert options != null : "fx:id=\"options\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert playback != null : "fx:id=\"playback\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert terminate != null : "fx:id=\"terminate\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert breakpoint_list != null : "fx:id=\"breakpoint_list\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert rules_list != null : "fx:id=\"rules_list\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert close != null : "fx:id=\"close\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-        assert open != null : "fx:id=\"open\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
-       
-    	String dbpath = "out.db";
-    	
-    	long start = System.nanoTime();
-    	instance = Manager.getInstance();
-    	long stop = System.nanoTime();
-    	
-    	System.out.println("Opened database " + dbpath + " successfully in " + ((stop - start) / 1000000.0) + " ms.");
-    	
+	
+	public void loadDb() throws RollbackException {
+		Manager.globalInit("jdbc:sqlite:" + dbpath, "org.sqlite.JDBC");
+		instance = Manager.getInstance();
+    	System.out.println("Opened database " + dbpath + " successfully");
     	trace_label.setText("Debugging " + dbpath);
+    	
     	run.setDisable(true);
-    	
-    	start = System.nanoTime();
-    	cookieAccess = new CookiesAccess(instance);
-    	cookies = cookieAccess.getAll();
-    	totalCookies = cookies.size();
-    	stop = System.nanoTime();
-    	
-    	System.out.println("Loaded " + totalCookies + " cookies in " + ((stop - start) / 1000000.0) + " ms.");
-    	
-    	start = System.nanoTime();
-    	ruleAccess = new ActiveRulesAccess(instance);
-    	rules = ruleAccess.getAll();
-    	totalRules = rules.size();
-    	stop = System.nanoTime();
-    	
-    	System.out.println("Loaded " + totalRules + " active rules in " + ((stop - start) / 1000000.0) + " ms.");
-    	
-    	start = System.nanoTime();
-    	stepAccess = new StepsAccess(instance);
-    	steps = stepAccess.getAll();
-    	totalSteps = steps.size();
-    	stop = System.nanoTime();
-    	
-    	System.out.println("Loaded " + totalSteps + " steps in " + ((stop - start) / 1000000.0) + " ms.");
-    	
     	
     	// Initialize Terms Tree View
     	nodeStack = initializeTree(new TreeItem<String>("Terms"));
     	stepStack = new Stack<StepBean>();
     	
+    	run.setDisable(true);
+
+    	cookieAccess = new CookiesAccess(instance);
+    	cookies = cookieAccess.getAll();
+    	totalCookies = cookies.size();
+    	
+    	ruleAccess = new ActiveRulesAccess(instance);
+    	rules = ruleAccess.getAll();
+    	totalRules = rules.size();
+    	
+    	stepAccess = new StepsAccess(instance);
+    	steps = stepAccess.getAll();
+    	totalSteps = steps.size();
+
     	//Populate Rules List View
         observableRules = FXCollections.observableArrayList();
         for (ActiveRuleBean bean : rules) {
@@ -326,11 +291,39 @@ public class Controller {
                 
         rules_list.setItems((FilteredList<String>) filtered_rules);
         
-        step_return.setDisable(true);
-        step_into.setDisable(true);
-        
-        proceed = false;
-        jumpToNextStep();
+        step_return.setDisable(false);
+        step_into.setDisable(false);
+        step_over.setDisable(false);
+        run.setDisable(false);
+        resume.setDisable(false);
+        terminate.setDisable(false);
+        proceed = true;
+        onStepInto(null);
+	}
+    
+    @FXML // This method is called by the FXMLLoader when initialization is complete
+    void initialize() throws RollbackException {
+    	assert filter_field != null : "fx:id=\"filter_field\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert resume != null : "fx:id=\"resume\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert step_return != null : "fx:id=\"step_return\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert about != null : "fx:id=\"about\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert run != null : "fx:id=\"pause\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert step_over != null : "fx:id=\"step_over\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert help != null : "fx:id=\"help\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert file != null : "fx:id=\"file\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert trace_label != null : "fx:id=\"trace_label\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert terms_tree != null : "fx:id=\"terms_tree\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert step_into != null : "fx:id=\"step_into\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert options != null : "fx:id=\"options\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert playback != null : "fx:id=\"playback\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert terminate != null : "fx:id=\"terminate\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert breakpoint_list != null : "fx:id=\"breakpoint_list\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert rules_list != null : "fx:id=\"rules_list\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert close != null : "fx:id=\"close\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+        assert open != null : "fx:id=\"open\" was not injected: check your FXML file 'CRSXVIZ.fxml'.";
+       
+        trace_label.setText("No trace file opened");
+    	
     }
     
     @FXML
@@ -351,6 +344,12 @@ public class Controller {
 				if (selectedFile.exists() && selectedFile.canRead()) {
 					dbpath = selectedFile.getAbsolutePath();
 					System.out.println("File opened OK");
+					try {
+					loadDb();
+					} catch (RollbackException e) {
+						System.out.println("Error opening database");
+						e.printStackTrace();
+					}
 				} else {
 					System.out.println("Specified file is not readable");
 				}
@@ -394,6 +393,20 @@ public class Controller {
     	if (dbpath == null)
     		System.out.println("File already closed.");
     	dbpath = null;
+    	rules = null;
+    	observableRules = FXCollections.observableArrayList();
+    	rules_list.setItems(observableRules);
+    	filter_field.clear();
+    	observableBreakpoints = FXCollections.observableArrayList();
+    	breakpoint_list.setItems(observableBreakpoints);
+    	terms_tree.setRoot(null);
+    	run.setDisable(true);
+    	terminate.setDisable(true);
+    	step_into.setDisable(true);
+    	step_over.setDisable(true);
+    	step_return.setDisable(true);
+    	resume.setDisable(true);
+    	trace_label.setText("No trace file opened");
     }
     
     @FXML
@@ -412,8 +425,13 @@ public class Controller {
     	step_over.setDisable(false);
     	System.out.println("running debug...");
     	
-    	// TODO start from the beginning and run
-    	nodeStack = initializeTree(new TreeItem<String>("Terms"));
+    	try {
+			loadDb();
+		} catch (RollbackException e) {
+			System.out.println("Error reloading state");
+			e.printStackTrace();
+			onCloseFile(null);
+		}
     }
     
     @FXML
@@ -590,7 +608,6 @@ public class Controller {
     			rules_list.getFocusModel().focus(s.getActiveRuleId());
     		}
     		
-    		System.out.println("---------------------------------------------------");
     		if (currentStep < totalSteps) {
     			s = steps.get(currentStep);
     			step_over.setDisable(false);
