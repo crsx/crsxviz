@@ -156,6 +156,14 @@ public class Controller {
 		this.stage = s;
 	}
 	
+    private void showError(String title, String message) {
+    	Alert alert = new Alert(AlertType.ERROR);
+    	alert.setTitle(title);
+    	alert.setHeaderText(null);
+    	alert.setContentText(message);
+    	alert.showAndWait();
+    }
+	
 	public void loadDb() throws RollbackException {
 		Manager.globalInit("jdbc:sqlite:" + dbpath, "org.sqlite.JDBC");
 		instance = Manager.getInstance();
@@ -330,6 +338,7 @@ public class Controller {
     void onOpenFile(ActionEvent event){
     	if (dbpath != null) {
     		System.out.println("File already open");
+    		showError("Error!", "A file already open.\nPlease close it before opening a new one");
     	} else {
 	    	System.out.println("Opening file...");
 	    	FileChooser fileChooser = new FileChooser();
@@ -345,13 +354,15 @@ public class Controller {
 					dbpath = selectedFile.getAbsolutePath();
 					System.out.println("File opened OK");
 					try {
-					loadDb();
+						loadDb();
 					} catch (RollbackException e) {
 						System.out.println("Error opening database");
+						showError("Error!", "Unable to open database");
 						e.printStackTrace();
 					}
 				} else {
 					System.out.println("Specified file is not readable");
+					showError("Error!", "Specified file was not readable");
 				}
 			}
     	}
@@ -361,6 +372,7 @@ public class Controller {
     void onRunParser(ActionEvent event){
     	if (dbpath != null) {
     		System.out.println("File already open");
+    		showError("Error!", "A trace is already open. Please close it before continuing");
     	} else {
 	    	System.out.println("Running parser...");
 	    	RunnerDialog d = null;
@@ -373,15 +385,18 @@ public class Controller {
 		    			dbpath = d.getOutFile().getAbsolutePath();
 		    		} else {
 		    			System.out.println("Error: RunnerDialog claims processingRan, but no file was returned.");
+		    			showError("Error!", "RunnerDialog claims processingRan, but no file was returned.");
 		    		}
 		    	} else {
 		    		System.out.println("Processing was not run by RunnerDialog");
 		    	}
 			} catch (IOException e) {
 				System.out.println("IOError while starting RunnerDialog");
+				showError("Error!", "IOError while starting prcoessing\n" + e.getMessage());
 				e.printStackTrace();
 			} catch (Exception e) {
 				System.out.println("Error while starting RunnerDialog");
+				showError("Error!", "Exception during prcoessing\n" + e.getMessage());
 				e.printStackTrace();
 			}
     	}
@@ -390,8 +405,10 @@ public class Controller {
     @FXML
     void onCloseFile(ActionEvent event){
     	System.out.println("Closing file...");
-    	if (dbpath == null)
+    	if (dbpath == null) {
+    		showError("Error!", "Cannot close, no files are open");
     		System.out.println("File already closed.");
+    	}
     	dbpath = null;
     	rules = null;
     	observableRules = FXCollections.observableArrayList();
@@ -428,6 +445,7 @@ public class Controller {
     	try {
 			loadDb();
 		} catch (RollbackException e) {
+			showError("Error!", "An exception occured while reloading state\n" + e.getMessage());
 			System.out.println("Error reloading state");
 			e.printStackTrace();
 			onCloseFile(null);
