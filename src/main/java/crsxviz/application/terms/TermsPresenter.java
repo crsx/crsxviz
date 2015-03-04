@@ -2,7 +2,6 @@ package crsxviz.application.terms;
 
 import crsxviz.application.crsxviz.CrsxvizPresenter;
 import crsxviz.persistence.beans.ActiveRules;
-import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.Steps;
 import crsxviz.persistence.services.TraceService;
 import java.net.URL;
@@ -17,7 +16,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -37,12 +35,11 @@ public class TermsPresenter implements Initializable {
     @FXML
     private Button step_over;
     @FXML
+    private Button terminate;
+    @FXML
     private Label trace_label;
     @FXML
     private TreeView<String> terms_tree;
-
-    @Inject
-    String dbName;
 
     @Inject
     TraceService ts;
@@ -57,7 +54,6 @@ public class TermsPresenter implements Initializable {
 
     private List<Steps> steps;
     private List<ActiveRules> rules;
-    private List<Cookies> cookies;
     private int totalSteps;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
@@ -67,25 +63,9 @@ public class TermsPresenter implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        
+        trace_label.setText("No trace file opened");
 
-        steps = ts.allSteps();
-        rules = ts.allRules();
-        cookies = ts.allCookies();
-
-        totalSteps = steps.size();
-
-        trace_label.setText("Debugging " + dbName);
-        run.setDisable(true);
-
-        // Initialize Terms Tree View
-        nodeStack = initializeTree(new TreeItem<>("Terms"));
-        stepStack = new Stack<>();
-
-        step_return.setDisable(true);
-        step_into.setDisable(true);
-
-        proceed = false;
-        jumpToNextStep();
     }
 
     @FXML
@@ -319,13 +299,55 @@ public class TermsPresenter implements Initializable {
         return nodeStack;
     }
 
+    /**
+     * Initializes the Presenter to an initial state where either a
+     * database has been opened and thus will display the correct state of
+     * buttons along with initial term tree, or where a database has not been 
+     * opened.
+     * @param main Instance of the calling presenter
+     */
     public void setCrsxMain(CrsxvizPresenter main) {
         this.main = main;
         steps = main.getSteps();
         rules = main.getRules();
+        totalSteps = steps.size();
         
+        String label = main.getDbName();
+        trace_label.setText(label == null ? "No trace file opened" : "Debugging " + label);
         observableRules = main.getObservableRules();
         observableBreakpoints = main.getBreakpoints();
+        
+        nodeStack = initializeTree(new TreeItem<>("Terms"));
+        stepStack = new Stack<>();
+        
+        step_return.setDisable(false);
+        step_into.setDisable(false);
+        step_over.setDisable(false);
+        run.setDisable(false);
+        resume.setDisable(false);
+        terminate.setDisable(false);
+        proceed = true;
+        onStepInto(null);
+    }
+    
+    /**
+     * Return the Presenter to its initial state where no database is to be 
+     * displayed.
+     */
+    public void clearDisplay() {
+        observableBreakpoints = FXCollections.observableArrayList();
+        observableRules = FXCollections.observableArrayList();
+        steps = null;
+        rules = null;
+        totalSteps = lastIndent =  currentStep = 0;
+        terms_tree.setRoot(null);
+    	run.setDisable(true);
+    	terminate.setDisable(true);
+    	step_into.setDisable(true);
+    	step_over.setDisable(true);
+    	step_return.setDisable(true);
+    	resume.setDisable(true);
+    	trace_label.setText("No trace file opened");
     }
     
 }

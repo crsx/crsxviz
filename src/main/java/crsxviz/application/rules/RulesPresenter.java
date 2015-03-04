@@ -25,7 +25,7 @@ public class RulesPresenter implements Initializable {
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
-
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -77,5 +77,12 @@ public class RulesPresenter implements Initializable {
     public void highlightActiveRule(int ruleId) {
         rules_list.getSelectionModel().select(ruleId);
         rules_list.getFocusModel().focus(ruleId);
+    }
+    
+    public void clearDisplay() {
+        observableBreakpoints = FXCollections.observableArrayList();
+        observableRules = FXCollections.observableArrayList();
+        rules_list.setItems(observableRules);
+        filter_field.clear();
     }
 }

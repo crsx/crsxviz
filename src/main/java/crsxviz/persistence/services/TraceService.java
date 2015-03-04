@@ -3,16 +3,20 @@ package crsxviz.persistence.services;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.Steps;
+import java.util.HashMap;
 import java.util.List;
-import javax.annotation.PostConstruct;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import org.eclipse.persistence.config.PersistenceUnitProperties;
 
 public class TraceService {
 	
+    private static final String DEFAULT_DATABASE = "out.db";
+    
     private EntityManager em;
     private EntityManagerFactory emf;
     private EntityTransaction et;
@@ -23,9 +27,17 @@ public class TraceService {
         this.et = this.em.getTransaction();
     }
     
-    @PostConstruct
     public void init() {
-        this.emf = Persistence.createEntityManagerFactory("crsxviz");
+        this.init(DEFAULT_DATABASE);
+    }
+    
+    public void init(String dbpath) {
+        String url = "jdbc:sqlite:" + dbpath;
+        if (!url.endsWith(".db"))
+            url += ".db";
+        Map overriddenProps = new HashMap();
+        overriddenProps.put(PersistenceUnitProperties.JDBC_URL, url);
+        this.emf = Persistence.createEntityManagerFactory("crsxviz", overriddenProps);
         this.em = this.emf.createEntityManager();
         this.et = this.em.getTransaction();
     }

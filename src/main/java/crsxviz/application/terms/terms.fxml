@@ -14,16 +14,16 @@
             <children>
                 <ToolBar layoutY="25.0" prefWidth="640.0" HBox.hgrow="ALWAYS">
                     <items>
-                        <Button fx:id="run" mnemonicParsing="false" onAction="#onRun" text="Run" />
-                        <Button fx:id="resume" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onResume" text="Resume" />
-                        <Button fx:id="terminate" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onTerminate" text="Terminate" />
+                        <Button fx:id="run" disable="true" mnemonicParsing="false" onAction="#onRun" text="Run" />
+                        <Button fx:id="resume" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onResume" text="Resume" />
+                        <Button fx:id="terminate" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onTerminate" text="Terminate" />
                     </items>
                 </ToolBar>
                 <ToolBar nodeOrientation="RIGHT_TO_LEFT" prefWidth="640.0" HBox.hgrow="ALWAYS">
                     <items>
-                        <Button fx:id="step_return" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepReturn" text="Step Return" />
-                        <Button fx:id="step_over" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepOver" text="Step Over" />
-                        <Button fx:id="step_into" mnemonicParsing="false" onAction="#onStepInto" text="Step Into" />
+                        <Button fx:id="step_return" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepReturn" text="Step Return" />
+                        <Button fx:id="step_over" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepOver" text="Step Over" />
+                        <Button fx:id="step_into" disable="true" mnemonicParsing="false" onAction="#onStepInto" text="Step Into" />
                     </items>
                 </ToolBar>
             </children>

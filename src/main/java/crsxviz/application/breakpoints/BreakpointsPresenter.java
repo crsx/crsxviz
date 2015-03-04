@@ -4,6 +4,7 @@ import crsxviz.application.crsxviz.CrsxvizPresenter;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.services.TraceService;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -35,10 +36,11 @@ public class BreakpointsPresenter implements Initializable {
     
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private List<ActiveRules> rules;
-
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        rules = ts.allRules();
+        // rules = ts.allRules();
+        rules = new ArrayList<>();
 
         final ContextMenu bp_cmenu = new ContextMenu();
         MenuItem bp_cmItem = new MenuItem("Remove Breakpoint");
@@ -96,5 +98,11 @@ public class BreakpointsPresenter implements Initializable {
     public void setCrsxMain(CrsxvizPresenter main) {
         observableBreakpoints = main.getBreakpoints();
         breakpoint_list.setItems(observableBreakpoints);
+    }
+    
+    public void clearDisplay() {
+        observableBreakpoints = FXCollections.observableArrayList();
+        breakpoint_list.setItems(observableBreakpoints);
+        rules = null;
     }
 }

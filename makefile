@@ -1,7 +1,7 @@
 BASE_DIR = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 CRSXVIZ_DIR = $(BASE_DIR)
-PARSER_SRC_DIR = $(BASE_DIR)/src/parser
+PARSER_SRC_DIR = $(BASE_DIR)/src/main/java/crsxviz/parser
 DEB_DIR = $(BASE_DIR)/deb_build
 
 DPKG_FOUND := $(shell which dpkg > /dev/null; echo $$?)
@@ -15,10 +15,10 @@ parser:
 	+make all -f $(PARSER_SRC_DIR)/makefile CRSXVIZ_DIR=$(CRSXVIZ_DIR)
 
 viz:
-	ant build
+	mvn clean package
 	
 jar:
-	ant jar
+	mvn clean package
 	
 install: jar parser
 	chmod a+x $(DEB_DIR) -R

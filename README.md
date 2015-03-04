@@ -17,15 +17,16 @@ This project exists to work on this visualization effort.
 
 ## Build Instructions
 
-To build and test the database functionality run the following command
+To build a distributable jar package use the following command
 
-```ant Main```
+```mvn```
 
-To build an executable and distributable jar package use the following command
+The jar can be executed by running 
 
-```ant jar```
-
-The jar can be executed by running ```java -jar crsxviz.jar``` or just double click the jar.
+```
+chmod a+x run.sh
+./run.sh
+```
 
 License
 =======
