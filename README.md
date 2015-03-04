@@ -19,7 +19,10 @@ This project exists to work on this visualization effort.
 
 To build a distributable jar package use the following command
 
-```mvn```
+```
+chmod a+x ./build.sh
+./build.sh
+```
 
 The jar can be executed by running 
 
