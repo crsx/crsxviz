@@ -472,6 +472,8 @@ public class Controller {
     
     @FXML
     void onRun(ActionEvent event){
+    	terminate.setDisable(true);
+    	resume.setDisable(true);
     	slider.setDisable(false);
     	slider.setMax(totalSteps);
     	slider.setMajorTickUnit(Math.floor(totalSteps / 10));
@@ -503,6 +505,9 @@ public class Controller {
     
     @FXML
     void onTerminate(ActionEvent event){
+    	terms_tree.setRoot(null);
+    	terminate.setDisable(true);
+    	resume.setDisable(true);
     	run.setDisable(false);
     	step_into.setDisable(true);
 		step_return.setDisable(true);
