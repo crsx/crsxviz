@@ -179,6 +179,7 @@ public class Controller {
     }
 
     public static void showError(String title, String message) {
+        System.out.println(message);
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);

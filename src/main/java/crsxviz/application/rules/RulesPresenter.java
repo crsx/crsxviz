@@ -51,6 +51,13 @@ public class RulesPresenter implements Initializable {
         
     }
 
+    /**
+     * Initializes the Presenter to an initial state where either a
+     * database has been opened and thus will display the correct state of
+     * buttons along with initial term tree, or where a database has not been 
+     * opened.
+     * @param main Instance of the calling presenter
+     */
     public void setCrsxMain(CrsxvizPresenter main) {
         observableRules = main.getObservableRules();
         observableBreakpoints = main.getBreakpoints();
@@ -74,11 +81,19 @@ public class RulesPresenter implements Initializable {
         rules_list.setItems((FilteredList<String>) list);
     }
     
+    /**
+     * Highlights the given rule in the Rules pane
+     * @param ruleId 
+     */
     public void highlightActiveRule(int ruleId) {
         rules_list.getSelectionModel().select(ruleId);
         rules_list.getFocusModel().focus(ruleId);
     }
     
+    /**
+     * Return the Presenter to its initial state where no database is to be 
+     * displayed.
+     */
     public void clearDisplay() {
         observableBreakpoints = FXCollections.observableArrayList();
         observableRules = FXCollections.observableArrayList();

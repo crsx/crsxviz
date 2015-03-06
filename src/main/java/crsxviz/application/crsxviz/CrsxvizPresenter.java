@@ -1,5 +1,6 @@
 package crsxviz.application.crsxviz;
 
+import com.airhacks.afterburner.views.FXMLView;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -25,7 +26,9 @@ import java.io.IOException;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javax.inject.Inject;
@@ -80,9 +83,9 @@ public class CrsxvizPresenter implements Initializable {
         this.rulesPresenter = (RulesPresenter) rulesView.getPresenter();
         this.breakpointsPresenter = (BreakpointsPresenter) breakpointsView.getPresenter();
 
-        terms.getChildren().add(termsView.getView());
-        rules.getChildren().add(rulesView.getView());
-        breakpoints.getChildren().add(breakpointsView.getView());
+        addAll(terms, termsView);
+        addAll(rules, rulesView);
+        addAll(breakpoints, breakpointsView);
     }
 
     public ObservableList<String> getBreakpoints() {
@@ -108,7 +111,6 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     void onOpenFile(ActionEvent event) {
         if (dbpath != null) {
-            System.out.println("File already open");
             showError("Error!", "A file already open.\nPlease close it before opening a new one");
         } else {
             System.out.println("Opening file...");
@@ -126,7 +128,6 @@ public class CrsxvizPresenter implements Initializable {
                     System.out.println("File opened OK");
                     loadDb(dbpath);
                 } else {
-                    System.out.println("Specified file is not readable");
                     showError("Error!", "Specified file is not readable");
                 }
             }
@@ -136,7 +137,7 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     void onRunParser(ActionEvent event) throws IOException {
         if (dbpath != null) {
-            System.out.println("File already open");
+            showError("Error!", "A file already open.\nPlease close it before opening a new one");
         } else {
             System.out.println("Running parser...");
             RunnerDialog d = new RunnerDialog();
@@ -147,7 +148,6 @@ public class CrsxvizPresenter implements Initializable {
                     dbpath = d.getOutFile().getAbsolutePath();
                     loadDb(dbpath);
                 } else {
-                    System.out.println("Error: RunnerDialog claims processingRan, but no file was returned.");
                     showError("Error!", "RunnerDialog claims processingRan, but no file was returned.");
                 }
             } else {
@@ -159,10 +159,8 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     void onCloseFile(ActionEvent event) {
         System.out.println("Closing file...");
-        if (dbpath == null) {
-            System.out.println("File already closed.");
+        if (dbpath == null) 
             showError("Error!", "Cannot close, no files are open");
-        }
         dbpath = null;
         this.clearControls();
     }
@@ -187,19 +185,48 @@ public class CrsxvizPresenter implements Initializable {
         reloadPresenters();
     }
     
-    public void reloadPresenters() {
+    /**
+     * Forces a reload of Presenters following a new database being opened.
+     * 
+     * This effectively shows the new data accessed by the new database.
+     */
+    private void reloadPresenters() {
         breakpointsPresenter.setCrsxMain(this);
         rulesPresenter.setCrsxMain(this);
         termsPresenter.setCrsxMain(this);
     }
     
+    /**
+     * Clears the data shown by the presenters. This sets all buttons
+     * to their initial states along with erasing data of all lists.
+     */
     public void clearControls() {
         termsPresenter.clearDisplay();
         breakpointsPresenter.clearDisplay();
         rulesPresenter.clearDisplay();
     }
     
+    /**
+     * Returns the name of the database that is currently open.
+     * @return Path to the database
+     */
     public String getDbName() {
         return dbpath;
+    }
+    
+    /**
+     * Add all view nodes to the given pane.
+     * 
+     * This is a workaround to side step the double loading of
+     * AnchorPane which prevents resizing from happening correctly.
+     * @param pane 
+     * @param view 
+     */
+    private void addAll(Pane pane, FXMLView view) {
+        Node node = view.getViewWithoutRootContainer();
+        while (node != null) {
+            pane.getChildren().add(node);
+            node = view.getViewWithoutRootContainer();
+        }
     }
 }
