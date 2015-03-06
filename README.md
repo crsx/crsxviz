@@ -20,15 +20,26 @@ This project exists to work on this visualization effort.
 To build a distributable jar package use the following command
 
 ```
-chmod a+x ./build.sh
+chmod +x ./build.sh
 ./build.sh
+```
+
+or by running
+
+```
+mvn clean package
 ```
 
 The jar can be executed by running 
 
 ```
-chmod a+x run.sh
+chmod +x run.sh
 ./run.sh
+```
+
+or by running 
+```
+java -jar crsxviz.jar
 ```
 
 License
