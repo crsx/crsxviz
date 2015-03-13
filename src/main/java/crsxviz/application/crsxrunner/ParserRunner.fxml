@@ -12,9 +12,9 @@
          <children>
             <HBox prefHeight="0.0" prefWidth="135.0">
                <children>
-                  <Label minWidth="-Infinity" prefWidth="175.0" text="CRSX compiled program to run: " HBox.hgrow="SOMETIMES">
+                  <Label minWidth="-Infinity" text="CRSX compiled program to run: " HBox.hgrow="SOMETIMES">
                      <HBox.margin>
-                        <Insets left="10.0" />
+                        <Insets left="10.0" right="20.0" />
                      </HBox.margin>
                      <padding>
                         <Insets top="5.0" />
@@ -37,9 +37,9 @@
             </HBox>
             <HBox prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label minWidth="-Infinity" prefHeight="17.0" prefWidth="60.0" text="Wrapper: " HBox.hgrow="SOMETIMES">
+                  <Label minWidth="-Infinity" text="Wrapper: " HBox.hgrow="SOMETIMES">
                      <HBox.margin>
-                        <Insets left="10.0" top="5.0" />
+                        <Insets left="10.0" right="20.0" top="5.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txtWrapper" prefHeight="25.0" prefWidth="520.0" HBox.hgrow="ALWAYS">
@@ -54,9 +54,9 @@
             </HBox>
             <HBox minHeight="-Infinity" prefHeight="125.0">
                <children>
-                  <Label minWidth="-Infinity" prefWidth="35.0" text="Term: " HBox.hgrow="SOMETIMES">
+                  <Label minWidth="-Infinity" text="Term: " HBox.hgrow="SOMETIMES">
                      <HBox.margin>
-                        <Insets left="10.0" right="10.0" top="5.0" />
+                        <Insets left="10.0" right="15.0" top="5.0" />
                      </HBox.margin>
                   </Label>
                   <Accordion fx:id="acrdnTermPanel" HBox.hgrow="ALWAYS">
@@ -69,7 +69,7 @@
                                        <children>
                                           <Label text="Path: ">
                                              <HBox.margin>
-                                                <Insets left="10.0" top="5.0" />
+                                                <Insets left="10.0" right="20.0" top="5.0" />
                                              </HBox.margin>
                                           </Label>
                                           <TextField fx:id="txtInFilePath" HBox.hgrow="ALWAYS">
@@ -112,9 +112,9 @@
             </HBox>
             <HBox prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label minWidth="-Infinity" prefWidth="120.0" text="Output trace file path: ">
+                  <Label minWidth="-Infinity" text="Output trace file path: ">
                      <HBox.margin>
-                        <Insets left="10.0" top="5.0" />
+                        <Insets left="10.0" right="20.0" top="5.0" />
                      </HBox.margin>
                   </Label>
                   <TextField fx:id="txtOutPath" HBox.hgrow="ALWAYS">
@@ -141,7 +141,7 @@
                   </Button>
                   <Label text="Status: ">
                      <HBox.margin>
-                        <Insets left="10.0" right="3.0" top="20.0" />
+                        <Insets left="10.0" right="20.0" top="20.0" />
                      </HBox.margin>
                   </Label>
                   <Label fx:id="lblStatus" prefHeight="17.0" prefWidth="347.0" text="Not Started" HBox.hgrow="ALWAYS">
