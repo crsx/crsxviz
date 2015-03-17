@@ -21,11 +21,6 @@
                                 <MenuItem fx:id="close" mnemonicParsing="false" onAction="#onCloseFile" text="Close" />
                             </items>
                         </Menu>
-                        <Menu fx:id="options" mnemonicParsing="false" text="Options">
-                            <items>
-                                <MenuItem fx:id="playback" mnemonicParsing="false" onAction="#onAdjustPlayback" text="Adjust Playback" />
-                            </items>
-                        </Menu>
                         <Menu fx:id="help" mnemonicParsing="false" text="Help">
                             <items>
                                 <MenuItem fx:id="about" mnemonicParsing="false" onAction="#onAbout" text="About" />

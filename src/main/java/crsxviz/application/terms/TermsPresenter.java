@@ -19,6 +19,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
@@ -46,6 +47,8 @@ public class TermsPresenter implements Initializable {
     private TreeView<String> terms_tree;
     @FXML
     private Slider slider;
+    @FXML
+    private TextField step_specifier;
 
     @Inject
     TraceService ts;
@@ -75,16 +78,22 @@ public class TermsPresenter implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         trace_label.setText("No trace file opened");
         initialSliderState();
+        step_specifier.setText("");
+        step_specifier.setEditable(false);
+        step_specifier.setFocusTraversable(false);
     }
 
     @FXML
     void onRun(ActionEvent event) {
         sliderOn();
         run.setDisable(true);
-        resume.setDisable(true);
-        terminate.setDisable(true);
+        resume.setDisable(false);
+        terminate.setDisable(false);
         step_over.setDisable(false);
         System.out.println("running debug...");
+        step_specifier.setText("");
+        step_specifier.setEditable(true);
+        step_specifier.setFocusTraversable(false);
 
         nodeStack = initializeTree(new TreeItem<>("Terms"));
         stepStack = new Stack<>();
@@ -110,6 +119,9 @@ public class TermsPresenter implements Initializable {
         step_over.setDisable(true);
         step_back.setDisable(true);
         slider.setDisable(true);
+        step_specifier.setText("");
+        step_specifier.setEditable(false);
+        step_specifier.setFocusTraversable(false);
         for (int i = 0; i < totalSteps; i++) {
             steps.get(i).setStartDataDisplayed(false);
             steps.get(i).setCompleteDataDisplayed(false);
@@ -315,6 +327,7 @@ public class TermsPresenter implements Initializable {
         }
         previousSliderValue = (int) slider.getValue();
         slider.setValue(currentStep);
+        step_specifier.setText("" + currentStep);
     }
 
     @FXML
@@ -486,6 +499,7 @@ public class TermsPresenter implements Initializable {
         }
         previousSliderValue = (int) slider.getValue();
         slider.setValue(currentStep);
+        step_specifier.setText("" + currentStep);
     }
 
     /**
