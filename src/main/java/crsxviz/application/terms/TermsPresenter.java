@@ -24,6 +24,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 import javax.inject.Inject;
+import jdk.nashorn.internal.runtime.regexp.joni.EncodingHelper;
 
 public class TermsPresenter implements Initializable {
 
@@ -79,7 +80,7 @@ public class TermsPresenter implements Initializable {
         trace_label.setText("No trace file opened");
         initialSliderState();
         step_specifier.setText("");
-        step_specifier.setEditable(false);
+        step_specifier.setEditable(true);
         step_specifier.setFocusTraversable(false);
     }
 
@@ -630,5 +631,23 @@ public class TermsPresenter implements Initializable {
         slider.setMajorTickUnit(Math.floor(totalSteps / 10));
         slider.setMinorTickCount((int) Math.floor(slider.getMajorTickUnit()) / 5);
         slider.setValue(0);
+    }
+    
+    @FXML
+    public void onStepSpecify(){
+        int specifiedStep = Integer.valueOf(step_specifier.getText());
+        if(specifiedStep < 0 || specifiedStep > steps.size()){
+            return;
+        }
+        else if(specifiedStep < currentStep){
+            while(currentStep > specifiedStep){
+                onStepBack();
+            }
+        }
+        else if(specifiedStep > currentStep){
+            while(currentStep < specifiedStep){
+                step();
+            }
+        }
     }
 }
