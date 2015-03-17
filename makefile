@@ -1,7 +1,7 @@
 BASE_DIR = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 CRSXVIZ_DIR = $(BASE_DIR)
-PARSER_SRC_DIR = $(BASE_DIR)/src/main/java/crsxviz/parser
+PARSER_SRC_DIR = $(BASE_DIR)/src/parser
 DEB_DIR = $(BASE_DIR)/deb_build
 
 DPKG_FOUND := $(shell which dpkg > /dev/null; echo $$?)
