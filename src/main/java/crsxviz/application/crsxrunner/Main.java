@@ -13,15 +13,20 @@ public class Main  extends Application {
 
     public static void main(String[] args) {
         Runner r = new Runner();
-        if (args.length == 3) {
-                r.run(args[0], null, args[1], args[2]);
-        } else if (args.length == 4) {
-                r.run(args[0], args[1], args[2], args[3]);
-        } else if (args.length == 0) {
-                launch(args);
-        } else {
-                System.out.println("Incorrect number of arguments");
-                help();
+        try {
+	        if (args.length == 3) {
+	                r.run(args[0], null, args[1], args[2]);
+	        } else if (args.length == 4) {
+	                r.run(args[0], args[1], args[2], args[3]);
+	        } else if (args.length == 0) {
+	                launch(args);
+	        } else {
+	                System.out.println("Incorrect number of arguments");
+	                help();
+	        }
+        } catch (Exception e) {
+        	System.err.println("Error running app.");
+        	e.printStackTrace();
         }
     }
 

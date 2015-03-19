@@ -97,6 +97,12 @@
                     <include>**/*.properties</include>
                 </includes>
             </resource>
+			<resource>
+                <directory>bin</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <includes>
