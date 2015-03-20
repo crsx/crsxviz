@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar crsxviz.jar
+$JAVA_HOME/../bin/java -jar crsxviz.jar

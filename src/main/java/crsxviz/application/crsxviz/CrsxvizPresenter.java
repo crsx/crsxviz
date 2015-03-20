@@ -65,9 +65,9 @@ public class CrsxvizPresenter implements Initializable {
     @Inject
     private String dbpath;
 
-    public RulesPresenter rulesPresenter;
-    protected TermsPresenter termsPresenter;
-    protected BreakpointsPresenter breakpointsPresenter;
+    private static RulesPresenter rulesPresenter;
+    private static TermsPresenter termsPresenter;
+    private static BreakpointsPresenter breakpointsPresenter;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules;
@@ -79,33 +79,13 @@ public class CrsxvizPresenter implements Initializable {
         TermsView termsView = new TermsView();
         RulesView rulesView = new RulesView();
         BreakpointsView breakpointsView = new BreakpointsView();
-        this.termsPresenter = (TermsPresenter) termsView.getPresenter();
-        this.rulesPresenter = (RulesPresenter) rulesView.getPresenter();
-        this.breakpointsPresenter = (BreakpointsPresenter) breakpointsView.getPresenter();
+        CrsxvizPresenter.termsPresenter = (TermsPresenter) termsView.getPresenter();
+        CrsxvizPresenter.rulesPresenter = (RulesPresenter) rulesView.getPresenter();
+        CrsxvizPresenter.breakpointsPresenter = (BreakpointsPresenter) breakpointsView.getPresenter();
 
         addAll(terms, termsView);
         addAll(rules, rulesView);
         addAll(breakpoints, breakpointsView);
-    }
-
-    public ObservableList<String> getBreakpoints() {
-        return observableBreakpoints;
-    }
-
-    public ObservableList<String> getObservableRules() {
-        observableRules = FXCollections.observableArrayList();
-        getRules().stream().forEach(
-                (rule) -> observableRules.add(rule.getValue())
-        );
-        return observableRules;
-    }
-
-    public List<ActiveRules> getRules() {
-        return ts.allRules();
-    }
-
-    public List<Steps> getSteps() {
-        return ts.allSteps();
     }
 
     @FXML
@@ -179,6 +159,14 @@ public class CrsxvizPresenter implements Initializable {
         this.stage = stage;
     }
     
+    /**
+     * Load the database pointed to by db. 
+     * After loading the database, this method will force
+     * the Presenters to reload, effectively updating them with
+     * the loaded database
+     * 
+     * @param db absolute path to the database
+     */
     private void loadDb(String db) {
         if (db != null)
             ts.init(db);
@@ -191,9 +179,9 @@ public class CrsxvizPresenter implements Initializable {
      * This effectively shows the new data accessed by the new database.
      */
     private void reloadPresenters() {
-        breakpointsPresenter.setCrsxMain(this);
-        rulesPresenter.setCrsxMain(this);
-        termsPresenter.setCrsxMain(this);
+        breakpointsPresenter.initiateData();
+        rulesPresenter.initiateData();
+        termsPresenter.initiateData();
     }
     
     /**
@@ -204,14 +192,6 @@ public class CrsxvizPresenter implements Initializable {
         termsPresenter.clearDisplay();
         breakpointsPresenter.clearDisplay();
         rulesPresenter.clearDisplay();
-    }
-    
-    /**
-     * Returns the name of the database that is currently open.
-     * @return Path to the database
-     */
-    public String getDbName() {
-        return dbpath;
     }
     
     /**
@@ -228,5 +208,25 @@ public class CrsxvizPresenter implements Initializable {
             pane.getChildren().add(node);
             node = view.getViewWithoutRootContainer();
         }
+    }
+    
+    /**
+     * Used to initialize the application with a test database.
+     * testInitialize requires the TraceService testInstance
+     * @param testInstance instance of TraceService to test against
+     */
+    public void testInitialize(TraceService testInstance) {
+        this.ts = testInstance;
+        ts.init();
+        reloadPresenters();
+    }
+    
+    /**
+     * Retrieve the presenter of the rule view. 
+     * 
+     * @return Retrieve the presenter for the rule view.
+     */
+    public static RulesPresenter getRulesPresenter() {
+        return rulesPresenter;
     }
 }

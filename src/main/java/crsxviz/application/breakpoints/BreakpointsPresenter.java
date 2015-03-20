@@ -1,8 +1,8 @@
 package crsxviz.application.breakpoints;
 
 import static crsxviz.application.crsxrunner.Controller.showError;
-import crsxviz.application.crsxviz.CrsxvizPresenter;
 import crsxviz.persistence.beans.ActiveRules;
+import crsxviz.persistence.services.TraceService;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javax.inject.Inject;
 
 
 public class BreakpointsPresenter implements Initializable {
@@ -30,6 +31,9 @@ public class BreakpointsPresenter implements Initializable {
     private ListView<String> breakpoint_list;
     @FXML
     private MenuButton bp_menu;
+    
+    @Inject
+    TraceService ts;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private List<ActiveRules> rules;
@@ -95,11 +99,9 @@ public class BreakpointsPresenter implements Initializable {
      * Initializes the Presenter to an initial state where either a database has
      * been opened and thus will display the correct state of buttons along with
      * initial term tree, or where a database has not been opened.
-     *
-     * @param main Instance of the calling presenter
      */
-    public void setCrsxMain(CrsxvizPresenter main) {
-        observableBreakpoints = main.getBreakpoints();
+    public void initiateData() {
+        observableBreakpoints = ts.allObservableBreakpoints();
         breakpoint_list.setItems(observableBreakpoints);
     }
 

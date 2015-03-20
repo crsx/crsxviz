@@ -207,7 +207,7 @@ public class TermsPresenter implements Initializable {
 
                 nodeFocus(newNode);
 
-                main.rulesPresenter.highlightActiveRule(s.getActiveRuleId());
+                CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
 
                 if (currentStep < totalSteps - 1) {
                     currentStep++;
@@ -235,7 +235,7 @@ public class TermsPresenter implements Initializable {
 
                 nodeFocus(currentNode);
 
-                main.rulesPresenter.highlightActiveRule(s.getActiveRuleId());
+                CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
 
                 if (currentStep < totalSteps - 1) {
                     if (currentStep + 1 < totalSteps && steps.get(currentStep + 1).getIndentation() < s.getIndentation() && s.isStartDataDisplayed() && !s.isCompleteDataDisplayed()) {
@@ -289,7 +289,7 @@ public class TermsPresenter implements Initializable {
                     nodeFocus(currentNode);
                 }
 
-                main.rulesPresenter.highlightActiveRule(s.getActiveRuleId());
+                CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
             }
 
             System.out.println("---------------------------------------------------");
@@ -352,7 +352,7 @@ public class TermsPresenter implements Initializable {
                 terms_tree.requestFocus();
                 terms_tree.getSelectionModel().select(currentNode);
                 terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-                main.rulesPresenter.highlightActiveRule(currentLinkedStep.getActiveRuleId());
+                CrsxvizPresenter.getRulesPresenter().highlightActiveRule(currentLinkedStep.getActiveRuleId());
             } else if (!currentLinkedStep.isCompleteDataDisplayed()) {
                 // Previous step is either this step's parent, the previous sibling, or the last child of the previous sibling
                 Steps previousLinkedStep = stepsSoFar.removeLast();
@@ -374,7 +374,7 @@ public class TermsPresenter implements Initializable {
                     terms_tree.requestFocus();
                     terms_tree.getSelectionModel().select(currentNode);
                     terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-                    main.rulesPresenter.highlightActiveRule(previousLinkedStep.getActiveRuleId());
+                    CrsxvizPresenter.getRulesPresenter().highlightActiveRule(previousLinkedStep.getActiveRuleId());
                     currentStep--;
                 } else if (currentLinkedStep.getIndentation() < previousLinkedStep.getIndentation()) {
                     // Previous step is the final child of this step's previous sibling
@@ -424,7 +424,7 @@ public class TermsPresenter implements Initializable {
                     terms_tree.requestFocus();
                     terms_tree.getSelectionModel().select(newChildNode);
                     terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-                    main.rulesPresenter.highlightActiveRule(previousLinkedStep.getActiveRuleId());
+                    CrsxvizPresenter.getRulesPresenter().highlightActiveRule(previousLinkedStep.getActiveRuleId());
                     currentStep--;
 
                 } else {
@@ -455,7 +455,7 @@ public class TermsPresenter implements Initializable {
                     terms_tree.requestFocus();
                     terms_tree.getSelectionModel().select(newNode);
                     terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-                    main.rulesPresenter.highlightActiveRule(previousLinkedStep.getActiveRuleId());
+                    CrsxvizPresenter.getRulesPresenter().highlightActiveRule(previousLinkedStep.getActiveRuleId());
                     currentStep--;
                 }
             }
@@ -539,25 +539,23 @@ public class TermsPresenter implements Initializable {
         terms_tree.getSelectionModel().select(node);
         terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
     }
-
+   
     /**
      * Initializes the Presenter to an initial state where either a database has
      * been opened and thus will display the correct state of buttons along with
      * initial term tree, or where a database has not been opened.
      *
-     * @param main Instance of the calling presenter
      */
-    public void setCrsxMain(CrsxvizPresenter main) {
-        this.main = main;
-        steps = main.getSteps();
-        rules = main.getRules();
+    public void initiateData() {
+        steps = ts.allSteps();
+        rules = ts.allRules();
         totalSteps = steps.size();
 
-        String label = main.getDbName();
+        String label = ts.getDbName();
         trace_label.setText(label == null ? "No trace file opened" : "Debugging " + label);
-        observableRules = main.getObservableRules();
-        observableBreakpoints = main.getBreakpoints();
-
+        observableRules = ts.allObservableRules();
+        observableBreakpoints = ts.allObservableBreakpoints();
+        
         nodeStack = initializeTree(new TreeItem<>("Terms"));
         stepStack = new Stack<>();
     	stepsSoFar = new LinkedList<>();
