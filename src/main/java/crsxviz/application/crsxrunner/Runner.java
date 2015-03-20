@@ -1,14 +1,63 @@
 package crsxviz.application.crsxrunner;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URL;
 
 public class Runner {
 
     private static String CRSX_PARSER = "crsx_parse";
 
-    public String run(String exeName, String wrapper, String term, String dbOutPath) {
+	/** Pipes the contents of one stream into another then closes both streams
+	 * @param is The input to copy
+	 * @param os The target for the data to be copied to
+	 * @throws IOException There was an error performing the IO
+	 */
+	static public long pipeStreams(InputStream is, OutputStream os) throws IOException {
+		byte[] buf = new byte[512]; // 512 appears to be best performance memory allocation size on windows 64-bit HotSpot 8
+		long totalLen = 0;
+		int len;
+		while( (len = is.read(buf)) > 0) {
+			os.write(buf, 0, len);
+			totalLen += len;
+		}
+		os.close();
+		is.close();
+		return totalLen;
+	}
+    
+    public String run(String exeName, String wrapper, String term, String dbOutPath) throws IOException {
+    	String parserPath;
+    	try {
+    		parserPath = getParserPath();
+    	} catch (RuntimeException e) {
+    		InputStream parser_exe_internal = this.getClass().getClassLoader().getResourceAsStream(CRSX_PARSER);
+    		if (parser_exe_internal == null) {
+    			throw new IOException("Could not locate parser binary");
+    		}
+    		File f = new File(CRSX_PARSER);
+    		if (!f.createNewFile()){
+    			throw new IOException("Error extracting parser binary. Could not create file.");
+    		}
+    		OutputStream os = new FileOutputStream(f);
+    		try {
+    			pipeStreams(parser_exe_internal, os);
+    		} catch (IOException ex) {
+    			throw new IOException("Error extracting parser binary. Could not write file");
+    		}
+    		try {
+    			f.setExecutable(true);
+    		} catch (SecurityException ex) {
+    			throw new IOException("Error setting extracted parser binary to executable.");
+    		}
+    		parserPath = f.getAbsolutePath();
+    	}
+    	
         if (exeName == null || exeName.length() == 0) {
             throw new IllegalArgumentException("Executable to run must be set");
         }
@@ -24,7 +73,7 @@ public class Runner {
             cmd += " wrapper=\"" + wrapper + "\"";
         }
         cmd += " term=\"" + term + "\"";
-        cmd = cmd + " crsxviz | " + getParserPath() + " " + dbOutPath;
+        cmd = cmd + " crsxviz | " + parserPath + " " + dbOutPath;
 
         try {
             System.out.println("Running `" + cmd + "`");
@@ -57,6 +106,9 @@ public class Runner {
     }
 
     private String getParserPath() {
+    	File f = new File(CRSX_PARSER);
+    	if (f.exists() && f.canExecute())
+    		return f.getAbsolutePath();
         return getExecResults("which " + CRSX_PARSER);
     }
 
