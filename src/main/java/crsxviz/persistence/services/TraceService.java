@@ -5,6 +5,9 @@ import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.Steps;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,18 @@ public class TraceService {
         this.emf = Persistence.createEntityManagerFactory("crsxviz", overriddenProps);
         this.em = this.emf.createEntityManager();
         this.et = this.em.getTransaction();
+        
+        initFastLoader(url);
+    }
+    
+    private Connection fastConn = null;
+    protected void initFastLoader(String url) {
+    	try {
+			fastConn = DriverManager.getConnection(url);
+		} catch (SQLException e) {
+			System.err.println("Could not open fastConn");
+			e.printStackTrace();
+		}
     }
     
     public String getDbName() {
@@ -75,7 +90,11 @@ public class TraceService {
     
     @SuppressWarnings("unchecked")
     public List<CompiledSteps> allCompiledSteps() {
-        return this.em.createNamedQuery(CompiledSteps.getAll).getResultList();
+    	return CompiledSteps.loadAll(fastConn);
+    }
+    
+    public CompiledSteps getCompiledStep(Long num) {
+    	return CompiledSteps.loadStep(fastConn, num);
     }
     
     public ObservableList<String> allObservableBreakpoints() {

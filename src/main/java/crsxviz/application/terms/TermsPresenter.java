@@ -204,11 +204,12 @@ public class TermsPresenter implements Initializable {
     void step() {
         if (currentStep < totalSteps && proceed) {
             Steps s = steps.get(currentStep);
-
+            
             if (s.getIndentation() > lastIndent) {
                 // Next indentation level, should always be a new term/subterm
                 lastIndent = s.getIndentation();
-                Alert a = new Alert(AlertType.INFORMATION, cSteps.get(currentStep).toString());
+                
+                
                 TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
                 TreeItem<String> newCompleteNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
                 s.setStartDataDisplayed(true);
@@ -336,6 +337,11 @@ public class TermsPresenter implements Initializable {
         previousSliderValue = (int) slider.getValue();
         slider.setValue(currentStep);
         step_specifier.setText("" + currentStep);
+        
+        CompiledSteps thisStep = ts.getCompiledStep(new Long(currentStep));
+        TreeItem t =new TreeItem<String>();
+        t.setValue(thisStep.toString());
+        this.terms_tree.setRoot(t);
     }
 
     @FXML

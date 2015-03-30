@@ -1,6 +1,12 @@
 package crsxviz.persistence.beans;
 
+import java.sql.Statement;
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -10,12 +16,14 @@ import javafx.beans.property.StringProperty;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedNativeQueries;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 
 @Entity
-@NamedQueries({
-	@NamedQuery(name = CompiledSteps.getAll, query = "SELECT a from CompiledSteps a")
+@NamedNativeQueries({
+	@NamedNativeQuery(name = CompiledSteps.getAll, query = "SELECT * from CompiledSteps;")
 })
 public class CompiledSteps implements Serializable {
 	public final static String PREFIX = "crsxviz.persistence.beans.CompiledSteps.";
@@ -30,6 +38,67 @@ public class CompiledSteps implements Serializable {
     private String _center;
     private String _right;
     
+    public static CompiledSteps loadStep(Connection c, Long stepNum) {
+    	try {
+			Statement stmt = c.createStatement();
+			stmt.execute("SELECT * FROM CompiledSteps WHERE id=" + stepNum + ";");
+			ResultSet rs = stmt.getResultSet();
+			return loadStep(rs);
+		} catch (SQLException e) {
+			System.err.println("Unable to request step " + stepNum);
+			e.printStackTrace();
+			return null;
+		}
+    }
+    
+    public static List<CompiledSteps> loadAll(Connection c) {
+    	int count = 0;
+    	try {
+    		Statement stmt = c.createStatement();
+			stmt.execute("SELECT COUNT(id) FROM CompiledSteps;");
+			ResultSet rs = stmt.getResultSet();
+			if(rs.wasNull() || !rs.first()) 
+				return null;
+			count = rs.getInt(1);
+    	} catch (SQLException e) {
+    		System.err.println("Unable to get row count for CompiledSteps");
+    		e.printStackTrace();
+    		return null;
+    	}
+    	List<CompiledSteps> l = new ArrayList<CompiledSteps>(count);
+    	try {
+			Statement stmt = c.createStatement();
+			stmt.execute("SELECT * FROM CompiledSteps;");
+			ResultSet rs = stmt.getResultSet();
+			if(rs.wasNull() || !rs.first()) 
+				return null;
+			for (int i = 0; i < count; i++) {
+				l.add(i, loadStep(rs));
+				rs.next();
+			}
+		} catch (SQLException e) {
+			System.err.println("Unable to populate list");
+			e.printStackTrace();
+			return null;
+		}
+    	return l;
+    }
+    
+    private static CompiledSteps loadStep(ResultSet r) {
+    	CompiledSteps c = new CompiledSteps();
+    	try {
+			c.setid(r.getInt(1));
+	    	c.setleft(r.getString(2));
+	    	c.setcenter(r.getString(3));
+	    	c.setright(r.getString(4));
+    	} catch (SQLException e) {
+			System.err.println("Error loading CompiledStep from ResultSet");
+			e.printStackTrace();
+			return null;
+		}
+    	return c;
+    }
+    
 	public CompiledSteps() { }
 	
 	public void setid(Integer id) {
@@ -38,6 +107,14 @@ public class CompiledSteps implements Serializable {
         else
             this.id.set(id);
 	}
+	
+	public String toString() {
+		StringBuilder s = new StringBuilder();
+		s.append(getleft());
+		s.append(getcenter());
+		s.append(getright());
+		return s.toString();
+	};
 	
 	@Id   
 	public Integer getid() {
