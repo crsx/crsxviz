@@ -1,11 +1,14 @@
 package crsxviz.persistence.services;
 
 import crsxviz.persistence.beans.ActiveRules;
+import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.Steps;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -13,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+
 import org.eclipse.persistence.config.PersistenceUnitProperties;
 
 public class TraceService {
@@ -67,6 +71,11 @@ public class TraceService {
     @SuppressWarnings("unchecked")
     public List<Steps> allSteps() {
         return this.em.createNamedQuery(Steps.getAll).getResultList();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public List<CompiledSteps> allCompiledSteps() {
+        return this.em.createNamedQuery(CompiledSteps.getAll).getResultList();
     }
     
     public ObservableList<String> allObservableBreakpoints() {

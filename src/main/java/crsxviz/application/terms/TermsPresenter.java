@@ -2,19 +2,23 @@ package crsxviz.application.terms;
 
 import crsxviz.application.crsxviz.CrsxvizPresenter;
 import crsxviz.persistence.beans.ActiveRules;
+import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Steps;
 import crsxviz.persistence.services.TraceService;
+
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Stack;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -24,6 +28,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
 import javax.inject.Inject;
+
 import jdk.nashorn.internal.runtime.regexp.joni.EncodingHelper;
 
 public class TermsPresenter implements Initializable {
@@ -67,6 +72,7 @@ public class TermsPresenter implements Initializable {
     private boolean proceed;
 
     private List<Steps> steps;
+    private List<CompiledSteps> cSteps;
     private List<ActiveRules> rules;
     private int totalSteps;
 
@@ -202,6 +208,7 @@ public class TermsPresenter implements Initializable {
             if (s.getIndentation() > lastIndent) {
                 // Next indentation level, should always be a new term/subterm
                 lastIndent = s.getIndentation();
+                Alert a = new Alert(AlertType.INFORMATION, cSteps.get(currentStep).toString());
                 TreeItem<String> newNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
                 TreeItem<String> newCompleteNode = new TreeItem<String>("Indentation level " + s.getIndentation() + ": Step " + s.getStepNum() + ":\n" + s.getStartData() + "\n");
                 s.setStartDataDisplayed(true);
@@ -563,6 +570,7 @@ public class TermsPresenter implements Initializable {
      */
     public void initiateData() {
         steps = ts.allSteps();
+        cSteps = ts.allCompiledSteps();
         rules = ts.allRules();
         totalSteps = steps.size();
 
