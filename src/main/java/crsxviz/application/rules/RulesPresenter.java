@@ -45,6 +45,9 @@ public class RulesPresenter implements Initializable {
         cmItem.setOnAction(
                 (event) -> {
                     String breakpoint = rules_list.getSelectionModel().getSelectedItem();
+                    if (breakpoint.contains("\n")) {
+                    	breakpoint = breakpoint.substring(0, breakpoint.indexOf("\n"));
+                    }
                     observableBreakpoints.add(breakpoint);
                     System.out.println("Breakpoint set on: " + breakpoint);
                 }
