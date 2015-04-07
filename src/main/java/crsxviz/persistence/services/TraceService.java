@@ -3,12 +3,16 @@ package crsxviz.persistence.services;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Cookies;
+import crsxviz.persistence.beans.RuleDetails;
 import crsxviz.persistence.beans.Steps;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -109,6 +113,30 @@ public class TraceService {
         return list;
     }
 	
+    public List<RuleDetails> getRuleDetails(String ruleName) {
+    	String sql = "SELECT * FROM ActiveRules as R JOIN DispatchedRules as D ON R.ActiveRuleID=D.ActiveRuleID WHERE R.Value = \"" + ruleName + "\";";
+    	Statement s;
+		try {
+			List<RuleDetails> l = new LinkedList<RuleDetails>();
+			s = fastConn.createStatement();
+			s.execute(sql);
+			ResultSet rs = s.getResultSet();
+			if (!rs.next()) {
+				System.err.println("No results returned");
+				return l;
+			}
+			do {
+				RuleDetails d = new RuleDetails(rs);
+				l.add(d);
+			} while (rs.next());
+			return l;
+		} catch (SQLException e) {
+			System.err.println("Error requesting rule details");
+			e.printStackTrace();
+		}
+    	return null;
+    }
+    
     public void close() {
         et.begin();
         et.commit();

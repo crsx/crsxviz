@@ -1,8 +1,12 @@
 package crsxviz.application.rules;
 
 import crsxviz.application.crsxviz.CrsxvizPresenter;
+import crsxviz.persistence.beans.RuleDetails;
 import crsxviz.persistence.services.TraceService;
+
+import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
@@ -16,6 +20,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+
 import javax.inject.Inject;
 
 public class RulesPresenter implements Initializable {
@@ -48,12 +53,13 @@ public class RulesPresenter implements Initializable {
         cMenu.getItems().add(cmItem);
         rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 (event) -> {
+                	this.onEntityClicked();
                     if (event.getButton() == MouseButton.SECONDARY) {
                         cMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
                     }
                 }
         );
-        
+
     }
 
     /**
@@ -83,6 +89,22 @@ public class RulesPresenter implements Initializable {
         });
 
         rules_list.setItems((FilteredList<String>) list);
+    }
+    
+    public void onEntityClicked() {
+    	String result = "";
+    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem();
+    	if (selection.contains("\n")) {
+    		result = selection.substring(0, selection.indexOf("\n"));
+    	} else {
+	    	List<RuleDetails> l = ts.getRuleDetails(selection);
+	    	result = RuleDetails.toString(l);
+    	}
+    	for (int i = 0; i < observableRules.size(); i++) {
+    		if (observableRules.get(i).equals(selection)) {
+    			observableRules.set(i,  result);
+    		}
+    	}
     }
     
     /**
