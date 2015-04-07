@@ -14,19 +14,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-
-@Entity
-@NamedQueries({
-    @NamedQuery(name = Steps.getAll, query = "SELECT a from Steps a")
-})
 public class Steps implements Serializable {
 
-    public final static String PREFIX = "crsxviz.persistence.beans.Steps.";
-    public final static String getAll = PREFIX + "getAll";
     private int stepNum;
     private int indentation;
     private int activeRuleId;
@@ -58,7 +47,6 @@ public class Steps implements Serializable {
     public Steps() {
     }
 
-    @Id
     public int getStepNum() {
         return stepNum;
     }

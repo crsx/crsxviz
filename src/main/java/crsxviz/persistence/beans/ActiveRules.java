@@ -16,19 +16,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 
-@Entity
-@NamedQueries({
-    @NamedQuery(name = ActiveRules.getAll, query = "SELECT a from ActiveRules a")
-})
 public class ActiveRules implements Serializable {
 
-    public final static String PREFIX = "crsxviz.persistence.beans.ActiveRules.";
-    public final static String getAll = PREFIX + "getAll";
     private IntegerProperty activeRuleId;
     private StringProperty value;
     private StringProperty env;
@@ -47,7 +37,6 @@ public class ActiveRules implements Serializable {
     public ActiveRules() {
     }
 
-    @Id
     public int getActiveRuleId() {
         return (activeRuleId == null) ? _activeRuleId : activeRuleId.get();
     }

@@ -14,19 +14,7 @@ import java.util.logging.Logger;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-
-@Entity
-@NamedQueries({
-    @NamedQuery(name = DispatchedRules.getAll, query = "SELECT a from DispatchedRules a")
-})
 public class DispatchedRules implements Serializable {
-
-    public final static String PREFIX = "crsxviz.persistence.beans.DispatchedRules.";
-    public final static String getAll = PREFIX + "getAll";
 
     public DispatchedRules() {
     }
@@ -36,7 +24,6 @@ public class DispatchedRules implements Serializable {
     private IntegerProperty srcRuleOffset;
     private int _srcRuleOffset;
 
-    @Id
     public int getActiveRuleId() {
         return (activeRuleId == null) ? _activeRuleId : activeRuleId.get();
     }

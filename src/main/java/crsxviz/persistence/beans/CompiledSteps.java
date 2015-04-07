@@ -16,19 +16,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedNativeQueries;
-import javax.persistence.NamedNativeQuery;
-
-@Entity
-@NamedNativeQueries({
-    @NamedNativeQuery(name = CompiledSteps.getAll, query = "SELECT * from CompiledSteps;")
-})
 public class CompiledSteps implements Serializable {
-
-    public final static String PREFIX = "crsxviz.persistence.beans.CompiledSteps.";
-    public final static String getAll = PREFIX + "getAll";
 
     private IntegerProperty id;
     private StringProperty left;
@@ -152,9 +140,6 @@ public class CompiledSteps implements Serializable {
         return s.toString();
     }
 
-    ;
-	
-	@Id
     public Integer getid() {
         return (id == null) ? _id : id.get();
     }

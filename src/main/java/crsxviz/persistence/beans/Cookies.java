@@ -14,19 +14,9 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 
-@Entity
-@NamedQueries({
-    @NamedQuery(name = Cookies.getAll, query = "SELECT a FROM Cookies a")
-})
 public class Cookies implements Serializable {
 
-    public final static String PREFIX = "crsxviz.persistence.beans.Cookies.";
-    public final static String getAll = PREFIX + "getAll";
     private IntegerProperty cookieId;
     private StringProperty value;
     private int _cookieId;
@@ -35,7 +25,6 @@ public class Cookies implements Serializable {
     public Cookies() {
     }
 
-    @Id
     public int getCookieId() {
         return (cookieId == null) ? _cookieId : cookieId.get();
     }
