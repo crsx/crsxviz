@@ -73,7 +73,6 @@ public class TermsPresenter implements Initializable {
     private boolean proceed;
 
     private List<Steps> steps;
-    private List<CompiledSteps> cSteps;
     private List<ActiveRules> rules;
     private int totalSteps;
 
@@ -373,7 +372,6 @@ public class TermsPresenter implements Initializable {
         for(Steps step : steps){
         	System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
         }
-        cSteps = ts.allCompiledSteps();
         rules = ts.allRules();
         totalSteps = steps.size();
 
