@@ -2,7 +2,7 @@ package crsxviz.application.breakpoints;
 
 import static crsxviz.application.crsxrunner.Controller.showError;
 import crsxviz.persistence.beans.ActiveRules;
-import crsxviz.persistence.services.TraceService;
+import crsxviz.persistence.services.DatabaseService;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javax.inject.Inject;
 
 
 public class BreakpointsPresenter implements Initializable {
@@ -32,8 +31,7 @@ public class BreakpointsPresenter implements Initializable {
     @FXML
     private MenuButton bp_menu;
     
-    @Inject
-    TraceService ts;
+    private DatabaseService ts;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private List<ActiveRules> rules;
@@ -93,6 +91,10 @@ public class BreakpointsPresenter implements Initializable {
 
         bp_menu.getItems().addAll(addBP, removeAll);
 
+    }
+    
+    public void setDbService(DatabaseService service) {
+        this.ts = service;
     }
 
     /**

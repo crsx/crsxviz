@@ -9,11 +9,14 @@ import javafx.stage.Stage;
 import crsxviz.application.crsxviz.CrsxvizView;
 
 public class App extends Application {
+    
+    
+    private CrsxvizPresenter crsxviz;
 
     @Override
     public void start(Stage stage) throws Exception {
         CrsxvizView appView = new CrsxvizView();
-        CrsxvizPresenter crsxviz = (CrsxvizPresenter) appView.getPresenter();
+        crsxviz = (CrsxvizPresenter) appView.getPresenter();
         crsxviz.setStage(stage);
         Scene scene = new Scene(appView.getView());
         stage.setTitle("CRSX Visualizer");
@@ -30,4 +33,7 @@ public class App extends Application {
         Injector.forgetAll();
     }
 
+    public CrsxvizPresenter getRootPresenter() {
+        return crsxviz;
+    }
 }

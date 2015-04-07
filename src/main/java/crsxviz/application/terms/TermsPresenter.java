@@ -4,7 +4,7 @@ import crsxviz.application.crsxviz.CrsxvizPresenter;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Steps;
-import crsxviz.persistence.services.TraceService;
+import crsxviz.persistence.services.DatabaseService;
 
 import java.net.URL;
 import java.util.LinkedList;
@@ -17,8 +17,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -27,9 +25,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 
-import javax.inject.Inject;
 
-import jdk.nashorn.internal.runtime.regexp.joni.EncodingHelper;
 
 public class TermsPresenter implements Initializable {
 
@@ -56,8 +52,7 @@ public class TermsPresenter implements Initializable {
     @FXML
     private TextField step_specifier;
 
-    @Inject
-    TraceService ts;
+    private DatabaseService ts;
 
     private int lastIndent = 0, currentStep = 0, previousSliderValue = 0;
     Stack<TreeItem<String>> nodeStack;
@@ -78,8 +73,6 @@ public class TermsPresenter implements Initializable {
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
-
-    private CrsxvizPresenter main;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -516,6 +509,10 @@ public class TermsPresenter implements Initializable {
         step_specifier.setText("" + currentStep);
     }
 
+    public void setDbService(DatabaseService service) {
+        this.ts = service;
+    }
+    
     /**
      * Jump to the first breakpoint. If there are no breakpoints set, then the
      * program will step through each instruction per user input. That is with
@@ -598,7 +595,7 @@ public class TermsPresenter implements Initializable {
         resume.setDisable(false);
         terminate.setDisable(false);
         proceed = true;
-        onStepInto(null);
+        //onStepInto(null);
     }
 
     /**
@@ -638,9 +635,10 @@ public class TermsPresenter implements Initializable {
      * Enable the slider
      */
     private void sliderOn() {
+        double majorTick = Math.floor(totalSteps / 10);
         slider.setDisable(false);
         slider.setMax(totalSteps);
-        slider.setMajorTickUnit(Math.floor(totalSteps / 10));
+        slider.setMajorTickUnit(majorTick <= 0 ? 1 : majorTick);
         slider.setMinorTickCount((int) Math.floor(slider.getMajorTickUnit()) / 5);
         slider.setValue(0);
     }

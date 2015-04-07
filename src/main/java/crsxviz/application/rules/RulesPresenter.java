@@ -1,7 +1,6 @@
 package crsxviz.application.rules;
 
-import crsxviz.application.crsxviz.CrsxvizPresenter;
-import crsxviz.persistence.services.TraceService;
+import crsxviz.persistence.services.DatabaseService;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -16,7 +15,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javax.inject.Inject;
 
 public class RulesPresenter implements Initializable {
 
@@ -25,8 +23,7 @@ public class RulesPresenter implements Initializable {
     @FXML
     private ListView<String> rules_list;
     
-    @Inject
-    TraceService ts;
+    private DatabaseService ts;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
@@ -54,6 +51,10 @@ public class RulesPresenter implements Initializable {
                 }
         );
         
+    }
+    
+    public void setDbService(DatabaseService service) {
+        this.ts = service;
     }
 
     /**

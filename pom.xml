@@ -7,11 +7,41 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>crsxviz</name>
+    
+    <repositories>
+        <repository>
+            <id>maven-central-repo</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>sonatype-snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+           </snapshots>
+        </repository>
+    </repositories>
+    
     <dependencies>
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>testfx-core</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -34,16 +64,6 @@
             <groupId>org.controlsfx</groupId>
             <artifactId>openjfx-dialogs</artifactId>
             <version>1.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.loadui</groupId>
-            <artifactId>testFx</artifactId>
-            <version>3.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>2.0.5-beta</version>
         </dependency>
     </dependencies>
     <build>

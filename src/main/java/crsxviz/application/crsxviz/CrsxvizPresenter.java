@@ -18,20 +18,14 @@ import crsxviz.application.rules.RulesPresenter;
 import crsxviz.application.rules.RulesView;
 import crsxviz.application.terms.TermsPresenter;
 import crsxviz.application.terms.TermsView;
-import crsxviz.persistence.beans.ActiveRules;
-import crsxviz.persistence.beans.Steps;
-import crsxviz.persistence.services.TraceService;
+import crsxviz.persistence.services.DatabaseService;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javax.inject.Inject;
 
 public class CrsxvizPresenter implements Initializable {
 
@@ -59,18 +53,13 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     private Menu file;
 
-    @Inject
-    TraceService ts;
+    private DatabaseService ts = DatabaseService.getInstance("out.db");
 
-    @Inject
     private String dbpath;
 
     private static RulesPresenter rulesPresenter;
     private static TermsPresenter termsPresenter;
     private static BreakpointsPresenter breakpointsPresenter;
-
-    private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
-    private ObservableList<String> observableRules;
 
     private Stage stage;
 
@@ -83,6 +72,10 @@ public class CrsxvizPresenter implements Initializable {
         CrsxvizPresenter.rulesPresenter = (RulesPresenter) rulesView.getPresenter();
         CrsxvizPresenter.breakpointsPresenter = (BreakpointsPresenter) breakpointsView.getPresenter();
 
+        CrsxvizPresenter.breakpointsPresenter.setDbService(ts);
+        CrsxvizPresenter.termsPresenter.setDbService(ts);
+        CrsxvizPresenter.rulesPresenter.setDbService(ts);
+        
         addAll(terms, termsView);
         addAll(rules, rulesView);
         addAll(breakpoints, breakpointsView);
@@ -159,6 +152,12 @@ public class CrsxvizPresenter implements Initializable {
         this.stage = stage;
     }
     
+    public void setService(DatabaseService ts) {
+        this.ts = ts;
+        DatabaseService.init(this.ts.getDbName());
+        reloadPresenters();
+    }
+    
     /**
      * Load the database pointed to by db. 
      * After loading the database, this method will force
@@ -169,7 +168,7 @@ public class CrsxvizPresenter implements Initializable {
      */
     private void loadDb(String db) {
         if (db != null)
-            ts.init(db);
+            DatabaseService.init(db);
         reloadPresenters();
     }
     
@@ -213,12 +212,10 @@ public class CrsxvizPresenter implements Initializable {
     /**
      * Used to initialize the application with a test database.
      * testInitialize requires the TraceService testInstance
-     * @param testInstance instance of TraceService to test against
+     * @param dbname Name of test database
      */
-    public void testInitialize(TraceService testInstance) {
-        this.ts = testInstance;
-        ts.init();
-        reloadPresenters();
+    public void testInitialize(String dbname) {
+        loadDb(dbname);
     }
     
     /**
