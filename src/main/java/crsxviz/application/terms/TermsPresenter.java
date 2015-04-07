@@ -1,8 +1,6 @@
 package crsxviz.application.terms;
 
 import crsxviz.application.crsxviz.CrsxvizPresenter;
-import crsxviz.application.terms.diff_match_patch.Diff;
-import crsxviz.application.terms.diff_match_patch.Operation;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Steps;
@@ -12,6 +10,7 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Stack;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,7 +31,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 import javax.inject.Inject;
 
@@ -57,7 +55,7 @@ public class TermsPresenter implements Initializable {
     @FXML
     private Label trace_label;
     @FXML
-    private TreeView<TextFlow> terms_tree;
+    private TreeView<Text> terms_tree;
     @FXML
     private Slider slider;
     @FXML
@@ -73,17 +71,16 @@ public class TermsPresenter implements Initializable {
     private boolean proceed;
 
     private List<Steps> steps;
+    private List<CompiledSteps> cSteps;
     private List<ActiveRules> rules;
     private int totalSteps;
+    private Stack<TreeItem<Text>> nodeStack;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
 
     private CrsxvizPresenter main;
-    
-    private diff_match_patch differ = new diff_match_patch();
-    private LinkedList<Diff> diffs;
-
+  
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         trace_label.setText("No trace file opened");
@@ -221,37 +218,136 @@ public class TermsPresenter implements Initializable {
         step_specifier.setText("" + currentStep);
         
         CompiledSteps thisStep = ts.getCompiledStep(new Long(currentStep));
-        TextFlow subtexts = null;
         if(currentStep > 0){
         	String thisStepString = thisStep.toString();
-        	diffs = differ.diff_main(ts.getCompiledStep(new Long(currentStep - 1)).toString(), thisStepString);
-        	subtexts = new TextFlow(); 
-        	for(int i = 0; i < diffs.size(); i++){
-        		Diff diff = diffs.get(i);
-        		Text subtext = new Text();
-        		if(diff.operation == Operation.EQUAL){
-        			subtext.setText(diff.text);
-        			subtexts.getChildren().add(subtext);
+        	TreeItem t = new TreeItem<Text>(new Text("Full Term String"));
+            this.terms_tree.setRoot(t);
+            nodeStack = new Stack<TreeItem<Text>>();
+            nodeStack.push(t);
+            boolean newIndent = true;
+        	while(!thisStepString.equals("")){
+        		int nextSiblingIndex = thisStepString.indexOf(',');
+        		int nextChildIndex = thisStepString.indexOf('[');
+        		int endIndentIndex = thisStepString.indexOf(']');
+        		if(nextSiblingIndex == -1 && nextChildIndex == -1 && endIndentIndex == -1){
+        			break;
         		}
-        		else if(diff.operation == Operation.DELETE){
-//        			subtext.setText(diff.text);
-//        			subtext.setFill(Color.RED);
-//        			subtexts.getChildren().add(subtext);
+        		else if((endIndentIndex < nextChildIndex || nextChildIndex == -1) && (endIndentIndex < nextSiblingIndex || nextSiblingIndex == -1)){
+        			// place final term if there is one, then pop and place ]
+        			if(endIndentIndex != 0){
+        				//There is a preceding term, store first
+        				if(newIndent){
+        					TreeItem<Text> parentNode = nodeStack.pop();
+                			String term = thisStepString.substring(0, endIndentIndex);
+                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			TreeItem<Text> termNode = new TreeItem<Text>(termText);
+                			parentNode.getChildren().add(termNode);
+                			nodeStack.push(parentNode);
+                			nodeStack.push(termNode);
+        					newIndent = false;
+        				}
+        				else{
+        					nodeStack.pop();
+        					TreeItem<Text> parentNode = nodeStack.pop();
+                			String term = thisStepString.substring(0, endIndentIndex);
+                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			TreeItem<Text> termNode = new TreeItem<Text>(termText);
+                			parentNode.getChildren().add(termNode);
+                			nodeStack.push(parentNode);
+                			nodeStack.push(termNode);
+        				}
+        			}
+        			nodeStack.pop();
+            		TreeItem<Text> parentNode = nodeStack.pop();
+            		if(endIndentIndex + 1 >= thisStepString.length()){
+        				thisStepString = "";
+        			}
+        			else{
+        				if(thisStepString.charAt(endIndentIndex + 1) == ',' ){
+        					TreeItem<Text> endIndentNode = new TreeItem<Text>(new Text("],"));
+                    		parentNode.getParent().getChildren().add(endIndentNode);
+                    		nodeStack.push(endIndentNode);
+                    		thisStepString = thisStepString.substring(endIndentIndex + 2, thisStepString.length());
+        				}
+        				else{
+        					TreeItem<Text> endIndentNode = new TreeItem<Text>(new Text("]"));
+                    		parentNode.getParent().getChildren().add(endIndentNode);
+                    		nodeStack.push(endIndentNode);
+                    		thisStepString = thisStepString.substring(endIndentIndex + 1, thisStepString.length());
+        				}
+        				
+        			}
         		}
-        		else if(diff.operation == Operation.INSERT){
-        			subtext.setText(diff.text);
-        			subtext.setFont(Font.font("System", FontWeight.BOLD, 12));
-        			subtext.setFill(Color.GREEN);
-        			subtexts.getChildren().add(subtext);
+        		else if((nextSiblingIndex < nextChildIndex || nextChildIndex == -1) && (nextSiblingIndex < endIndentIndex || endIndentIndex == -1)){
+        			if(newIndent){
+        				newIndent = false;
+            			TreeItem<Text> parentNode = nodeStack.pop();
+            			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
+            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			TreeItem<Text> siblingNode = new TreeItem<Text>(siblingTermText);
+            			parentNode.getChildren().add(siblingNode);
+            			nodeStack.push(parentNode);
+            			nodeStack.push(siblingNode);
+        			}
+        			else{
+        				nodeStack.pop();
+            			TreeItem<Text> parentNode = nodeStack.pop();
+            			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
+            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			TreeItem<Text> siblingNode = new TreeItem<>(siblingTermText);
+            			parentNode.getChildren().add(siblingNode);
+            			nodeStack.push(parentNode);
+            			nodeStack.push(siblingNode);
+        			}
+        			if(nextSiblingIndex + 1 >= thisStepString.length()){
+        				thisStepString = "";
+        			}
+        			else{
+        				thisStepString = thisStepString.substring(nextSiblingIndex + 1, thisStepString.length());
+        			}
         		}
+        		else{
+        			if(!newIndent){
+        				nodeStack.pop();
+        			}
+        			TreeItem<Text> parentNode = nodeStack.pop();
+        			String childTerm = thisStepString.substring(0, nextChildIndex + 1);
+        			Text childTermText = new Text(childTerm.replaceAll("\\s", ""));
+        			TreeItem<Text> childNode = new TreeItem<Text>(childTermText);
+        			parentNode.getChildren().add(childNode);
+        			nodeStack.push(parentNode);
+        			nodeStack.push(childNode);
+        			newIndent = true;
+        			if(nextChildIndex + 1 >= thisStepString.length()){
+        				thisStepString = "";
+        			}
+        			else{
+        				thisStepString = thisStepString.substring(nextChildIndex + 1, thisStepString.length());
+        			}
+        		}
+        		terms_tree.getRoot().setExpanded(true);
         	}
-        }
-        else{
-        	subtexts = new TextFlow();
-        	subtexts.getChildren().add(new Text(thisStep.toString()));
-        }
-        TreeItem t = new TreeItem<TextFlow>(subtexts);
-        this.terms_tree.setRoot(t);
+        	
+//        	for(int i = 0; i < diffs.size(); i++){
+//        		Diff diff = diffs.get(i);
+//        		Text subtext = new Text();
+//        		if(diff.operation == Operation.EQUAL){
+//        			subtext.setText(diff.text);
+//        			subtexts.getChildren().add(subtext);
+//        		}
+//        		else if(diff.operation == Operation.DELETE){
+////        			subtext.setText(diff.text);
+////        			subtext.setFill(Color.RED);
+////        			subtexts.getChildren().add(subtext);
+//        		}
+//        		else if(diff.operation == Operation.INSERT){
+//        			subtext.setText(diff.text);
+//        			subtext.setFont(Font.font("System", FontWeight.BOLD, 12));
+//        			subtext.setFill(Color.GREEN);
+//        			subtexts.getChildren().add(subtext);
+//        		}
+//        	}
+        }    
     }
 
     @FXML
@@ -287,33 +383,116 @@ public class TermsPresenter implements Initializable {
         step_specifier.setText("" + currentStep);
         
         CompiledSteps thisStep = ts.getCompiledStep(new Long(currentStep));
-        TextFlow subtexts = null;
         if(currentStep < steps.size()){
         	String thisStepString = thisStep.toString();
-        	diffs = differ.diff_main(ts.getCompiledStep(new Long(currentStep + 1)).toString(), thisStepString);
-        	subtexts = new TextFlow(); 
-        	for(int i = 0; i < diffs.size(); i++){
-        		Diff diff = diffs.get(i);
-        		Text subtext = new Text();
-        		if(diff.operation == Operation.EQUAL){
-        			subtext.setText(diff.text);
-        			subtexts.getChildren().add(subtext);
+        	TreeItem t = new TreeItem<Text>(new Text("Full Term String"));
+            this.terms_tree.setRoot(t);
+            nodeStack = new Stack<TreeItem<Text>>();
+            nodeStack.push(t);
+            boolean newIndent = true;
+            while(!thisStepString.equals("")){
+        		int nextSiblingIndex = thisStepString.indexOf(',');
+        		int nextChildIndex = thisStepString.indexOf('[');
+        		int endIndentIndex = thisStepString.indexOf(']');
+        		if(nextSiblingIndex == -1 && nextChildIndex == -1 && endIndentIndex == -1){
+        			break;
         		}
-        		else if(diff.operation == Operation.DELETE){
-//        			subtext.setText(diff.text);
-//        			subtext.setFill(Color.RED);
-//        			subtexts.getChildren().add(subtext);
+        		else if((endIndentIndex < nextChildIndex || nextChildIndex == -1) && (endIndentIndex < nextSiblingIndex || nextSiblingIndex == -1)){
+        			// place final term if there is one, then pop and place ]
+        			if(endIndentIndex != 0){
+        				//There is a preceding term, store first
+        				if(newIndent){
+        					TreeItem<Text> parentNode = nodeStack.pop();
+                			String term = thisStepString.substring(0, endIndentIndex);
+                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			TreeItem<Text> termNode = new TreeItem<Text>(termText);
+                			parentNode.getChildren().add(termNode);
+                			nodeStack.push(parentNode);
+                			nodeStack.push(termNode);
+        					newIndent = false;
+        				}
+        				else{
+        					nodeStack.pop();
+        					TreeItem<Text> parentNode = nodeStack.pop();
+                			String term = thisStepString.substring(0, endIndentIndex);
+                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			TreeItem<Text> termNode = new TreeItem<Text>(termText);
+                			parentNode.getChildren().add(termNode);
+                			nodeStack.push(parentNode);
+                			nodeStack.push(termNode);
+        				}
+        			}
+        			nodeStack.pop();
+            		TreeItem<Text> parentNode = nodeStack.pop();
+            		if(endIndentIndex + 1 >= thisStepString.length()){
+        				thisStepString = "";
+        			}
+        			else{
+        				if(thisStepString.charAt(endIndentIndex + 1) == ',' ){
+        					TreeItem<Text> endIndentNode = new TreeItem<Text>(new Text("],"));
+                    		parentNode.getParent().getChildren().add(endIndentNode);
+                    		nodeStack.push(endIndentNode);
+                    		thisStepString = thisStepString.substring(endIndentIndex + 2, thisStepString.length());
+        				}
+        				else{
+        					TreeItem<Text> endIndentNode = new TreeItem<Text>(new Text("]"));
+                    		parentNode.getParent().getChildren().add(endIndentNode);
+                    		nodeStack.push(endIndentNode);
+                    		thisStepString = thisStepString.substring(endIndentIndex + 1, thisStepString.length());
+        				}
+        				
+        			}
         		}
-        		else if(diff.operation == Operation.INSERT){
-        			subtext.setText(diff.text);
-        			//subtext.setFont(Font.font("System", FontWeight.BOLD, 12));
-        			//subtext.setFill(Color.GREEN);
-        			subtexts.getChildren().add(subtext);
+        		else if((nextSiblingIndex < nextChildIndex || nextChildIndex == -1) && (nextSiblingIndex < endIndentIndex || endIndentIndex == -1)){
+        			if(newIndent){
+        				newIndent = false;
+            			TreeItem<Text> parentNode = nodeStack.pop();
+            			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
+            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			TreeItem<Text> siblingNode = new TreeItem<Text>(siblingTermText);
+            			parentNode.getChildren().add(siblingNode);
+            			nodeStack.push(parentNode);
+            			nodeStack.push(siblingNode);
+        			}
+        			else{
+        				nodeStack.pop();
+            			TreeItem<Text> parentNode = nodeStack.pop();
+            			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
+            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			TreeItem<Text> siblingNode = new TreeItem<>(siblingTermText);
+            			parentNode.getChildren().add(siblingNode);
+            			nodeStack.push(parentNode);
+            			nodeStack.push(siblingNode);
+        			}
+        			if(nextSiblingIndex + 1 >= thisStepString.length()){
+        				thisStepString = "";
+        			}
+        			else{
+        				thisStepString = thisStepString.substring(nextSiblingIndex + 1, thisStepString.length());
+        			}
         		}
+        		else{
+        			if(!newIndent){
+        				nodeStack.pop();
+        			}
+        			TreeItem<Text> parentNode = nodeStack.pop();
+        			String childTerm = thisStepString.substring(0, nextChildIndex + 1);
+        			Text childTermText = new Text(childTerm.replaceAll("\\s", ""));
+        			TreeItem<Text> childNode = new TreeItem<Text>(childTermText);
+        			parentNode.getChildren().add(childNode);
+        			nodeStack.push(parentNode);
+        			nodeStack.push(childNode);
+        			newIndent = true;
+        			if(nextChildIndex + 1 >= thisStepString.length()){
+        				thisStepString = "";
+        			}
+        			else{
+        				thisStepString = thisStepString.substring(nextChildIndex + 1, thisStepString.length());
+        			}
+        		}
+        		terms_tree.getRoot().setExpanded(true);
         	}
         }
-        TreeItem t = new TreeItem<TextFlow>(subtexts);
-        this.terms_tree.setRoot(t);
     }
 
     /**
@@ -342,7 +521,7 @@ public class TermsPresenter implements Initializable {
      * @param root Root node to build the term tree from
      * @return
      */
-    private void initializeTree(TreeItem<TextFlow> root) {
+    private void initializeTree(TreeItem<Text> root) {
         terms_tree.setRoot(root);
         root.setExpanded(true);
         currentStep = 0;
@@ -354,7 +533,7 @@ public class TermsPresenter implements Initializable {
      *
      * @param node Node to focus on
      */
-    private void nodeFocus(TreeItem<TextFlow> node) {
+    private void nodeFocus(TreeItem<Text> node) {
         terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         terms_tree.requestFocus();
         terms_tree.getSelectionModel().select(node);
@@ -372,6 +551,7 @@ public class TermsPresenter implements Initializable {
         for(Steps step : steps){
         	System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
         }
+        cSteps = ts.allCompiledSteps();
         rules = ts.allRules();
         totalSteps = steps.size();
 
@@ -451,5 +631,9 @@ public class TermsPresenter implements Initializable {
                 step();
             }
         }
+    }
+    
+    private void updateTermDisplay(String termString){
+    
     }
 }
