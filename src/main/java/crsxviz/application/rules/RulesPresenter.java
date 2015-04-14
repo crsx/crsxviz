@@ -2,7 +2,6 @@ package crsxviz.application.rules;
 
 import crsxviz.persistence.services.DatabaseService;
 import crsxviz.persistence.beans.RuleDetails;
-
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -18,6 +17,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+
 
 public class RulesPresenter implements Initializable {
 
@@ -57,7 +57,6 @@ public class RulesPresenter implements Initializable {
                     }
                 }
         );
-
     }
     
     public void setDbService(DatabaseService service) {
