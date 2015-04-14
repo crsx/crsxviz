@@ -7,33 +7,32 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="690.0" prefWidth="635.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.terms.TermsPresenter">
+<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.terms.TermsPresenter">
     <children>
 
         <!-- Term Tree Controls -->
-        <HBox alignment="TOP_CENTER" layoutY="25.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="41.0" prefWidth="635.0" translateY="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <HBox alignment="TOP_CENTER" layoutY="25.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" translateY="25.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <ToolBar layoutY="25.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="42.0" prefWidth="187.0" HBox.hgrow="ALWAYS">
-                    <items>
-                        <Button fx:id="run" disable="true" mnemonicParsing="false" onAction="#onRun" text="Run" />
-                        <Button fx:id="resume" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onResume" text="Resume" />
-                        <Button fx:id="terminate" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onTerminate" text="Terminate" />
-                    </items>
-                </ToolBar>
-                <ToolBar layoutY="25.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="42.0" prefWidth="419.0" HBox.hgrow="ALWAYS">
+                <ToolBar layoutY="25.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minWidth="0.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="42.0" prefWidth="710.0" HBox.hgrow="ALWAYS">
                     <items>
                         <Button fx:id="step_back" disable="true" mnemonicParsing="false" onAction="#onStepBack" text="Step Back" />
                         <Button fx:id="step_return" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepReturn" text="Step Return" />
                         <Button fx:id="step_over" disable="true" layoutX="10.0" layoutY="13.0" mnemonicParsing="false" onAction="#onStepOver" text="Step Over" />
                         <Button fx:id="step_into" disable="true" mnemonicParsing="false" onAction="#onStepInto" text="Step Into" />
-                  <TextField fx:id="step_specifier" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#onStepSpecify" prefHeight="25.0" prefWidth="100.0" />
+                  <TextField fx:id="step_specifier" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onAction="#onStepSpecify" />
+                        <Button fx:id="terminate" disable="true" mnemonicParsing="false" onAction="#onTerminate" text="Terminate" />
+                        <Button fx:id="resume" disable="true" mnemonicParsing="false" onAction="#onResume" text="Resume" />
+                        <Button fx:id="run" disable="true" mnemonicParsing="false" onAction="#onRun" text="Run" />
                     </items>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
                 </ToolBar>
             </children>
         </HBox>
-        <HBox layoutY="67.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="54.0" prefWidth="635.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="67.0">
+        <HBox layoutY="67.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="54.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="67.0">
             <children>
-                <Slider fx:id="slider" blockIncrement="20.0" layoutY="67.0" majorTickUnit="10.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" minorTickCount="5" onMouseClicked="#onSliderClick" prefHeight="58.0" prefWidth="635.0" showTickLabels="true" showTickMarks="true" HBox.hgrow="ALWAYS">
+                <Slider fx:id="slider" blockIncrement="20.0" layoutY="67.0" majorTickUnit="10.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" minorTickCount="5" onMouseClicked="#onSliderClick" prefHeight="58.0" showTickLabels="true" showTickMarks="true" HBox.hgrow="ALWAYS">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
@@ -43,8 +42,8 @@
 
         <!-- Term Tree -->
 
-        <TreeView fx:id="terms_tree" layoutY="119.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="565.0" prefWidth="635.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="125.0" />
-        <Label fx:id="trace_label" alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="25.0" prefWidth="635.0" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <TreeView fx:id="terms_tree" layoutY="119.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="565.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="125.0" />
+        <Label fx:id="trace_label" alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="25.0" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <font>
                 <Font size="15.0" />
             </font>

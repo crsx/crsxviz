@@ -6,13 +6,13 @@
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 
-<AnchorPane fx:id="view" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" prefWidth="1280.0" styleClass="crsxviz" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.crsxviz.CrsxvizPresenter">
+<AnchorPane fx:id="view" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" styleClass="crsxviz" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.crsxviz.CrsxvizPresenter">
     <children>
 
         <!-- MENU BAR -->
-        <HBox fillHeight="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="30.0" prefWidth="1280.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <HBox fillHeight="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" prefHeight="30.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <MenuBar prefHeight="30.0" prefWidth="1280.0" HBox.hgrow="ALWAYS">
+                <MenuBar prefHeight="30.0" HBox.hgrow="ALWAYS">
                     <menus>
                         <Menu fx:id="file" mnemonicParsing="false" text="File">
                             <items>
@@ -33,16 +33,16 @@
 
         <!-- MAIN CONTENT -->
 
-        <SplitPane dividerPositions="0.5" layoutY="30.0" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" prefWidth="1280.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+        <SplitPane dividerPositions="0.53" layoutY="30.0" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
             <items>
-                <AnchorPane fx:id="terms" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" prefWidth="635.0" />
+                <AnchorPane fx:id="terms" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" />
 
                 <!-- Right Side of content -->
-                <SplitPane dividerPositions="0.27761627906976744" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" orientation="VERTICAL" prefHeight="690.0" prefWidth="635.0">
+                <SplitPane dividerPositions="0.27761627906976744" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" orientation="VERTICAL" prefHeight="690.0">
                     <items>
-                        <AnchorPane fx:id="breakpoints" minWidth="0.0" prefHeight="170.0" prefWidth="635.0" />
+                        <AnchorPane fx:id="breakpoints" minWidth="0.0" prefHeight="170.0" />
 
-                              <AnchorPane fx:id="rules" minWidth="0.0" prefHeight="345.0" prefWidth="635.0" />
+                              <AnchorPane fx:id="rules" minWidth="0.0" prefHeight="345.0" />
                     </items>
                 </SplitPane>
             </items>

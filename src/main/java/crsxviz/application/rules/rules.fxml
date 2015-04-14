@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.effect.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
@@ -13,8 +14,11 @@
                 <Font size="15.0" />
             </font>
         </Label>
-        <TextField fx:id="filter_field" layoutX="99.0" layoutY="23.0" minHeight="-Infinity" minWidth="0.0" prefHeight="31.0" prefWidth="525.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="22.0" />
-        <Label layoutY="27.0" minHeight="-Infinity" prefHeight="25.0" prefWidth="97.0" text=" Filter Search:" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="27.0">
+        <TextField fx:id="filter_field" layoutX="99.0" layoutY="23.0" minHeight="-Infinity" minWidth="0.0" prefHeight="31.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="22.0">
+         <padding>
+            <Insets left="5.0" />
+         </padding></TextField>
+        <Label layoutY="27.0" prefHeight="25.0" text=" Filter Search:" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="27.0">
             <font>
                 <Font size="16.0" />
             </font>
