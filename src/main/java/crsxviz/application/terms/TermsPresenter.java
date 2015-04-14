@@ -4,9 +4,10 @@ import crsxviz.application.crsxviz.CrsxvizPresenter;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Steps;
-import crsxviz.persistence.services.DatabaseService;
+import crsxviz.persistence.services.TraceService;
 
 import java.net.URL;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Stack;
@@ -16,6 +17,8 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SelectionMode;
@@ -23,8 +26,15 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.paint.Paint;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+import javax.inject.Inject;
+
+import jdk.nashorn.internal.runtime.regexp.joni.EncodingHelper;
 
 public class TermsPresenter implements Initializable {
 
@@ -51,7 +61,8 @@ public class TermsPresenter implements Initializable {
     @FXML
     private TextField step_specifier;
 
-    private DatabaseService ts;
+    @Inject
+    TraceService ts;
 
     private int lastIndent = 0, currentStep = 0, previousSliderValue = 0;
 
@@ -60,14 +71,16 @@ public class TermsPresenter implements Initializable {
     private boolean proceed;
 
     private List<Steps> steps;
-    private List<ActiveRules> rules;
     private List<CompiledSteps> cSteps;
+    private List<ActiveRules> rules;
     private int totalSteps;
     private Stack<TreeItem<Text>> nodeStack;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
-    
+
+    private CrsxvizPresenter main;
+  
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         trace_label.setText("No trace file opened");
@@ -174,6 +187,12 @@ public class TermsPresenter implements Initializable {
     }
 
     void step() {
+    	if(currentStep > 0){
+    		//lastStep = copyTree(terms_tree.getRoot());
+    	}
+    	CompiledSteps this0Step = ts.getCompiledStep(new Long(0));
+        String this0StepString = this0Step.toString();
+        System.out.println("Step 0 : " + this0StepString);
         if (currentStep < totalSteps && proceed) {
         	Steps s = steps.get(currentStep);
         	currentStep++;
@@ -206,7 +225,11 @@ public class TermsPresenter implements Initializable {
         
         CompiledSteps thisStep = ts.getCompiledStep(new Long(currentStep));
         if(currentStep > 0){
+        	CompiledSteps lastStep = ts.getCompiledStep(new Long(currentStep - 1));
         	String thisStepString = thisStep.toString();
+        	String lastStepString = lastStep.toString();
+        	thisStepString = thisStepString.replaceAll("\\s", "");
+        	lastStepString = lastStepString.replaceAll("\\s", "");
         	TreeItem t = new TreeItem<Text>(new Text("Full Term String"));
             this.terms_tree.setRoot(t);
             nodeStack = new Stack<TreeItem<Text>>();
@@ -226,7 +249,7 @@ public class TermsPresenter implements Initializable {
         				if(newIndent){
         					TreeItem<Text> parentNode = nodeStack.pop();
                 			String term = thisStepString.substring(0, endIndentIndex);
-                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			Text termText = new Text(term);
                 			TreeItem<Text> termNode = new TreeItem<Text>(termText);
                 			parentNode.getChildren().add(termNode);
                 			nodeStack.push(parentNode);
@@ -237,7 +260,7 @@ public class TermsPresenter implements Initializable {
         					nodeStack.pop();
         					TreeItem<Text> parentNode = nodeStack.pop();
                 			String term = thisStepString.substring(0, endIndentIndex);
-                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			Text termText = new Text(term);
                 			TreeItem<Text> termNode = new TreeItem<Text>(termText);
                 			parentNode.getChildren().add(termNode);
                 			nodeStack.push(parentNode);
@@ -270,7 +293,7 @@ public class TermsPresenter implements Initializable {
         				newIndent = false;
             			TreeItem<Text> parentNode = nodeStack.pop();
             			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
-            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			Text siblingTermText = new Text(siblingTerm);
             			TreeItem<Text> siblingNode = new TreeItem<Text>(siblingTermText);
             			parentNode.getChildren().add(siblingNode);
             			nodeStack.push(parentNode);
@@ -280,7 +303,7 @@ public class TermsPresenter implements Initializable {
         				nodeStack.pop();
             			TreeItem<Text> parentNode = nodeStack.pop();
             			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
-            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			Text siblingTermText = new Text(siblingTerm);
             			TreeItem<Text> siblingNode = new TreeItem<>(siblingTermText);
             			parentNode.getChildren().add(siblingNode);
             			nodeStack.push(parentNode);
@@ -299,7 +322,7 @@ public class TermsPresenter implements Initializable {
         			}
         			TreeItem<Text> parentNode = nodeStack.pop();
         			String childTerm = thisStepString.substring(0, nextChildIndex + 1);
-        			Text childTermText = new Text(childTerm.replaceAll("\\s", ""));
+        			Text childTermText = new Text(childTerm);
         			TreeItem<Text> childNode = new TreeItem<Text>(childTermText);
         			parentNode.getChildren().add(childNode);
         			nodeStack.push(parentNode);
@@ -312,28 +335,12 @@ public class TermsPresenter implements Initializable {
         				thisStepString = thisStepString.substring(nextChildIndex + 1, thisStepString.length());
         			}
         		}
-        		terms_tree.getRoot().setExpanded(true);
         	}
-        	
-//        	for(int i = 0; i < diffs.size(); i++){
-//        		Diff diff = diffs.get(i);
-//        		Text subtext = new Text();
-//        		if(diff.operation == Operation.EQUAL){
-//        			subtext.setText(diff.text);
-//        			subtexts.getChildren().add(subtext);
-//        		}
-//        		else if(diff.operation == Operation.DELETE){
-////        			subtext.setText(diff.text);
-////        			subtext.setFill(Color.RED);
-////        			subtexts.getChildren().add(subtext);
-//        		}
-//        		else if(diff.operation == Operation.INSERT){
-//        			subtext.setText(diff.text);
-//        			subtext.setFont(Font.font("System", FontWeight.BOLD, 12));
-//        			subtext.setFill(Color.GREEN);
-//        			subtexts.getChildren().add(subtext);
-//        		}
-//        	}
+        	if(currentStep > 0){
+    			//highlightNew(lastStep, terms_tree.getRoot());
+    			expandChildren(terms_tree.getRoot());
+    		}
+        	checkIfRewrite(lastStepString, terms_tree.getRoot());
         }    
     }
 
@@ -372,6 +379,7 @@ public class TermsPresenter implements Initializable {
         CompiledSteps thisStep = ts.getCompiledStep(new Long(currentStep));
         if(currentStep < steps.size()){
         	String thisStepString = thisStep.toString();
+        	thisStepString = thisStepString.replaceAll("\\s", "");
         	TreeItem t = new TreeItem<Text>(new Text("Full Term String"));
             this.terms_tree.setRoot(t);
             nodeStack = new Stack<TreeItem<Text>>();
@@ -391,7 +399,7 @@ public class TermsPresenter implements Initializable {
         				if(newIndent){
         					TreeItem<Text> parentNode = nodeStack.pop();
                 			String term = thisStepString.substring(0, endIndentIndex);
-                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			Text termText = new Text(term);
                 			TreeItem<Text> termNode = new TreeItem<Text>(termText);
                 			parentNode.getChildren().add(termNode);
                 			nodeStack.push(parentNode);
@@ -402,7 +410,7 @@ public class TermsPresenter implements Initializable {
         					nodeStack.pop();
         					TreeItem<Text> parentNode = nodeStack.pop();
                 			String term = thisStepString.substring(0, endIndentIndex);
-                			Text termText = new Text(term.replaceAll("\\s", ""));
+                			Text termText = new Text(term);
                 			TreeItem<Text> termNode = new TreeItem<Text>(termText);
                 			parentNode.getChildren().add(termNode);
                 			nodeStack.push(parentNode);
@@ -435,7 +443,7 @@ public class TermsPresenter implements Initializable {
         				newIndent = false;
             			TreeItem<Text> parentNode = nodeStack.pop();
             			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
-            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			Text siblingTermText = new Text(siblingTerm);
             			TreeItem<Text> siblingNode = new TreeItem<Text>(siblingTermText);
             			parentNode.getChildren().add(siblingNode);
             			nodeStack.push(parentNode);
@@ -445,7 +453,7 @@ public class TermsPresenter implements Initializable {
         				nodeStack.pop();
             			TreeItem<Text> parentNode = nodeStack.pop();
             			String siblingTerm = thisStepString.substring(0, nextSiblingIndex + 1);
-            			Text siblingTermText = new Text(siblingTerm.replaceAll("\\s", ""));
+            			Text siblingTermText = new Text(siblingTerm);
             			TreeItem<Text> siblingNode = new TreeItem<>(siblingTermText);
             			parentNode.getChildren().add(siblingNode);
             			nodeStack.push(parentNode);
@@ -464,7 +472,7 @@ public class TermsPresenter implements Initializable {
         			}
         			TreeItem<Text> parentNode = nodeStack.pop();
         			String childTerm = thisStepString.substring(0, nextChildIndex + 1);
-        			Text childTermText = new Text(childTerm.replaceAll("\\s", ""));
+        			Text childTermText = new Text(childTerm);
         			TreeItem<Text> childNode = new TreeItem<Text>(childTermText);
         			parentNode.getChildren().add(childNode);
         			nodeStack.push(parentNode);
@@ -477,15 +485,14 @@ public class TermsPresenter implements Initializable {
         				thisStepString = thisStepString.substring(nextChildIndex + 1, thisStepString.length());
         			}
         		}
-        		terms_tree.getRoot().setExpanded(true);
         	}
+            if(currentStep > 0){
+    			expandChildren(terms_tree.getRoot());
+    		}
+    		//lastStep = copyTree(terms_tree.getRoot());
         }
     }
 
-    public void setDbService(DatabaseService service) {
-        this.ts = service;
-    }
-    
     /**
      * Jump to the first breakpoint. If there are no breakpoints set, then the
      * program will step through each instruction per user input. That is with
@@ -539,13 +546,12 @@ public class TermsPresenter implements Initializable {
      */
     public void initiateData() {
         steps = ts.allSteps();
-        for(Steps step : steps){
-        	System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
-        }
-        cSteps = ts.allCompiledSteps();
         rules = ts.allRules();
-        totalSteps = steps.size();
-
+        totalSteps = steps.size();;
+        for(int i = 0; i < totalSteps; i++){
+        	CompiledSteps step = ts.getCompiledStep((long)i);
+        	System.out.println("Step " + i + " Indentation level " + steps.get(i).getIndentation() + " : " + step.toString().replaceAll("\\s", ""));
+        }
         String label = ts.getDbName();
         trace_label.setText(label == null ? "No trace file opened" : "Debugging " + label);
         observableRules = ts.allObservableRules();
@@ -599,10 +605,9 @@ public class TermsPresenter implements Initializable {
      * Enable the slider
      */
     private void sliderOn() {
-        double majorTick = Math.floor(totalSteps / 10);
         slider.setDisable(false);
         slider.setMax(totalSteps);
-        slider.setMajorTickUnit(majorTick <= 0 ? 1 : majorTick);
+        slider.setMajorTickUnit(Math.floor(totalSteps / 10));
         slider.setMinorTickCount((int) Math.floor(slider.getMajorTickUnit()) / 5);
         slider.setValue(0);
     }
@@ -625,7 +630,36 @@ public class TermsPresenter implements Initializable {
         }
     }
     
-    private void updateTermDisplay(String termString){
+    private void expandChildren(TreeItem<Text> node){
+    	node.setExpanded(true);
+    	for(TreeItem<Text> child : node.getChildren()){
+    		expandChildren(child);
+    	}
+    }
     
+    private void checkIfRewrite(String lastStepString, TreeItem<Text> term){
+    	boolean functionRewrite = false;
+    	for(TreeItem<Text> child : term.getChildren()){
+    		if(functionRewrite && child.getValue().getText().contains("]")){
+    			child.getValue().setFill(Color.BLUE);
+    			child.getValue().setFont(Font.font("System", FontWeight.BOLD, 12));
+    			functionRewrite = false;
+    		}
+    		else if(lastStepString.contains(child.getValue().getText())){
+    			int startIndex = lastStepString.indexOf(child.getValue().getText());
+    			int endIndex = startIndex + child.getValue().getText().length();
+    			String firstHalf = lastStepString.substring(0, startIndex);
+    			String lastHalf = lastStepString.substring(endIndex, lastStepString.length());
+    			lastStepString = firstHalf.concat(lastHalf);
+    		}
+    		else{
+    			if(child.getValue().getText().contains("[")){
+    				functionRewrite = true;
+    			}
+    			child.getValue().setFill(Color.BLUE);
+    			child.getValue().setFont(Font.font("System", FontWeight.BOLD, 12));
+    		}
+    		checkIfRewrite(lastStepString, child);
+    	}
     }
 }
