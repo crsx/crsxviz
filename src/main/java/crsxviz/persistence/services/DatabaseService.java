@@ -4,7 +4,12 @@ import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.DispatchedRules;
+import crsxviz.persistence.beans.RuleDetails;
 import crsxviz.persistence.beans.Steps;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.LinkedList;
 
 import java.util.List;
 
@@ -12,20 +17,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public enum DatabaseService {
+
     INSTANCE;
-    
+
     private static final String DEFAULT_DATABASE = "out.db";
 
     private static ObservableList<String> breakpoints;
 
     private static String dbName;
     private static String url;
-    
+
     public static DatabaseService getInstance(String dbName) {
         DatabaseService.init(dbName);
         return INSTANCE;
     }
-    
+
     public static void init() {
         init(DEFAULT_DATABASE);
     }
@@ -43,6 +49,10 @@ public enum DatabaseService {
         return (dbName != null) ? dbName : "";
     }
 
+    public List<RuleDetails> getRuleDetails(String ruleName) {
+        return ActiveRules.getRuleDetails(ruleName, url);
+    }
+
     public List<ActiveRules> allRules() {
         return ActiveRules.loadAllRules(url);
     }
@@ -58,7 +68,7 @@ public enum DatabaseService {
     public List<CompiledSteps> allCompiledSteps() {
         return CompiledSteps.loadAll(url);
     }
-    
+
     public List<DispatchedRules> allDispatchedRules() {
         return DispatchedRules.loadAllDispatchtedRules(url);
     }
@@ -79,4 +89,3 @@ public enum DatabaseService {
         return list;
     }
 }
-

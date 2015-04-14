@@ -1,7 +1,10 @@
 package crsxviz.application.rules;
 
 import crsxviz.persistence.services.DatabaseService;
+import crsxviz.persistence.beans.RuleDetails;
+
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
@@ -37,6 +40,9 @@ public class RulesPresenter implements Initializable {
         cmItem.setOnAction(
                 (event) -> {
                     String breakpoint = rules_list.getSelectionModel().getSelectedItem();
+                    if (breakpoint.contains("\n")) {
+                    	breakpoint = breakpoint.substring(0, breakpoint.indexOf("\n"));
+                    }
                     observableBreakpoints.add(breakpoint);
                     System.out.println("Breakpoint set on: " + breakpoint);
                 }
@@ -45,12 +51,13 @@ public class RulesPresenter implements Initializable {
         cMenu.getItems().add(cmItem);
         rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 (event) -> {
+                	this.onEntityClicked();
                     if (event.getButton() == MouseButton.SECONDARY) {
                         cMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
                     }
                 }
         );
-        
+
     }
     
     public void setDbService(DatabaseService service) {
@@ -84,6 +91,22 @@ public class RulesPresenter implements Initializable {
         });
 
         rules_list.setItems((FilteredList<String>) list);
+    }
+    
+    public void onEntityClicked() {
+    	String result = "";
+    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem();
+    	if (selection.contains("\n")) {
+    		result = selection.substring(0, selection.indexOf("\n"));
+    	} else {
+	    	List<RuleDetails> l = ts.getRuleDetails(selection);
+	    	result = RuleDetails.toString(l);
+    	}
+    	for (int i = 0; i < observableRules.size(); i++) {
+    		if (observableRules.get(i).equals(selection)) {
+    			observableRules.set(i,  result);
+    		}
+    	}
     }
     
     /**

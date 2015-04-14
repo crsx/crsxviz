@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -168,6 +169,39 @@ public class ActiveRules implements Serializable {
             breakpoint = new SimpleBooleanProperty(this, "breakpoint");
         }
         return breakpoint;
+    }
+    
+    public static List<RuleDetails> getRuleDetails(String ruleName, String url) {
+        String sql = "SELECT * FROM ActiveRules as R JOIN DispatchedRules as D ON R.ActiveRuleID=D.ActiveRuleID WHERE R.Value = \"" + ruleName + "\";";
+        Statement s;
+        Connection fastConn = null;
+        try {
+            List<RuleDetails> l = new LinkedList<>();
+            fastConn = DriverManager.getConnection(url);
+            s = fastConn.createStatement();
+            s.execute(sql);
+            ResultSet rs = s.getResultSet();
+            if (!rs.next()) {
+                System.err.println("No results returned");
+                return l;
+            }
+            do {
+                RuleDetails d = new RuleDetails(rs);
+                l.add(d);
+            } while (rs.next());
+            return l;
+        } catch (SQLException e) {
+            System.err.println("Error requesting rule details");
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fastConn != null) 
+                    fastConn.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(ActiveRules.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return null;
     }
 
     public static List<ActiveRules> loadAllRules(String url) {

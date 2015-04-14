@@ -38,11 +38,11 @@
                 <AnchorPane fx:id="terms" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" prefWidth="635.0" />
 
                 <!-- Right Side of content -->
-                <SplitPane dividerPositions="0.5" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" orientation="VERTICAL" prefHeight="690.0" prefWidth="635.0">
+                <SplitPane dividerPositions="0.27761627906976744" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" orientation="VERTICAL" prefHeight="690.0" prefWidth="635.0">
                     <items>
-                        <AnchorPane fx:id="breakpoints" minWidth="0.0" prefHeight="345.0" prefWidth="635.0" />
+                        <AnchorPane fx:id="breakpoints" minWidth="0.0" prefHeight="170.0" prefWidth="635.0" />
 
-                        <AnchorPane fx:id="rules" minWidth="0.0" prefHeight="345.0" prefWidth="635.0" />
+                              <AnchorPane fx:id="rules" minWidth="0.0" prefHeight="345.0" prefWidth="635.0" />
                     </items>
                 </SplitPane>
             </items>
