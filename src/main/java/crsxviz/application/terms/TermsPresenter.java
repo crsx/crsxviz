@@ -1,10 +1,11 @@
 package crsxviz.application.terms;
 
 import crsxviz.application.crsxviz.CrsxvizPresenter;
+import crsxviz.persistence.DataListener;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Steps;
-import crsxviz.persistence.services.DatabaseService;
+import crsxviz.persistence.services.DataService;
 
 import java.net.URL;
 import java.util.List;
@@ -18,7 +19,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
@@ -29,7 +29,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-public class TermsPresenter extends AnchorPane implements Initializable {
+public class TermsPresenter extends AnchorPane implements Initializable, DataListener {
 
     @FXML
     private Button step_into;
@@ -54,17 +54,16 @@ public class TermsPresenter extends AnchorPane implements Initializable {
     @FXML
     private TextField step_specifier;
 
-    private DatabaseService ts;
+    private DataService ts;
 
     private int lastIndent = 0, currentStep = 0, previousSliderValue = 0;
 
-	// Controls progress through the trace by providing means to pause
+    // Controls progress through the trace by providing means to pause
     // in a given location, used primarily to pause on breakpoints
     private boolean proceed;
 
     private List<Steps> steps;
     private List<ActiveRules> rules;
-    private List<CompiledSteps> cSteps;
     private int totalSteps;
     private Stack<TreeItem<Text>> nodeStack;
 
@@ -78,6 +77,9 @@ public class TermsPresenter extends AnchorPane implements Initializable {
         step_specifier.setText("");
         step_specifier.setEditable(true);
         step_specifier.setFocusTraversable(false);
+        
+        ts = DataService.getInstance();
+        ts.addListener(this);
     }
 
     @FXML
@@ -90,6 +92,8 @@ public class TermsPresenter extends AnchorPane implements Initializable {
         step_specifier.setText("");
         step_specifier.setEditable(true);
         step_specifier.setFocusTraversable(false);
+        currentStep = 0;
+        onStepInto(null);
     }
 
     @FXML
@@ -186,7 +190,7 @@ public class TermsPresenter extends AnchorPane implements Initializable {
         if (currentStep < totalSteps && proceed) {
             Steps s = steps.get(currentStep);
             currentStep++;
-            CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
+            //RulesPresenter.highlightActiveRule(s.getActiveRuleId());
             if (currentStep < totalSteps) {
                 s = steps.get(currentStep);
                 step_over.setDisable(false);
@@ -479,9 +483,10 @@ public class TermsPresenter extends AnchorPane implements Initializable {
         }
     }
 
-    public void setDbService(DatabaseService service) {
+    /*
+    public void setDbService(DataService service) {
         this.ts = service;
-    }
+    }*/
 
     /**
      * Jump to the first breakpoint. If there are no breakpoints set, then the
@@ -500,84 +505,6 @@ public class TermsPresenter extends AnchorPane implements Initializable {
                 proceed = !(observableBreakpoints.contains(rule));
             }
         }
-    }
-
-    /**
-     * Create the term tree from a given root node. This root item serves to be
-     * a subheading within the terms list window.
-     *
-     * @param root Root node to build the term tree from
-     * @return
-     */
-    private void initializeTree(TreeItem<Text> root) {
-        terms_tree.setRoot(root);
-        root.setExpanded(true);
-        currentStep = 0;
-        lastIndent = 0;
-    }
-
-    /**
-     * Focus on the given node in the terms_tree
-     *
-     * @param node Node to focus on
-     */
-    private void nodeFocus(TreeItem<Text> node) {
-        terms_tree.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        terms_tree.requestFocus();
-        terms_tree.getSelectionModel().select(node);
-        terms_tree.getFocusModel().focus(terms_tree.getSelectionModel().getSelectedIndex());
-    }
-
-    /**
-     * Initializes the Presenter to an initial state where either a database has
-     * been opened and thus will display the correct state of buttons along with
-     * initial term tree, or where a database has not been opened.
-     *
-     */
-    public void initiateData() {
-        steps = ts.allSteps();
-        for (Steps step : steps) {
-            System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
-        }
-        cSteps = ts.allCompiledSteps();
-        rules = ts.allRules();
-        totalSteps = steps.size();
-
-        String label = ts.getDbName();
-        trace_label.setText(label == null ? "No trace file opened" : "Debugging " + label);
-        observableRules = ts.allObservableRules();
-        observableBreakpoints = ts.allObservableBreakpoints();
-
-        sliderOn();
-        step_return.setDisable(false);
-        step_into.setDisable(false);
-        step_over.setDisable(false);
-        run.setDisable(false);
-        resume.setDisable(false);
-        terminate.setDisable(false);
-        proceed = true;
-        onStepInto(null);
-    }
-
-    /**
-     * Return the Presenter to its initial state where no database is to be
-     * displayed.
-     */
-    public void clearDisplay() {
-        observableBreakpoints = FXCollections.observableArrayList();
-        observableRules = FXCollections.observableArrayList();
-        steps = null;
-        rules = null;
-        totalSteps = lastIndent = currentStep = 0;
-        terms_tree.setRoot(null);
-        run.setDisable(true);
-        terminate.setDisable(true);
-        step_into.setDisable(true);
-        step_over.setDisable(true);
-        step_return.setDisable(true);
-        resume.setDisable(true);
-        trace_label.setText("No trace file opened");
-        initialSliderState();
     }
 
     /**
@@ -649,5 +576,50 @@ public class TermsPresenter extends AnchorPane implements Initializable {
             }
             checkIfRewrite(lastStepString, child);
         }
+    }
+    
+    @Override
+    public void dataClosed() {
+        observableBreakpoints = FXCollections.observableArrayList();
+        observableRules = FXCollections.observableArrayList();
+        steps = null;
+        rules = null;
+        totalSteps = lastIndent = currentStep = 0;
+        terms_tree.setRoot(null);
+        run.setDisable(true);
+        terminate.setDisable(true);
+        step_into.setDisable(true);
+        step_over.setDisable(true);
+        step_return.setDisable(true);
+        resume.setDisable(true);
+        trace_label.setText("No trace file opened");
+        initialSliderState();
+    }
+
+    @Override
+    public void dataLoaded() {
+        steps = ts.allSteps();
+        for (Steps step : steps) {
+            System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
+        }
+        rules = ts.allRules();
+        totalSteps = steps.size();
+        currentStep = 0;
+        lastIndent = 0;
+
+        String label = ts.getDbName();
+        trace_label.setText(label == null ? "No trace file opened" : "Debugging " + label);
+        observableRules = ts.allObservableRules();
+        observableBreakpoints = ts.allObservableBreakpoints();
+
+        sliderOn();
+        step_return.setDisable(false);
+        step_into.setDisable(false);
+        step_over.setDisable(false);
+        run.setDisable(false);
+        resume.setDisable(false);
+        terminate.setDisable(false);
+        proceed = true;
+        onStepInto(null);
     }
 }

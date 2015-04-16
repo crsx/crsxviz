@@ -9,7 +9,7 @@ import static crsxviz.application.crsxrunner.Controller.showError;
 import crsxviz.application.crsxrunner.RunnerDialog;
 import crsxviz.application.rules.RulesPresenter;
 import crsxviz.application.terms.TermsPresenter;
-import crsxviz.persistence.services.DatabaseService;
+import crsxviz.persistence.services.DataService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -35,13 +35,11 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     AnchorPane breakpoints;
 
-    private DatabaseService ts = DatabaseService.getInstance("out.db");
+    private DataService ts = DataService.getInstance("out.db");
 
     private String dbpath;
 
     private static RulesPresenter rulesPresenter;
-    private TermsPresenter termsPresenter;
-    private BreakpointsPresenter breakpointsPresenter;
 
     private Stage stage;
     
@@ -116,7 +114,7 @@ public class CrsxvizPresenter implements Initializable {
         if (dbpath == null) 
             showError("Error!", "Cannot close, no files are open");
         dbpath = null;
-        this.clearControls();
+        ts.dataClosed();
     }
     
     @FXML
@@ -128,10 +126,11 @@ public class CrsxvizPresenter implements Initializable {
         this.stage = stage;
     }
     
-    public void setService(DatabaseService ts) {
+    public void setService(DataService ts) {
         this.ts = ts;
-        DatabaseService.init(this.ts.getDbName());
-        reloadPresenters();
+        DataService.init(this.ts.getDbName());
+        ts.dataReloaded();
+        //reloadPresenters();
     }
     
     /**
@@ -143,16 +142,18 @@ public class CrsxvizPresenter implements Initializable {
      * @param db absolute path to the database
      */
     private void loadDb(String db) {
-        if (db != null)
-            DatabaseService.init(db);
-        reloadPresenters();
+        if (db != null) {
+            DataService.init(db);
+            ts.dataReloaded();
+        }
+        //reloadPresenters();
     }
     
     /**
      * Forces a reload of Presenters following a new database being opened.
      * 
      * This effectively shows the new data accessed by the new database.
-     */
+     *
     private void reloadPresenters() {
         breakpointsPresenter.initiateData();
         rulesPresenter.initiateData();
@@ -162,12 +163,12 @@ public class CrsxvizPresenter implements Initializable {
     /**
      * Clears the data shown by the presenters. This sets all buttons
      * to their initial states along with erasing data of all lists.
-     */
+     *
     public void clearControls() {
         termsPresenter.clearDisplay();
         breakpointsPresenter.clearDisplay();
         rulesPresenter.clearDisplay();
-    }
+    }*/
     
     /**
      * Used to initialize the application with a test database.

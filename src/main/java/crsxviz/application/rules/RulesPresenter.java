@@ -1,6 +1,7 @@
 package crsxviz.application.rules;
 
-import crsxviz.persistence.services.DatabaseService;
+import crsxviz.persistence.DataListener;
+import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.beans.RuleDetails;
 import java.net.URL;
 import java.util.List;
@@ -20,21 +21,23 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 
 
-public class RulesPresenter extends AnchorPane implements Initializable {
+public class RulesPresenter extends AnchorPane implements Initializable, DataListener {
 
     @FXML
     private TextField filter_field;
     @FXML
     private ListView<String> rules_list;
     
-    private DatabaseService ts;
+    private DataService ts;
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
+        ts = DataService.getInstance();
+        ts.addListener(this);
+        
         // Generate Context Menu for Rules
         final ContextMenu cMenu = new ContextMenu();
         MenuItem cmItem = new MenuItem("Set Breakpoint");
@@ -60,7 +63,7 @@ public class RulesPresenter extends AnchorPane implements Initializable {
         );
     }
     
-    public void setDbService(DatabaseService service) {
+    public void setDbService(DataService service) {
         this.ts = service;
     }
 
@@ -117,12 +120,18 @@ public class RulesPresenter extends AnchorPane implements Initializable {
         rules_list.getSelectionModel().select(ruleId);
         rules_list.getFocusModel().focus(ruleId);
     }
+
+    @Override
+    public void dataLoaded() {
+        observableRules = ts.allObservableRules();
+        observableBreakpoints = ts.allObservableBreakpoints();
+        
+        rules_list.setItems(observableRules);
+        setFilteredRules(new FilteredList<>(observableRules, p -> true));
+    }
     
-    /**
-     * Return the Presenter to its initial state where no database is to be 
-     * displayed.
-     */
-    public void clearDisplay() {
+        @Override
+    public void dataClosed() {
         observableBreakpoints = FXCollections.observableArrayList();
         observableRules = FXCollections.observableArrayList();
         rules_list.setItems(observableRules);

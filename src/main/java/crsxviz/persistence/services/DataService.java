@@ -6,29 +6,33 @@ import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.DispatchedRules;
 import crsxviz.persistence.beans.RuleDetails;
 import crsxviz.persistence.beans.Steps;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.LinkedList;
+import crsxviz.persistence.DataListener;
+import java.util.ArrayList;
 
 import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public enum DatabaseService {
+public enum DataService {
 
     INSTANCE;
 
     private static final String DEFAULT_DATABASE = "out.db";
+    
+    private List<DataListener> listeners = new ArrayList<>();
 
     private static ObservableList<String> breakpoints;
 
     private static String dbName;
     private static String url;
 
-    public static DatabaseService getInstance(String dbName) {
-        DatabaseService.init(dbName);
+    public static DataService getInstance(String dbName) {
+        DataService.init(dbName);
+        return INSTANCE;
+    }
+    
+    public static DataService getInstance() {
         return INSTANCE;
     }
 
@@ -87,5 +91,19 @@ public enum DatabaseService {
                 (rule) -> list.add(rule.getValue())
         );
         return list;
+    }
+    
+    public void addListener(DataListener toAdd) {
+        listeners.add(toAdd);
+    }
+    
+    public void dataReloaded() {
+        for (DataListener listener: listeners)
+            listener.dataLoaded();
+    }
+    
+    public void dataClosed() {
+        for (DataListener listener: listeners)
+            listener.dataClosed();
     }
 }

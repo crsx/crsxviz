@@ -13,7 +13,19 @@
                 <Font size="15.0" />
             </font>
         </Label>
-        <ListView fx:id="breakpoint_list" layoutY="25.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="320.0" prefWidth="635.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="29.0" />
-        <MenuButton fx:id="bp_menu" alignment="CENTER" graphicTextGap="0.0" layoutX="596.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="0.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" scaleShape="false" style="-fx-border-color: rgba(255, 255, 255, .1); -fx-background-color: rgba(255, 255, 255, .1);" AnchorPane.leftAnchor="595.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-3.0" />
+        <ListView fx:id="breakpoint_list" layoutY="25.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="320.0" prefWidth="635.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="29.0">
+         <contextMenu>
+            <ContextMenu>
+              <items>
+                <MenuItem mnemonicParsing="false" onAction="#removeBreakpoint" text="Remove Breakpoint" />
+              </items>
+            </ContextMenu>
+         </contextMenu></ListView>
+      <MenuButton layoutX="597.0" layoutY="-1.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="28.0" style="-fx-background-color: rgba(255, 255, 255, .1); -fx-border-color: rgba(255, 255, 255, .1);">
+        <items>
+          <MenuItem mnemonicParsing="false" onAction="#setNewBreakpoint" text="Set New Breakpoint" />
+          <MenuItem mnemonicParsing="false" onAction="#removeAll" text="Remove All" />
+        </items>
+      </MenuButton>
     </children>
 </AnchorPane>

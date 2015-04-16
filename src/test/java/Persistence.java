@@ -1,7 +1,7 @@
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.Cookies;
 import crsxviz.persistence.beans.Steps;
-import crsxviz.persistence.services.DatabaseService;
+import crsxviz.persistence.services.DataService;
 import java.util.List;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class Persistence {
     
-    private final DatabaseService ts = DatabaseService.getInstance("out.db");
+    private final DataService ts = DataService.getInstance("out.db");
     
     private List<Cookies> cookies;
     private List<Steps> steps;
