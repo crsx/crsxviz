@@ -1,34 +1,33 @@
 package crsxviz.application.crsxviz;
 
-import com.airhacks.afterburner.views.FXMLView;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
 import crsxviz.application.breakpoints.BreakpointsPresenter;
-import crsxviz.application.breakpoints.BreakpointsView;
 import static crsxviz.application.crsxrunner.Controller.showError;
 import crsxviz.application.crsxrunner.RunnerDialog;
 import crsxviz.application.rules.RulesPresenter;
-import crsxviz.application.rules.RulesView;
 import crsxviz.application.terms.TermsPresenter;
-import crsxviz.application.terms.TermsView;
 import crsxviz.persistence.services.DatabaseService;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class CrsxvizPresenter implements Initializable {
 
+    private static final String RULES = "../rules/rules.fxml";
+    private static final String BREAKPOINTS = "../breakpoints/breakpoints.fxml";
+    private static final String TERMS = "../terms/terms.fxml";
+    
     @FXML
     AnchorPane terms;
     @FXML
@@ -36,51 +35,33 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     AnchorPane breakpoints;
 
-    @FXML
-    private Parent view;
-    @FXML
-    private MenuItem close;
-    @FXML
-    private MenuItem open;
-    @FXML
-    private Menu options;
-    @FXML
-    private MenuItem playback;
-    @FXML
-    private MenuItem about;
-    @FXML
-    private Menu help;
-    @FXML
-    private Menu file;
-
     private DatabaseService ts = DatabaseService.getInstance("out.db");
 
     private String dbpath;
 
     private static RulesPresenter rulesPresenter;
-    private static TermsPresenter termsPresenter;
-    private static BreakpointsPresenter breakpointsPresenter;
+    private TermsPresenter termsPresenter;
+    private BreakpointsPresenter breakpointsPresenter;
 
     private Stage stage;
-
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        TermsView termsView = new TermsView();
-        RulesView rulesView = new RulesView();
-        BreakpointsView breakpointsView = new BreakpointsView();
-        CrsxvizPresenter.termsPresenter = (TermsPresenter) termsView.getPresenter();
-        CrsxvizPresenter.rulesPresenter = (RulesPresenter) rulesView.getPresenter();
-        CrsxvizPresenter.breakpointsPresenter = (BreakpointsPresenter) breakpointsView.getPresenter();
-
-        CrsxvizPresenter.breakpointsPresenter.setDbService(ts);
-        CrsxvizPresenter.termsPresenter.setDbService(ts);
-        CrsxvizPresenter.rulesPresenter.setDbService(ts);
-        
-        addAll(terms, termsView);
-        addAll(rules, rulesView);
-        addAll(breakpoints, breakpointsView);
+        rules.getChildren().setAll(loadPane(RULES));
+        terms.getChildren().setAll(loadPane(TERMS));
+        breakpoints.getChildren().setAll(loadPane(BREAKPOINTS));
     }
 
+    private Node loadPane(String fxml) {
+        Node node = null;
+        try {
+            node = (Node) FXMLLoader.load( getClass().getResource(fxml) );
+        } catch (IOException ex) {
+            Logger.getLogger(CrsxvizPresenter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return node;
+    }
+    
     @FXML
     void onOpenFile(ActionEvent event) {
         if (dbpath != null) {
@@ -137,15 +118,10 @@ public class CrsxvizPresenter implements Initializable {
         dbpath = null;
         this.clearControls();
     }
-
-    @FXML
-    void onAdjustPlayback(ActionEvent event) {
-        System.out.println("adjusting playback...");
-    }
-
+    
     @FXML
     void onAbout(ActionEvent event) {
-        System.out.println("about...");
+        System.out.println("onAbout...");
     }
 
     public void setStage(Stage stage) {
@@ -191,22 +167,6 @@ public class CrsxvizPresenter implements Initializable {
         termsPresenter.clearDisplay();
         breakpointsPresenter.clearDisplay();
         rulesPresenter.clearDisplay();
-    }
-    
-    /**
-     * Add all view nodes to the given pane.
-     * 
-     * This is a workaround to side step the double loading of
-     * AnchorPane which prevents resizing from happening correctly.
-     * @param pane 
-     * @param view 
-     */
-    private void addAll(Pane pane, FXMLView view) {
-        Node node = view.getViewWithoutRootContainer();
-        while (node != null) {
-            pane.getChildren().add(node);
-            node = view.getViewWithoutRootContainer();
-        }
     }
     
     /**

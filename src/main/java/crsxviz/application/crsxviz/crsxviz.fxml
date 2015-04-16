@@ -5,8 +5,11 @@
 <?import javafx.scene.effect.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
+<?import crsxviz.application.breakpoints.*?>
+<?import crsxviz.application.rules.*?>
+<?import crsxviz.application.terms.*?>
 
-<AnchorPane fx:id="view" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" styleClass="crsxviz" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.crsxviz.CrsxvizPresenter">
+<AnchorPane fx:id="view" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="crsxviz" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="crsxviz.application.crsxviz.CrsxvizPresenter">
     <children>
 
         <!-- MENU BAR -->
@@ -33,16 +36,19 @@
 
         <!-- MAIN CONTENT -->
 
-        <SplitPane dividerPositions="0.53" layoutY="30.0" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+        <SplitPane dividerPositions="0.53" layoutY="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
             <items>
-                <AnchorPane fx:id="terms" maxHeight="1.7976931348623157E308" minWidth="0.0" prefHeight="690.0" />
-
+                
+                <TermsPresenter id="terms" fx:id="terms" />
+                
                 <!-- Right Side of content -->
-                <SplitPane dividerPositions="0.27761627906976744" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="0.0" orientation="VERTICAL" prefHeight="690.0">
+                <SplitPane orientation="VERTICAL">
                     <items>
-                        <AnchorPane fx:id="breakpoints" minWidth="0.0" prefHeight="170.0" />
-
-                              <AnchorPane fx:id="rules" minWidth="0.0" prefHeight="345.0" />
+                        
+                        <BreakpointsPresenter id="breakpoints" fx:id="breakpoints" />
+                        
+                        <RulesPresenter id="rules" fx:id="rules" />
+                        
                     </items>
                 </SplitPane>
             </items>

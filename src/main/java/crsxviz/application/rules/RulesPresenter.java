@@ -17,9 +17,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 
 
-public class RulesPresenter implements Initializable {
+public class RulesPresenter extends AnchorPane implements Initializable {
 
     @FXML
     private TextField filter_field;

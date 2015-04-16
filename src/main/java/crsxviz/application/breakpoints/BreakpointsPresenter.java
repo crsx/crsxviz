@@ -22,9 +22,10 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 
 
-public class BreakpointsPresenter implements Initializable {
+public class BreakpointsPresenter extends AnchorPane implements Initializable {
 
     @FXML
     private ListView<String> breakpoint_list;
@@ -35,10 +36,9 @@ public class BreakpointsPresenter implements Initializable {
 
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private List<ActiveRules> rules;
-
+    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // rules = ts.allRules();
         rules = new ArrayList<>();
 
         final ContextMenu bp_cmenu = new ContextMenu();
