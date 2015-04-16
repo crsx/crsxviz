@@ -232,7 +232,16 @@ public class TermsPresenter implements Initializable {
 				if(nextSiblingIndex == -1 && nextChildIndex == -1 && endIndentIndex == -1){
 					break;
 				}
-				else if((endIndentIndex < nextChildIndex || nextChildIndex == -1) && (endIndentIndex < nextSiblingIndex || nextSiblingIndex == -1)){
+				if(nextSiblingIndex == -1){
+        			nextSiblingIndex = Integer.MAX_VALUE;
+        		}
+        		if(nextChildIndex == -1){
+        			nextChildIndex = Integer.MAX_VALUE;
+        		}
+        		if(endIndentIndex == -1){
+        			endIndentIndex = Integer.MAX_VALUE;
+        		}
+				if((endIndentIndex < nextChildIndex) && (endIndentIndex < nextSiblingIndex)){
 					// place final term if there is one, then pop and place ]
 					if(endIndentIndex != 0){
 						//There is a preceding term, store first
@@ -278,7 +287,7 @@ public class TermsPresenter implements Initializable {
 
 					}
 				}
-				else if((nextSiblingIndex < nextChildIndex || nextChildIndex == -1) && (nextSiblingIndex < endIndentIndex || endIndentIndex == -1)){
+				else if((nextSiblingIndex < nextChildIndex) && (nextSiblingIndex < endIndentIndex)){
 					if(newIndent){
 						newIndent = false;
 						TreeItem<Text> parentNode = nodeStack.pop();
@@ -379,7 +388,16 @@ public class TermsPresenter implements Initializable {
 				if(nextSiblingIndex == -1 && nextChildIndex == -1 && endIndentIndex == -1){
 					break;
 				}
-				else if((endIndentIndex < nextChildIndex || nextChildIndex == -1) && (endIndentIndex < nextSiblingIndex || nextSiblingIndex == -1)){
+				if(nextSiblingIndex == -1){
+        			nextSiblingIndex = Integer.MAX_VALUE;
+        		}
+        		if(nextChildIndex == -1){
+        			nextChildIndex = Integer.MAX_VALUE;
+        		}
+        		if(endIndentIndex == -1){
+        			endIndentIndex = Integer.MAX_VALUE;
+        		}
+				if((endIndentIndex < nextChildIndex) && (endIndentIndex < nextSiblingIndex)){
 					// place final term if there is one, then pop and place ]
 					if(endIndentIndex != 0){
 						//There is a preceding term, store first
@@ -425,7 +443,7 @@ public class TermsPresenter implements Initializable {
 
 					}
 				}
-				else if((nextSiblingIndex < nextChildIndex || nextChildIndex == -1) && (nextSiblingIndex < endIndentIndex || endIndentIndex == -1)){
+				else if((nextSiblingIndex < nextChildIndex) && (nextSiblingIndex < endIndentIndex)){
 					if(newIndent){
 						newIndent = false;
 						TreeItem<Text> parentNode = nodeStack.pop();
