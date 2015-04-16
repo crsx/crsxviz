@@ -15,7 +15,7 @@ import org.testfx.api.FxToolkit;
 import org.testfx.util.WaitForAsyncUtils;
 
 public class UITest extends FxRobot {
-    
+    /*
     private final DatabaseService ts = DatabaseService.getInstance("out.db");
     private static Stage primaryStage;
     private CrsxvizPresenter presenter;
@@ -40,9 +40,11 @@ public class UITest extends FxRobot {
         presenter = app.getRootPresenter();
     }
     
+    
     @Test
     public void test() throws Exception {
         presenter.setService(ts);
         clickOn("#file");
     }
+    */
 }
