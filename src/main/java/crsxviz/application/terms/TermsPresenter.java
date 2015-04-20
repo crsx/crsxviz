@@ -57,7 +57,10 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	private DataService ts;
 
 	private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
-
+	
+	String precedingLastString = "";
+	String precedingTerm = "";
+	
 	// Controls progress through the trace by providing means to pause
 	// in a given location, used primarily to pause on breakpoints
 	private boolean proceed;
@@ -181,8 +184,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 
 	void step(int stepsToAdvance) {
 		currentStep += stepsToAdvance;
-		if(currentStep >= totalSteps){
-			currentStep = totalSteps; 
+		if(currentStep > totalSteps - 1){
+			currentStep = totalSteps - 1; 
 		}
 		if (currentStep < totalSteps && proceed) {
 			Steps s = steps.get(currentStep);
@@ -346,6 +349,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 				}
 			}
 			expandChildren(terms_tree.getRoot());
+			precedingLastString = "";
+			precedingTerm = "";
 			checkIfRewrite(lastStepString, terms_tree.getRoot());
 		}   
 	}
@@ -355,7 +360,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		if(currentStep < 0){
 			currentStep = 0;
 		}
-		Steps s = steps.get(currentStep);
+		Steps s = steps.get(currentStep + 1);
 		//CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
 		if (currentStep <= 0) {
 			step_back.setDisable(true);
@@ -553,9 +558,9 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	 * Enable the slider
 	 */
 	private void sliderOn() {
-		double majorTick = Math.floor(totalSteps / 10);
+		double majorTick = Math.floor((totalSteps - 1) / 10);
 		slider.setDisable(false);
-		slider.setMax(totalSteps);
+		slider.setMax(totalSteps - 1);
 		slider.setMajorTickUnit(majorTick <= 0 ? 1 : majorTick);
 		slider.setMinorTickCount((int) Math.floor(slider.getMajorTickUnit()) / 5);
 		slider.setValue(0);
@@ -568,8 +573,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			return;
 		}
 		else if(specifiedStep < currentStep){
-			stepBack(currentStep + 1 - specifiedStep);
-			step(1);
+			stepBack(currentStep - specifiedStep);
+			step(0);
 		}
 		else if(specifiedStep > currentStep){
 			step(specifiedStep - currentStep);
@@ -584,8 +589,6 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	}
 
 	private void checkIfRewrite(String lastStepString, TreeItem<Text> term) {
-		String precedingLastString = "";
-		String precedingTerm = "";
 		boolean functionRewrite = false;
 		boolean functionShift = false;
 		for (TreeItem<Text> child : term.getChildren()) {
@@ -602,7 +605,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			else if (lastStepString.contains(child.getValue().getText())) {
 				int startIndex = lastStepString.indexOf(child.getValue().getText());
 				int endIndex = startIndex + child.getValue().getText().length();
-				if(!precedingTerm.equals("") && !precedingLastString.equals("") && !precedingTerm.equals(precedingLastString)){
+				if(!precedingTerm.equals("") && !precedingLastString.equals("") && !precedingTerm.equals(precedingLastString)  && !child.getValue().getText().contains("]")){
 					recursiveShiftHighlight(child);
 					functionShift = true;
 				}
