@@ -56,7 +56,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 
 	private DataService ts;
 
-	private int lastIndent = 0, currentStep = 0, previousSliderValue = 0;
+	private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
 
 	// Controls progress through the trace by providing means to pause
 	// in a given location, used primarily to pause on breakpoints
@@ -92,8 +92,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		step_specifier.setText("");
 		step_specifier.setEditable(true);
 		step_specifier.setFocusTraversable(false);
-		currentStep = 0;
-		onStepInto(null);
+		currentStep = -1;
+		step(1);
 	}
 
 	@FXML
@@ -586,23 +586,31 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		String precedingLastString = "";
 		String precedingTerm = "";
 		boolean functionRewrite = false;
+		boolean functionShift = false;
 		for (TreeItem<Text> child : term.getChildren()) {
 			if (functionRewrite && child.getValue().getText().contains("]")) {
 				child.getValue().setFill(Color.BLUE);
 				child.getValue().setFont(Font.font("System", FontWeight.BOLD, 12));
 				functionRewrite = false;
-			} else if (lastStepString.contains(child.getValue().getText())) {
+			} 
+			else if(functionShift &&  child.getValue().getText().contains("]")) {
+				child.getValue().setFill(Color.GREEN);
+				child.getValue().setFont(Font.font("System", FontWeight.BOLD, 12));
+				functionShift = false;
+			} 
+			else if (lastStepString.contains(child.getValue().getText())) {
 				int startIndex = lastStepString.indexOf(child.getValue().getText());
 				int endIndex = startIndex + child.getValue().getText().length();
 				if(!precedingTerm.equals("") && !precedingLastString.equals("") && !precedingTerm.equals(precedingLastString)){
-					child.getValue().setFill(Color.GREEN);
-					child.getValue().setFont(Font.font("System", FontWeight.BOLD, 12));	
+					recursiveShiftHighlight(child);
+					functionShift = true;
 				}
 				String firstHalf = lastStepString.substring(0, startIndex);
 				precedingLastString = lastStepString.substring(startIndex, endIndex);
 				String lastHalf = lastStepString.substring(endIndex, lastStepString.length());
 				lastStepString = firstHalf.concat(lastHalf);
-			} else {
+			} 
+			else {
 				if (child.getValue().getText().contains("[")) {
 					functionRewrite = true;
 				}
@@ -611,16 +619,26 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			}
 			precedingTerm = child.getValue().getText();
 			checkIfRewrite(lastStepString, child);
+			precedingTerm = child.getValue().getText();
 		}
 	}
-
+	
+	private void recursiveShiftHighlight(TreeItem<Text> term){
+		term.getValue().setFill(Color.GREEN);
+		term.getValue().setFont(Font.font("System", FontWeight.BOLD, 12));
+		for (TreeItem<Text> child : term.getChildren()) {
+			recursiveShiftHighlight(child);
+		}
+	}
+	
 	@Override
 	public void dataClosed() {
 		observableBreakpoints = FXCollections.observableArrayList();
 		observableRules = FXCollections.observableArrayList();
 		steps = null;
 		rules = null;
-		totalSteps = lastIndent = currentStep = 0;
+		totalSteps = lastIndent = 0;
+		currentStep = -1;
 		terms_tree.setRoot(null);
 		run.setDisable(true);
 		terminate.setDisable(true);
@@ -640,7 +658,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		}
 		rules = ts.allRules();
 		totalSteps = steps.size();
-		currentStep = 0;
+		currentStep = -1;
 		lastIndent = 0;
 
 		String label = ts.getDbName();
