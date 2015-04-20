@@ -3,15 +3,16 @@ package crsxviz.application.rules;
 import crsxviz.persistence.DataListener;
 import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.beans.RuleDetails;
-import java.net.URL;
+import java.io.IOException;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
@@ -21,7 +22,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 
 
-public class RulesPresenter extends AnchorPane implements Initializable, DataListener {
+public class RulesPresenter extends AnchorPane implements DataListener {
 
     @FXML
     private TextField filter_field;
@@ -33,8 +34,21 @@ public class RulesPresenter extends AnchorPane implements Initializable, DataLis
     private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
     private ObservableList<String> observableRules = FXCollections.observableArrayList();
     
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public RulesPresenter() {
+        initialize();
+    }
+    
+    private void initialize() {
+        final FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(RulesPresenter.class.getResource("rules.fxml"));
+        loader.setController(this);
+        loader.setRoot(this);
+        try {
+            loader.load();
+        } catch (IOException ex) {
+            Logger.getLogger(RulesPresenter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         ts = DataService.getInstance();
         ts.addListener(this);
         

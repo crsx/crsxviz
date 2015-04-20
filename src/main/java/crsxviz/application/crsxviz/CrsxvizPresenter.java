@@ -45,7 +45,7 @@ public class CrsxvizPresenter implements Initializable {
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        rules.getChildren().setAll(loadPane(RULES));
+        rulesPresenter = new RulesPresenter();
         terms.getChildren().setAll(loadPane(TERMS));
         breakpoints.getChildren().setAll(loadPane(BREAKPOINTS));
     }
