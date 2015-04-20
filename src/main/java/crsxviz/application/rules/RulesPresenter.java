@@ -20,19 +20,20 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-
+import javafx.scene.text.*;
+import javafx.scene.paint.Color;
 
 public class RulesPresenter extends AnchorPane implements DataListener {
 
     @FXML
     private TextField filter_field;
     @FXML
-    private ListView<String> rules_list;
+    private ListView<Text> rules_list;
     
     private DataService ts;
 
-    private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
-    private ObservableList<String> observableRules = FXCollections.observableArrayList();
+    private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
+    private ObservableList<Text> observableRules = FXCollections.observableArrayList();
     
     public RulesPresenter() {
         initialize();
@@ -57,9 +58,9 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         MenuItem cmItem = new MenuItem("Set Breakpoint");
         cmItem.setOnAction(
                 (event) -> {
-                    String breakpoint = rules_list.getSelectionModel().getSelectedItem();
-                    if (breakpoint.contains("\n")) {
-                    	breakpoint = breakpoint.substring(0, breakpoint.indexOf("\n"));
+                    Text breakpoint = rules_list.getSelectionModel().getSelectedItem();
+                    if (breakpoint.getText().contains("\n")) {
+                    	breakpoint.setText(breakpoint.getText().substring(0, breakpoint.getText().indexOf("\n")));
                     }
                     observableBreakpoints.add(breakpoint);
                     System.out.println("Breakpoint set on: " + breakpoint);
@@ -95,7 +96,7 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         setFilteredRules(new FilteredList<>(observableRules, p -> true));
     }
     
-    private void setFilteredRules(FilteredList<String> list) {
+    private void setFilteredRules(FilteredList<Text> list) {
         filter_field.textProperty().addListener((observable, oldValue, newValue) -> {
             list.setPredicate(String -> {
                 //empty filter
@@ -103,16 +104,16 @@ public class RulesPresenter extends AnchorPane implements DataListener {
                     return true;
                 }
 
-                return String.toLowerCase().contains(newValue.toLowerCase());
+                return String.getText().toLowerCase().contains(newValue.toLowerCase());
             });
         });
 
-        rules_list.setItems((FilteredList<String>) list);
+        rules_list.setItems((FilteredList<Text>) list);
     }
     
     public void onEntityClicked() {
     	String result = "";
-    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem();
+    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem().getText();
     	if (selection.contains("\n")) {
     		result = selection.substring(0, selection.indexOf("\n"));
     	} else {
@@ -121,7 +122,7 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     	}
     	for (int i = 0; i < observableRules.size(); i++) {
     		if (observableRules.get(i).equals(selection)) {
-    			observableRules.set(i,  result);
+    			observableRules.set(i,  new Text(result));
     		}
     	}
     }
@@ -150,5 +151,13 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         observableRules = FXCollections.observableArrayList();
         rules_list.setItems(observableRules);
         filter_field.clear();
+    }
+        
+    public void setNextRule(String nextRule) {
+    	for ( Text txt : rules_list.getItems()) {
+    		if (txt.getText().equals(nextRule)) {
+    			txt.setFill(Color.BLUE);
+    		}
+    	}
     }
 }

@@ -7,12 +7,13 @@ import crsxviz.persistence.beans.DispatchedRules;
 import crsxviz.persistence.beans.RuleDetails;
 import crsxviz.persistence.beans.Steps;
 import crsxviz.persistence.DataListener;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.text.*;
 
 public enum DataService {
 
@@ -22,7 +23,7 @@ public enum DataService {
     
     private List<DataListener> listeners = new ArrayList<>();
 
-    private static ObservableList<String> breakpoints;
+    private static ObservableList<Text> breakpoints;
 
     private static String dbName;
     private static String url;
@@ -81,14 +82,14 @@ public enum DataService {
         return CompiledSteps.loadStep(url, num);
     }
 
-    public ObservableList<String> allObservableBreakpoints() {
+    public ObservableList<Text> allObservableBreakpoints() {
         return breakpoints;
     }
 
-    public ObservableList<String> allObservableRules() {
+    public ObservableList<Text> allObservableRules() {
         ObservableList list = FXCollections.observableArrayList();
         allRules().stream().forEach(
-                (rule) -> list.add(rule.getValue())
+                (rule) -> list.add(new Text(rule.getValue()))
         );
         return list;
     }
