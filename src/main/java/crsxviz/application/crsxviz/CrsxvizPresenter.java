@@ -168,7 +168,7 @@ public class CrsxvizPresenter implements Initializable {
         termsPresenter.clearDisplay();
         breakpointsPresenter.clearDisplay();
         rulesPresenter.clearDisplay();
-    }*/
+    }
     
     /**
      * Used to initialize the application with a test database.

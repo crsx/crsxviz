@@ -67,8 +67,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	private int totalSteps;
 	private Stack<TreeItem<Text>> nodeStack;
 
-	private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
-	private ObservableList<String> observableRules = FXCollections.observableArrayList();
+	private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
+	private ObservableList<Text> observableRules = FXCollections.observableArrayList();
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -173,8 +173,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		if (currentSliderValue > tempPreviousSliderValue) {
 			step(currentSliderValue - currentStep);
 		} else if (currentSliderValue < tempPreviousSliderValue) {
-			stepBack(currentStep + 1 - currentSliderValue);
-			step(1);
+			stepBack(currentStep - currentSliderValue);
+			step(0);
 		}
 		previousSliderValue = currentSliderValue;
 	}
@@ -187,6 +187,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		if (currentStep < totalSteps && proceed) {
 			Steps s = steps.get(currentStep);
 			//CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
+			//String nextRule = rules.get(steps.get(currentStep+1).getActiveRuleId()).getValue();
+			//CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
 			if (currentStep < totalSteps) {
 				s = steps.get(currentStep);
 				step_over.setDisable(false);
@@ -212,7 +214,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			else{
 				lastIndent = 1;
 			}
-			step_back.setDisable(false);
+			if (currentStep > 0) step_back.setDisable(false);
 		}
 		else{
 			currentStep -= stepsToAdvance;
@@ -507,8 +509,8 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 
 	@FXML
 	void onStepBack() {
-		stepBack(2);
-		step(1);
+		stepBack(1);
+		step(0);
 	}
 	/*
     public void setDbService(DataService service) {
@@ -528,7 +530,6 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			while (currentStep < totalSteps && proceed) {
 				Steps step = steps.get(currentStep + stepsToAdvance);
 				String rule = rules.get(step.getActiveRuleId()).getValue();
-
 				stepsToAdvance++;
 				proceed = !(observableBreakpoints.contains(rule));
 			}

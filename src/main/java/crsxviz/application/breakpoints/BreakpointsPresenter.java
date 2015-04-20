@@ -20,17 +20,18 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.*;
 
 public class BreakpointsPresenter extends AnchorPane implements Initializable, DataListener {
 
     @FXML
-    private ListView<String> breakpoint_list;
+    private ListView<Text> breakpoint_list;
     @FXML
     private MenuButton bp_menu;
 
     private DataService ts;
 
-    private ObservableList<String> observableBreakpoints = FXCollections.observableArrayList();
+    private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
     private List<ActiveRules> rules;
 
     @Override
@@ -54,7 +55,7 @@ public class BreakpointsPresenter extends AnchorPane implements Initializable, D
                     String currentRule = rule.getValue();
                     if (currentRule.matches(exp) && !breakpoint_list.getItems().contains(currentRule)) {
                         System.out.println("pattern matched " + exp);
-                        observableBreakpoints.add(currentRule);
+                        observableBreakpoints.add(new Text(currentRule));
                     }
                 }
             } catch (PatternSyntaxException e) {
@@ -71,7 +72,7 @@ public class BreakpointsPresenter extends AnchorPane implements Initializable, D
 
     @FXML
     public void removeBreakpoint(ActionEvent event) {
-        String breakpoint = breakpoint_list.getSelectionModel().getSelectedItem();
+        String breakpoint = breakpoint_list.getSelectionModel().getSelectedItem().getText();
         observableBreakpoints.remove(breakpoint);
         System.out.println("Removed breakpoint: " + breakpoint);
     }
