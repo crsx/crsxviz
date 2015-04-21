@@ -189,9 +189,9 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		}
 		if (currentStep < totalSteps && proceed) {
 			Steps s = steps.get(currentStep);
-			//CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
-			//String nextRule = rules.get(steps.get(currentStep+1).getActiveRuleId()).getValue();
-			//CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
+			CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
+			String nextRule = rules.get(steps.get(currentStep+1).getActiveRuleId()).getValue();
+			CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
 			if (currentStep < totalSteps) {
 				s = steps.get(currentStep);
 				step_over.setDisable(false);
@@ -352,7 +352,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			precedingLastString = "";
 			precedingTerm = "";
 			checkIfRewrite(lastStepString, terms_tree.getRoot());
-		}   
+		}
 	}
 
 	void stepBack(int stepsToGoBack){
@@ -361,7 +361,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 			currentStep = 0;
 		}
 		Steps s = steps.get(currentStep + 1);
-		//CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
+		CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
 		if (currentStep <= 0) {
 			step_back.setDisable(true);
 		} else {
@@ -679,5 +679,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		terminate.setDisable(false);
 		proceed = true;
 		onStepInto(null);
+		onStepInto(null);
+		onStepBack();
 	}
 }
