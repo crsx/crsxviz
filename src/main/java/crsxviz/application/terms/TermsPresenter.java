@@ -347,6 +347,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 					}
 				}
 			}
+			terms_tree.getRoot().getChildren().add(new TreeItem<Text>(new Text("]")));
 			expandChildren(terms_tree.getRoot());
 			precedingLastString = "";
 			precedingTerm = "";
@@ -456,7 +457,6 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 							nodeStack.push(endIndentNode);
 							thisStepString = thisStepString.substring(endIndentIndex + 1, thisStepString.length());
 						}
-
 					}
 				}
 				else if((nextSiblingIndex < nextChildIndex) && (nextSiblingIndex < endIndentIndex)){
@@ -507,6 +507,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 					}
 				}
 			}
+			terms_tree.getRoot().getChildren().add(new TreeItem<Text>(new Text("]")));
 			expandChildren(terms_tree.getRoot());
 		}
 	}
@@ -531,7 +532,7 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	void jumpToNextStep() {
 		if (!observableBreakpoints.isEmpty()) {
 			int stepsToAdvance = 0;
-			while (currentStep < totalSteps && proceed) {
+			while (currentStep < totalSteps - 1 && proceed) {
 				Steps step = steps.get(currentStep + stepsToAdvance);
 				String rule = rules.get(step.getActiveRuleId()).getValue();
 				stepsToAdvance++;
