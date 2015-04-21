@@ -211,7 +211,6 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 				step_over.setDisable(true);
 			}
 			if(currentStep > 0){
-				s = steps.get(currentStep - 1);
 				lastIndent = s.getIndentation();
 			}
 			else{
