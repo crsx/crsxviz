@@ -190,8 +190,11 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 		if (currentStep < totalSteps && proceed) {
 			Steps s = steps.get(currentStep);
 			CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
-			String nextRule = rules.get(steps.get(currentStep+1).getActiveRuleId()).getValue();
-			CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
+			if (currentStep < totalSteps-1)
+			{
+				int nextRule = steps.get(currentStep+1).getActiveRuleId();
+				CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
+			}
 			if (currentStep < totalSteps) {
 				s = steps.get(currentStep);
 				step_over.setDisable(false);

@@ -3,6 +3,7 @@ package crsxviz.application.rules;
 import crsxviz.persistence.DataListener;
 import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.beans.RuleDetails;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -63,17 +64,17 @@ public class RulesPresenter extends AnchorPane implements DataListener {
                     	breakpoint.setText(breakpoint.getText().substring(0, breakpoint.getText().indexOf("\n")));
                     }
                     observableBreakpoints.add(breakpoint);
-                    System.out.println("Breakpoint set on: " + breakpoint);
+                    System.out.println("Breakpoint set on: " + breakpoint.getText());
                 }
         );
 
         cMenu.getItems().add(cmItem);
         rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 (event) -> {
-                	this.onEntityClicked();
                     if (event.getButton() == MouseButton.SECONDARY) {
                         cMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
                     }
+                    else this.onEntityClicked();
                 }
         );
     }
@@ -112,17 +113,17 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     }
     
     public void onEntityClicked() {
-    	String result = "";
-    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem().getText();
-    	if (selection.contains("\n")) {
-    		result = selection.substring(0, selection.indexOf("\n"));
+    	Text result = new Text("");
+    	Text selection = rules_list.selectionModelProperty().getValue().getSelectedItem();
+    	if (selection.getText().contains("\n")) {
+    		result.setText(selection.getText().substring(0, selection.getText().indexOf("\n")));
     	} else {
-	    	List<RuleDetails> l = ts.getRuleDetails(selection);
-	    	result = RuleDetails.toString(l);
+	    	List<RuleDetails> l = ts.getRuleDetails(selection.getText());
+	    	result.setText(RuleDetails.toString(l));
     	}
     	for (int i = 0; i < observableRules.size(); i++) {
     		if (observableRules.get(i).equals(selection)) {
-    			observableRules.set(i,  new Text(result));
+    			observableRules.set(i,  result);
     		}
     	}
     }
@@ -153,11 +154,11 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         filter_field.clear();
     }
         
-    public void setNextRule(String nextRule) {
-    	for ( Text txt : rules_list.getItems()) {
-    		if (txt.getText().equals(nextRule)) {
-    			txt.setFill(Color.BLUE);
-    		}
-    	}
+    public void setNextRule(int nextRule) {
+    	rules_list.getItems().get(nextRule).setFill(Color.BLUE);
+    	ObservableList items = rules_list.getItems();
+    	Text item = (Text) items.get(nextRule);
+    	Color color = (Color)item.getFill();
+    	rules_list.getItems().get(nextRule).setFont(Font.font("System", FontWeight.BOLD, 12));
     }
 }

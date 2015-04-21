@@ -72,9 +72,9 @@ public class BreakpointsPresenter extends AnchorPane implements Initializable, D
 
     @FXML
     public void removeBreakpoint(ActionEvent event) {
-        String breakpoint = breakpoint_list.getSelectionModel().getSelectedItem().getText();
+        Text breakpoint = breakpoint_list.getSelectionModel().getSelectedItem();
         observableBreakpoints.remove(breakpoint);
-        System.out.println("Removed breakpoint: " + breakpoint);
+        System.out.println("Removed breakpoint: " + breakpoint.getText());
     }
 
     public void setDbService(DataService service) {
