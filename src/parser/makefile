@@ -13,7 +13,7 @@ LIBS = -lpthread -ldl -lsqlite3
 
 all: crsx_parse
 
-_OBJ = main.o Step.o Cookies.o ActiveRules.o
+_OBJ = main.o Step.o Cookies.o ActiveRules.o CrsD.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp

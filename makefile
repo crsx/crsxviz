@@ -58,3 +58,7 @@ clean:
 	rm -f $(BASE_DIR)/crsxviz.deb
 	+make clean -f $(PARSER_SRC_DIR)/makefile CRSXVIZ_DIR=$(CRSXVIZ_DIR)
 	mvn clean
+	
+clean_parser:
+	rm -rf $(BASE_DIR)/bin/
+	+make clean -f $(PARSER_SRC_DIR)/makefile CRSXVIZ_DIR=$(CRSXVIZ_DIR)

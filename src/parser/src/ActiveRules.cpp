@@ -33,7 +33,7 @@ int ActiveRuleManager::GetActiveRuleID(string &s) {
 		}
 	}
 	if (!matched) {
-		//s = s.substr(0, s.find('['));
+		s = s.substr(0, s.find('['));
 		int rc = sqlite3_reset(ActiveRuleInsertStmt);
 		if (rc != SQLITE_OK) {
 			cout << "Error " << rc << " resetting statement" << endl;

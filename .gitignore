@@ -7,3 +7,5 @@ crsxviz.jar
 /bin/
 /*.jar
 /junit/
+
+src/parser/parser_win/
