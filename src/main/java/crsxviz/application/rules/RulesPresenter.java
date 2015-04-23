@@ -1,27 +1,24 @@
 package crsxviz.application.rules;
 
 import crsxviz.persistence.DataListener;
-import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.beans.RuleDetails;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import crsxviz.persistence.services.DataService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RulesPresenter extends AnchorPane implements DataListener {
 
@@ -32,8 +29,8 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     
     private DataService ts;
 
-    private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
-    private ObservableList<Text> observableRules = FXCollections.observableArrayList();
+    private ObservableList<Text> observableBreakpoints;
+    private ObservableList<Text> observableRules;
     
     public RulesPresenter() {
         initialize();
@@ -41,59 +38,29 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     
     private void initialize() {
         final FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(RulesPresenter.class.getResource("rules.fxml"));
+        loader.setLocation(getClass().getResource("rules.fxml"));
         loader.setController(this);
         loader.setRoot(this);
         try {
             loader.load();
         } catch (IOException ex) {
-            Logger.getLogger(RulesPresenter.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
         
         ts = DataService.getInstance();
         ts.addListener(this);
-        
-        // Generate Context Menu for Rules
-        final ContextMenu cMenu = new ContextMenu();
-        MenuItem cmItem = new MenuItem("Set Breakpoint");
-        cmItem.setOnAction(
-                (event) -> {
-                    Text breakpoint = rules_list.getSelectionModel().getSelectedItem();
-                    if (breakpoint.getText().contains("\n")) {
-                    	breakpoint.setText(breakpoint.getText().substring(0, breakpoint.getText().indexOf("\n")));
-                    }
-                    observableBreakpoints.add(breakpoint);
-                    System.out.println("Breakpoint set on: " + breakpoint);
-                }
-        );
 
-        cMenu.getItems().add(cmItem);
-        rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                (event) -> {
-                	this.onEntityClicked();
-                    if (event.getButton() == MouseButton.SECONDARY) {
-                        cMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
-                    }
-                }
-        );
-    }
-    
-    public void setDbService(DataService service) {
-        this.ts = service;
+        rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> onEntityClicked());
     }
 
-    /**
-     * Initializes the Presenter to an initial state where either a
-     * database has been opened and thus will display the correct state of
-     * buttons along with initial term tree, or where a database has not been 
-     * opened.
-     */
-    public void initiateData() {
-        observableRules = ts.allObservableRules();
-        observableBreakpoints = ts.allObservableBreakpoints();
-        
-        rules_list.setItems(observableRules);
-        setFilteredRules(new FilteredList<>(observableRules, p -> true));
+    @FXML
+    public void setBreakpoint() {
+        Text breakpoint = new Text(rules_list.getSelectionModel().getSelectedItem().getText());
+        if (breakpoint.getText().contains("\n")) {
+            breakpoint.setText(breakpoint.getText().substring(0, breakpoint.getText().indexOf("\n")));
+        }
+        observableBreakpoints.add(breakpoint);
+        System.out.println("Breakpoint set on: " + breakpoint);
     }
     
     private void setFilteredRules(FilteredList<Text> list) {
@@ -108,17 +75,17 @@ public class RulesPresenter extends AnchorPane implements DataListener {
             });
         });
 
-        rules_list.setItems((FilteredList<Text>) list);
+        rules_list.setItems(list);
     }
-    
-    public void onEntityClicked() {
-    	String result = "";
-    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem().getText();
-    	if (selection.contains("\n")) {
-    		result = selection.substring(0, selection.indexOf("\n"));
-    	} else {
-	    	List<RuleDetails> l = ts.getRuleDetails(selection);
-	    	result = RuleDetails.toString(l);
+
+    private void onEntityClicked() {
+        String result = "";
+        Text selection = rules_list.selectionModelProperty().getValue().getSelectedItem();
+        if (selection.getText().contains("\n")) {
+            result = selection.getText().substring(0, selection.getText().indexOf("\n"));
+        } else {
+            List<RuleDetails> l = ts.getRuleDetails(selection.getText());
+            result = RuleDetails.toString(l);
     	}
     	for (int i = 0; i < observableRules.size(); i++) {
     		if (observableRules.get(i).equals(selection)) {
@@ -129,7 +96,7 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     
     /**
      * Highlights the given rule in the Rules pane
-     * @param ruleId 
+     * @param ruleId id of the rule to be highlighted
      */
     public void highlightActiveRule(int ruleId) {
         rules_list.getSelectionModel().select(ruleId);

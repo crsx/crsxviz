@@ -1,41 +1,54 @@
 package crsxviz.application.breakpoints;
 
-import static crsxviz.application.crsxrunner.Controller.showError;
+import crsxviz.application.Utilities;
 import crsxviz.persistence.DataListener;
 import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.services.DataService;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.regex.PatternSyntaxException;
 import javafx.collections.FXCollections;
-
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuButton;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.*;
+import javafx.scene.text.Text;
 
-public class BreakpointsPresenter extends AnchorPane implements Initializable, DataListener {
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
+
+import static crsxviz.application.crsxrunner.Controller.showError;
+
+public class BreakpointsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     private ListView<Text> breakpoint_list;
-    @FXML
-    private MenuButton bp_menu;
 
     private DataService ts;
 
     private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
     private List<ActiveRules> rules;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public BreakpointsPresenter() {
+        initialize();
+    }
+
+    private void initialize() {
+        final FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource("breakpoints.fxml"));
+        loader.setRoot(this);
+        loader.setController(this);
+        try {
+            loader.load();
+        } catch (IOException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+        }
+
         rules = new ArrayList<>();
         ts = DataService.getInstance();
         ts.addListener(this);
@@ -53,7 +66,8 @@ public class BreakpointsPresenter extends AnchorPane implements Initializable, D
             try {
                 for (ActiveRules rule : rules) {
                     String currentRule = rule.getValue();
-                    if (currentRule.matches(exp) && !breakpoint_list.getItems().contains(currentRule)) {
+                    if (currentRule.matches(exp) && !Utilities.contains(breakpoint_list.getItems(), currentRule)) {
+                        //if (currentRule.matches(exp) && !breakpoint_list.getItems().contains(currentRule)) {
                         System.out.println("pattern matched " + exp);
                         observableBreakpoints.add(new Text(currentRule));
                     }
@@ -72,23 +86,9 @@ public class BreakpointsPresenter extends AnchorPane implements Initializable, D
 
     @FXML
     public void removeBreakpoint(ActionEvent event) {
-        String breakpoint = breakpoint_list.getSelectionModel().getSelectedItem().getText();
+        Text breakpoint = breakpoint_list.getSelectionModel().getSelectedItem();
         observableBreakpoints.remove(breakpoint);
-        System.out.println("Removed breakpoint: " + breakpoint);
-    }
-
-    public void setDbService(DataService service) {
-        this.ts = service;
-    }
-
-    /**
-     * Initializes the Presenter to an initial state where either a database has
-     * been opened and thus will display the correct state of buttons along with
-     * initial term tree, or where a database has not been opened.
-     */
-    public void initiateData() {
-        observableBreakpoints = ts.allObservableBreakpoints();
-        breakpoint_list.setItems(observableBreakpoints);
+        System.out.println("Removed breakpoint: " + breakpoint.getText());
     }
 
     @Override
@@ -97,8 +97,8 @@ public class BreakpointsPresenter extends AnchorPane implements Initializable, D
         breakpoint_list.setItems(observableBreakpoints);
         rules = ts.allRules();
     }
-    
-        @Override
+
+    @Override
     public void dataClosed() {
         observableBreakpoints = FXCollections.observableArrayList();
         breakpoint_list.setItems(observableBreakpoints);

@@ -6,30 +6,25 @@ import crsxviz.persistence.beans.ActiveRules;
 import crsxviz.persistence.beans.CompiledSteps;
 import crsxviz.persistence.beans.Steps;
 import crsxviz.persistence.services.DataService;
-
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Stack;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-public class TermsPresenter extends AnchorPane implements Initializable, DataListener {
+import java.io.IOException;
+import java.util.List;
+import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class TermsPresenter extends AnchorPane implements DataListener {
 
 	@FXML
 	private Button step_into;
@@ -57,9 +52,9 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	private DataService ts;
 
 	private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
-	
-	String precedingLastString = "";
-	String precedingTerm = "";
+
+	private String precedingLastString = "";
+	private String precedingTerm = "";
 	
 	// Controls progress through the trace by providing means to pause
 	// in a given location, used primarily to pause on breakpoints
@@ -73,8 +68,21 @@ public class TermsPresenter extends AnchorPane implements Initializable, DataLis
 	private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
 	private ObservableList<Text> observableRules = FXCollections.observableArrayList();
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
+	public TermsPresenter() {
+		initialize();
+	}
+
+	private void initialize() {
+		final FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(getClass().getResource("terms.fxml"));
+		loader.setRoot(this);
+		loader.setController(this);
+		try {
+			loader.load();
+		} catch (IOException ex) {
+			Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+		}
+
 		trace_label.setText("No trace file opened");
 		initialSliderState();
 		step_specifier.setText("");
