@@ -200,8 +200,8 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 			CrsxvizPresenter.getRulesPresenter().highlightActiveRule(s.getActiveRuleId());
 			if (currentStep < totalSteps-1)
 			{
-				int nextRule = steps.get(currentStep+1).getActiveRuleId();
-				CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
+				//int nextRule = steps.get(currentStep+1).getActiveRuleId();
+				//CrsxvizPresenter.getRulesPresenter().setNextRule(nextRule);
 			}
 			if (currentStep < totalSteps) {
 				s = steps.get(currentStep);
