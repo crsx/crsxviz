@@ -13,7 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
+import javafx.scene.text.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -120,11 +120,9 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         filter_field.clear();
     }
         
-    public void setNextRule(String nextRule) {
-    	for ( Text txt : rules_list.getItems()) {
-    		if (txt.getText().equals(nextRule)) {
-    			txt.setFill(Color.BLUE);
-    		}
-    	}
+
+    public void setNextRule(int nextRule) {
+     	rules_list.getItems().get(nextRule).setFill(Color.BLUE);
+       	rules_list.getItems().get(nextRule).setFont(Font.font("System", FontWeight.BOLD, 12));
     }
 }
