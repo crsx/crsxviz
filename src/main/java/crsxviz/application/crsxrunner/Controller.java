@@ -24,6 +24,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.DirectoryChooser;
 
 public class Controller {
 
@@ -70,6 +71,9 @@ public class Controller {
     private Button btnBrowseExe;
 
     @FXML
+    private Button btnBrowseCrs;
+
+    @FXML
     private AnchorPane ParserRunnerPane;
 
     @FXML
@@ -80,6 +84,9 @@ public class Controller {
 
     @FXML
     private TextField txtOutPath;
+
+    @FXML
+    private TextField txtCrsPath;
 
     @FXML
     private Button btnBrowseOutPath;
@@ -115,6 +122,17 @@ public class Controller {
             txtExecutable.setText(val);
         }
     }
+    
+    private File doCrsBrowse() {
+    	DirectoryChooser dirPick = new DirectoryChooser();
+    	File selectedDir = dirPick.showDialog(stage);
+    	if (selectedDir == null || !selectedDir.exists()) {
+    		txtCrsPath.setText("");
+    	} else {
+    		txtCrsPath.setText(selectedDir.getAbsolutePath());
+    	}
+    	return selectedDir;
+    }
 
     private boolean isActivate(KeyEvent event) {
         switch (event.getCode()) {
@@ -136,6 +154,18 @@ public class Controller {
     @FXML
     void onClickExeBrowse(MouseEvent event) {
         doExeBtn();
+    }
+    
+    @FXML
+    void onCrsBrowseKey(KeyEvent event) {
+        if (isActivate(event)) {
+            doCrsBrowse();
+        }
+    }
+    
+    @FXML
+    void onClickCrsBrowse(MouseEvent event) {
+    	doCrsBrowse();
     }
 
     private void doBrowseInFile() {
@@ -192,11 +222,16 @@ public class Controller {
         File exeFile = new File(txtExecutable.getText());
         File inFile = new File(txtInFilePath.getText());
         File outFile = new File(txtOutPath.getText());
+        File crsDir = new File(txtCrsPath.getText());
         String inTerm = txtaInTerm.getText();
         String wrapper = txtWrapper.getText();
         if (!exeFile.exists() || !exeFile.canExecute()) {
             showError("Configuration Error", "CRSX compiled program to run must exist and be executable");
             return;
+        }
+        if (!crsDir.exists() || !crsDir.isDirectory() || !crsDir.canRead()) {
+        	showError("Configuration Error", "Invalid CRS file directory");
+        	return;
         }
         if (outFile.getPath().length() == 0) {
             showError("Configuration Error", "Output file cannot be empty");
@@ -240,13 +275,13 @@ public class Controller {
         if (wrapper.length() == 0) {
             wrapper = null;
         }
-
+        
         btnStart.setDisable(true);
         statusIndicator.setVisible(true);
         lblStatus.setText("Running");
         try {
             Runner r = new Runner();
-            String output = r.run(exeFile.getAbsolutePath(), wrapper, inTerm, outFile.getAbsolutePath());
+            String output = r.run(exeFile.getAbsolutePath(), crsDir.getAbsolutePath(), wrapper, inTerm, outFile.getAbsolutePath());
             lblStatus.setText("Completed");
             processingRan = true;
             Alert alert = new Alert(AlertType.INFORMATION);
