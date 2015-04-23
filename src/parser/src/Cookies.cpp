@@ -81,6 +81,7 @@ void BlobCookie::addCookie(string s) {
 	if (s.length() == 0)
 		return;
 	cookieIDs.push_back(CookieManager::GetCookieID(s));	
+	cookieList.push_back(s);
 #endif
 }
 

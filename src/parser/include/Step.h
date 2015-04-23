@@ -1,7 +1,10 @@
 #include <vector>
 #include <string>
+extern "C" {
 #include <sqlite3.h>
+}
 #include <include/Cookies.h>
+#include <deque>
 
 /** Processes step stages from crsxviz output from a crsx compiler into database entries
 */
@@ -30,7 +33,7 @@ public:
 
 	/** The indentation level of the step
 	*/
-	int indent;
+	size_t indent;
 
 	/** Flag for if the step is a begin or complete
 	*/
@@ -60,6 +63,8 @@ public:
 	/** The cookies that were detected by the compiler
 	*/
 	BlobCookie cookies;
+
+	static void compiledInsert(std::string, std::string, std::string);
 	
 private:
 	/** Initializes Step static prepared statements for use with the DB
@@ -76,6 +81,14 @@ private:
 	/** Static class internal storage of prepared statement for completing step stages
 	*/
 	static sqlite3_stmt* StepsUpdateStmt;
+
+	/** Static class internal storage of prepared statement for completing step stages
+	*/
+	static sqlite3_stmt* CompiledInsertStmt;
+
+	/** Static class internal storage of prepared statement for completing step stages
+	*/
+	static sqlite3_stmt* CompiledFirstInsertStmt;
 
 	static constexpr const char * TableSchema = R"(CREATE TABLE `Steps` (
 	`StepNum`        INTEGER NOT NULL PRIMARY KEY UNIQUE,
@@ -107,6 +120,23 @@ private:
 	CompleteAllocs = ?, CompleteFrees = ?, CompleteData = ?
 	WHERE StepNum = ?)";
 
+	static constexpr const char * CompiledSchema = R"(CREATE TABLE `CompiledSteps`(
+	id INTEGER PRIMARY KEY   AUTOINCREMENT,
+	left TEXT,
+	center TEXT,
+	right TEXT);)";
+
+	static constexpr const char * CompiledInsertTemplate = R"(INSERT INTO `CompiledSteps`
+	(`left`, `center`, `right`)
+	VALUES (?, ?, ?);)";
+
+	static constexpr const char * CompiledFirstInsertTemplate = R"(INSERT INTO `CompiledSteps`
+	(`id`, `left`, `center`, `right`)
+	VALUES (0,?, ?, ?);)";
+
+	static constexpr const char * CompiledTableFixAutoincrement = R"(INSERT INTO `SQLITE_SEQUENCE`
+	(seq, name) VALUES ('-1', 'CompiledSteps');)";
+
 	/** Uses StepsInsertStmt to add the Step to the database
 	*   @throws runtime_error There was an error inserting into the database
 	*/
@@ -122,4 +152,27 @@ private:
 	*   @throws runtime_error when the string does not match the expected format
 	*/
 	void parseStepHeader (std::string &s);
+
+	typedef struct SplitStep_s {
+		std::string left;
+		std::string center;
+		std::string right;
+	}SplitStep;
+
+	/** Gets the section of the string enclosed by the outer most []
+	*   @param s The string to parse
+	*   @return The left, center, and right subsections of the string delimited by []
+	*/
+	SplitStep getSection(std::string &s, size_t minOffset = 0);
+
+	SplitStep rowSplit();
+
+	static size_t lastIndent;
+	static std::deque<std::string> left;
+	static std::deque<std::string> right;
+	static Step::SplitStep prev;
+	static std::string left_flat;
+	static std::string right_flat;
+
+	static bool firstWrite;
 };
