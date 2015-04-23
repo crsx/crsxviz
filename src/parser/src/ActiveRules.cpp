@@ -13,7 +13,7 @@ void ActiveRuleManager::CreateActiveRuleTable(sqlite3* db) {
 	if (!db)
 		throw invalid_argument("Database pointer cannot be NULL");
 	
-	char *errMsg = NULL;
+	char *errMsg = NULL; 
 	int rc = sqlite3_exec(db, TableSchema, NULL, 0, &errMsg);
 	if (rc != SQLITE_OK){
 		fprintf(stderr, "SQL error: %s\n", errMsg);
@@ -33,6 +33,7 @@ int ActiveRuleManager::GetActiveRuleID(string &s) {
 		}
 	}
 	if (!matched) {
+		//s = s.substr(0, s.find('['));
 		int rc = sqlite3_reset(ActiveRuleInsertStmt);
 		if (rc != SQLITE_OK) {
 			cout << "Error " << rc << " resetting statement" << endl;

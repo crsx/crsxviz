@@ -135,7 +135,6 @@ def doMain():
         sql.execute("ALTER TABLE `ActiveRules` ADD COLUMN 'UsedInTrace' INTEGER;")
         sql.execute("UPDATE `ActiveRules` SET UsedInTrace=1;")
         sql.execute("CREATE TABLE `DispatchedRules`(ActiveRuleID INTEGER, SrcRuleName TEXT, SrcRuleOffset INTEGER, SrcRuleIdent TEXT, SrcRuleArgs TEXT, StartState TEXT, EndState TEXT);")
-        sql.execute("CREATE TABLE `CompiledSteps`(id INTEGER PRIAMRY KEY AUTO INCREMENT, left TEXT, center TEXT, right TEXT);")
     elif tableCols == 5:
         Print("\nDatabase already has RuleBody column.\nNotice: all existing rule body lines will be overwritten")
     else:
@@ -143,6 +142,7 @@ def doMain():
         SystemExit("Unsupported existing column count in ActiveRules")
     
     Print(r"Removing [\d+] from rule names")
+        
     existingRows = list()
     sql.execute("SELECT `Value`, `ActiveRuleID` FROM `ActiveRules`;")
     for tpl in sql.fetchall():
@@ -167,12 +167,6 @@ def doMain():
         for r in foundRules[name][1]:
             Print("\tAdding dispatched rule data")
             sql.execute('INSERT INTO `DispatchedRules` VALUES ((SELECT ActiveRuleID FROM `ActiveRules` WHERE `Value`=?),?,?,?,?,?,?);', (name, r.group(1), r.group(2), r.group(3), r.group(4), r.group(5), r.group(6)))
-    
-    conn.commit()
-
-    compiled = doTbl(getTbl(conn))
-    for l in compiled:
-        sql.execute('INSERT INTO `CompiledSteps` (`left`, `center`, `right`) VALUES (?, ?, ?);', (l[0], l[1], l[2]))
 
     conn.commit()
     Print("\nTrace update completed")
@@ -212,55 +206,6 @@ def bufToIntArray(buf):
             tmp += ord(buf[i*4 + j])
         ret.append(tmp)
     return ret
-
-def rowSplit(r):
-    lastCookieStart = r[9][-1].split(u"[")[0]+"["
-    p = getSection(r[7][r[7].find(lastCookieStart):])
-    return p
-
-def doTbl(tbl):
-    leftStack = list()
-    leftStack.append("")
-    rightStack = list()
-    rightStack.append("")
-    lines = list()
-    for i in range(len(tbl)):
-        if i == 0:
-            lines.append(["", tbl[i][7], ""])
-            continue
-        if tbl[i - 1][1] < tbl[i][1]:
-            prev = rowSplit(tbl[i - 1])
-            leftStack.append(prev[0])
-            rightStack.append(prev[2])
-        if tbl[i - 1][1] > tbl[i][1]:
-            leftStack.pop()
-            rightStack.pop()
-        rightStack.reverse()
-        line = ["".join(leftStack), tbl[i][7], "".join(rightStack)]
-        rightStack.reverse()
-        lines.append(line)
-    if tbl[len(tbl)-1][1] == 1:
-        lines.append(["", tbl[len(tbl)-1][8], ""])
-    return lines
-
-def getTbl(conn):
-    sql = conn.cursor()
-    sql.execute("SELECT * FROM `Cookies`;")
-    cookiesTbl = sql.fetchall()
-    cookies = list()
-    for row in cookiesTbl:
-        cookies.append(row[1])
-    sql.execute("SELECT * FROM `Steps`;")
-    rtbl = sql.fetchall()
-    tbl = list()
-    for row in rtbl:
-        r = bufToIntArray(row[9])
-        tmp = list(row)
-        for ofs in range(len(r)):
-            r[ofs] = cookies[r[ofs]]
-        tmp[9] = r
-        tbl.append(tmp)
-    return tbl
 
 if __name__ == "__main__":
     global args

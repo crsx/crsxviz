@@ -115,5 +115,7 @@ int main(int argc, char* argv[]) {
 	}
 	cout << "Result: " << lastLine << endl;
 
+	Step::compiledInsert("", lastLine, "");
+
 	sqlite3_close(db);
 }
