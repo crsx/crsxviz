@@ -1,63 +1,37 @@
 package crsxviz.application.crsxviz;
 
 
+import crsxviz.application.breakpoints.BreakpointsPresenter;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.layout.AnchorPane;
-import crsxviz.application.breakpoints.BreakpointsPresenter;
 import static crsxviz.application.crsxrunner.Controller.showError;
 import crsxviz.application.crsxrunner.RunnerDialog;
 import crsxviz.application.rules.RulesPresenter;
 import crsxviz.application.terms.TermsPresenter;
-import crsxviz.persistence.services.DataService;
+import crsxviz.persistence.services.IDataService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class CrsxvizPresenter implements Initializable {
 
-    private static final String RULES = "../rules/rules.fxml";
-    private static final String BREAKPOINTS = "../breakpoints/breakpoints.fxml";
-    private static final String TERMS = "../terms/terms.fxml";
-    
-    @FXML
-    AnchorPane terms;
-    @FXML
-    AnchorPane rules;
-    @FXML
-    AnchorPane breakpoints;
-
-    private DataService ts = DataService.getInstance("out.db");
+    private IDataService ts;
 
     private String dbpath;
 
     private static RulesPresenter rulesPresenter;
+    private static TermsPresenter termsPresenter;
+    private static BreakpointsPresenter breakpointsPresenter;
 
-    private Stage stage;
-    
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        rulesPresenter = new RulesPresenter();
-        terms.getChildren().setAll(loadPane(TERMS));
-        breakpoints.getChildren().setAll(loadPane(BREAKPOINTS));
-    }
-
-    private Node loadPane(String fxml) {
-        Node node = null;
-        try {
-            node = (Node) FXMLLoader.load( getClass().getResource(fxml) );
-        } catch (IOException ex) {
-            Logger.getLogger(CrsxvizPresenter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return node;
+        rulesPresenter = RulesPresenter.getPresenter();
+        termsPresenter = TermsPresenter.getPresenter();
+        breakpointsPresenter = BreakpointsPresenter.getPresenter();
     }
     
     @FXML
@@ -70,7 +44,7 @@ public class CrsxvizPresenter implements Initializable {
             fileChooser.setTitle("Open Trace File");
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("SQLite3 Database Files", "*.db"));
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All formats", "*"));
-            File selectedFile = fileChooser.showOpenDialog(stage);
+            File selectedFile = fileChooser.showOpenDialog(new Stage());
             if (selectedFile == null) {
                 dbpath = null;
                 System.out.println("Browse aborted");
@@ -121,16 +95,20 @@ public class CrsxvizPresenter implements Initializable {
     void onAbout(ActionEvent event) {
         System.out.println("onAbout...");
     }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
     
-    public void setService(DataService ts) {
+    /**
+     * Set the service to be used by the controller to get data.
+     * 
+     * @param ts The service to be used
+     */
+    public void setService(IDataService ts) {
         this.ts = ts;
-        DataService.init(this.ts.getDbName());
-        ts.dataReloaded();
-        //reloadPresenters();
+        
+        rulesPresenter.setService(ts);
+        termsPresenter.setService(ts);
+        breakpointsPresenter.setService(ts);
+        
+        ts.dataRequiresReload();
     }
     
     /**
@@ -143,48 +121,8 @@ public class CrsxvizPresenter implements Initializable {
      */
     private void loadDb(String db) {
         if (db != null) {
-            DataService.init(db);
-            ts.dataReloaded();
+            ts.setDataName(db);
+            this.setService(ts);
         }
-        //reloadPresenters();
-    }
-    
-    /**
-     * Forces a reload of Presenters following a new database being opened.
-     * 
-     * This effectively shows the new data accessed by the new database.
-     *
-    private void reloadPresenters() {
-        breakpointsPresenter.initiateData();
-        rulesPresenter.initiateData();
-        termsPresenter.initiateData();
-    }
-    
-    /**
-     * Clears the data shown by the presenters. This sets all buttons
-     * to their initial states along with erasing data of all lists.
-     *
-    public void clearControls() {
-        termsPresenter.clearDisplay();
-        breakpointsPresenter.clearDisplay();
-        rulesPresenter.clearDisplay();
-    }
-    
-    /**
-     * Used to initialize the application with a test database.
-     * testInitialize requires the TraceService testInstance
-     * @param dbname Name of test database
-     */
-    public void testInitialize(String dbname) {
-        loadDb(dbname);
-    }
-    
-    /**
-     * Retrieve the presenter of the rule view. 
-     * 
-     * @return Retrieve the presenter for the rule view.
-     */
-    public static RulesPresenter getRulesPresenter() {
-        return rulesPresenter;
     }
 }

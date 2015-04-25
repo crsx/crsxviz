@@ -9,40 +9,30 @@ import crsxviz.persistence.beans.Steps;
 import crsxviz.persistence.DataListener;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.text.*;
 
-public enum DataService {
-
-    INSTANCE;
-
-    private static final String DEFAULT_DATABASE = "out.db";
+public class DataService implements IDataService {
     
-    private List<DataListener> listeners = new ArrayList<>();
+    private final List<DataListener> listeners = new ArrayList<>();
 
     private static ObservableList<Text> breakpoints;
 
-    private static String dbName;
-    private static String url;
-
-    public static DataService getInstance(String dbName) {
-        DataService.init(dbName);
-        return INSTANCE;
+    private String dbName;
+    private String url = new String();
+    
+    @Override
+    public String getDataName() {
+        return (dbName != null) ? dbName : "";
     }
     
-    public static DataService getInstance() {
-        return INSTANCE;
-    }
-
-    public static void init() {
-        init(DEFAULT_DATABASE);
-    }
-
-    public static void init(String dbpath) {
-        dbName = dbpath;
+    @Override
+    public void setDataName(String dbpath) {
+        this.dbName = dbpath;
         breakpoints = FXCollections.observableArrayList();
         url = "jdbc:sqlite:" + dbpath;
         if (!url.endsWith(".db")) {
@@ -50,61 +40,71 @@ public enum DataService {
         }
     }
 
-    public String getDbName() {
-        return (dbName != null) ? dbName : "";
-    }
-
+    @Override
     public List<RuleDetails> getRuleDetails(String ruleName) {
-        return ActiveRules.getRuleDetails(ruleName, url);
+        return url.isEmpty() ? new LinkedList<>() : ActiveRules.getRuleDetails(ruleName, url);
     }
 
+    @Override
     public List<ActiveRules> allRules() {
-        return ActiveRules.loadAllRules(url);
+        return url.isEmpty() ? new LinkedList<>() : ActiveRules.loadAllRules(url);
     }
 
+    @Override
     public List<Cookies> allCookies() {
-        return Cookies.loadAllCookies(url);
+        return url.isEmpty() ? new LinkedList<>() : Cookies.loadAllCookies(url);
     }
 
+    @Override
     public List<Steps> allSteps() {
-        return Steps.loadAllSteps(url);
+        return url.isEmpty() ? new LinkedList<>() : Steps.loadAllSteps(url);
     }
 
+    @Override
     public List<CompiledSteps> allCompiledSteps() {
-        return CompiledSteps.loadAll(url);
+        return url.isEmpty() ? new LinkedList<>() : CompiledSteps.loadAll(url);
     }
 
+    @Override
     public List<DispatchedRules> allDispatchedRules() {
-        return DispatchedRules.loadAllDispatchtedRules(url);
+        return url.isEmpty() ? new LinkedList<>() : DispatchedRules.loadAllDispatchtedRules(url);
     }
 
+    @Override
     public CompiledSteps getCompiledStep(Long num) {
-        return CompiledSteps.loadStep(url, num);
+        return url.isEmpty() ? new CompiledSteps() : CompiledSteps.loadStep(url, num);
     }
 
+    @Override
     public ObservableList<Text> allObservableBreakpoints() {
         return breakpoints;
     }
 
+    @Override
     public ObservableList<Text> allObservableRules() {
         ObservableList list = FXCollections.observableArrayList();
-        allRules().stream().forEach(
-                (rule) -> list.add(new Text(rule.getValue()))
-        );
+        for (ActiveRules rule : allRules())
+            list.add(new Text(rule.getValue()));
         return list;
     }
     
+    @Override
     public void addListener(DataListener toAdd) {
-        listeners.add(toAdd);
+        if (!listeners.contains(toAdd))
+            listeners.add(toAdd);
     }
     
-    public void dataReloaded() {
-        for (DataListener listener: listeners)
-            listener.dataLoaded();
+    @Override
+    public void dataRequiresReload() {
+        listeners.stream().forEach(
+            (listener) -> listener.dataLoaded()
+        );
     }
     
+    @Override
     public void dataClosed() {
-        for (DataListener listener: listeners)
-            listener.dataClosed();
+        listeners.stream().forEach(
+            (listener) -> listener.dataClosed()
+        );
     }
 }

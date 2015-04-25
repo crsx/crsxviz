@@ -9,7 +9,7 @@ import org.junit.Test;
 
 public class Persistence {
     
-    private final DataService ts = DataService.getInstance("out.db");
+    private final DataService ts = new DataService();
     
     private List<Cookies> cookies;
     private List<Steps> steps;
@@ -17,6 +17,7 @@ public class Persistence {
     
     @Before
     public void setUp() {
+        ts.setDataName("out.db");
         cookies = ts.allCookies();
         steps = ts.allSteps();
         rules = ts.allRules();

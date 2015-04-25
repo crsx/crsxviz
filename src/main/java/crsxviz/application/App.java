@@ -1,7 +1,7 @@
 package crsxviz.application;
 
 import crsxviz.application.crsxviz.CrsxvizPresenter;
-import java.io.IOException;
+import crsxviz.persistence.services.DataService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -14,49 +14,17 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        stage.setTitle("CRSX Visualizer");
-        stage.setScene(
-            createScene(
-                loadMainPane()
-            )
-        );
-
-        stage.show();
-    }
-
-    /**
-     * Creates the main application scene.
-     *
-     * @param mainPane the main application layout.
-     *
-     * @return the created scene.
-     */
-    private Scene createScene(Pane mainPane) {
-        Scene scene = new Scene( mainPane );
-
-        scene.getStylesheets().setAll(
-            getClass().getResource("app.css").toExternalForm()
-        );
-
-        return scene;
-    }
-    
-    /**
-     * Loads the main fxml layout.
-     *
-     * @return the loaded pane.
-     * @throws IOException if the pane could not be loaded.
-     */
-    private Pane loadMainPane() throws IOException {
         FXMLLoader loader = new FXMLLoader();
 
         Pane mainPane = (Pane) loader.load(
             getClass().getResourceAsStream( "crsxviz/crsxviz.fxml" )
         );
         
-        CrsxvizPresenter presenter = new CrsxvizPresenter();
-
-        return mainPane;
+        crsxviz = loader.<CrsxvizPresenter>getController();
+        crsxviz.setService(new DataService());
+        stage.setScene(new Scene(mainPane));
+        stage.setTitle("CRSX Visualizer");
+        stage.show();
     }
 
     public CrsxvizPresenter getRootPresenter() {

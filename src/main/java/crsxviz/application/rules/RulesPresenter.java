@@ -1,8 +1,9 @@
 package crsxviz.application.rules;
 
+import crsxviz.application.Utilities;
 import crsxviz.persistence.DataListener;
-import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.beans.RuleDetails;
+import crsxviz.persistence.services.IDataService;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -13,11 +14,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.*;
@@ -29,16 +27,18 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     private TextField filter_field;
     @FXML
     private ListView<Text> rules_list;
-    
-    private DataService ts;
 
-    private ObservableList<Text> observableBreakpoints = FXCollections.observableArrayList();
-    private ObservableList<Text> observableRules = FXCollections.observableArrayList();
+    private IDataService ts;
+
+    private ObservableList<Text> observableBreakpoints;
+    private ObservableList<Text> observableRules;
     
+    private static RulesPresenter presenter;
+
     public RulesPresenter() {
         initialize();
     }
-    
+
     private void initialize() {
         final FXMLLoader loader = new FXMLLoader();
         loader.setLocation(RulesPresenter.class.getResource("rules.fxml"));
@@ -50,52 +50,33 @@ public class RulesPresenter extends AnchorPane implements DataListener {
             Logger.getLogger(RulesPresenter.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        ts = DataService.getInstance();
-        ts.addListener(this);
+        presenter = loader.<RulesPresenter>getController();
         
-        // Generate Context Menu for Rules
-        final ContextMenu cMenu = new ContextMenu();
-        MenuItem cmItem = new MenuItem("Set Breakpoint");
-        cmItem.setOnAction(
-                (event) -> {
-                    Text breakpoint = rules_list.getSelectionModel().getSelectedItem();
-                    if (breakpoint.getText().contains("\n")) {
-                    	breakpoint.setText(breakpoint.getText().substring(0, breakpoint.getText().indexOf("\n")));
-                    }
-                    observableBreakpoints.add(breakpoint);
-                    System.out.println("Breakpoint set on: " + breakpoint);
-                }
-        );
-
-        cMenu.getItems().add(cmItem);
-        rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                (event) -> {
-                	this.onEntityClicked();
-                    if (event.getButton() == MouseButton.SECONDARY) {
-                        cMenu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
-                    }
-                }
-        );
+        rules_list.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> onEntityClicked());
     }
     
-    public void setDbService(DataService service) {
+    public static RulesPresenter getPresenter() {
+        return presenter;
+    }
+
+    @FXML
+    void setBreakpoint() {
+        Text breakpoint = new Text(rules_list.getSelectionModel().getSelectedItem().getText());
+        if (breakpoint.getText().contains("\n")) {
+            breakpoint.setText(breakpoint.getText().substring(0, breakpoint.getText().indexOf("\n")));
+        }
+        if (!Utilities.contains(observableBreakpoints, breakpoint.getText())) { 
+            observableBreakpoints.add(breakpoint);
+            System.out.println("Breakpoint set on: " + breakpoint.getText());
+        } else 
+            System.out.println("Breakpoint " + breakpoint.getText() + " already set.");
+    }
+
+    public void setService(IDataService service) {
         this.ts = service;
+        ts.addListener(this);
     }
 
-    /**
-     * Initializes the Presenter to an initial state where either a
-     * database has been opened and thus will display the correct state of
-     * buttons along with initial term tree, or where a database has not been 
-     * opened.
-     */
-    public void initiateData() {
-        observableRules = ts.allObservableRules();
-        observableBreakpoints = ts.allObservableBreakpoints();
-        
-        rules_list.setItems(observableRules);
-        setFilteredRules(new FilteredList<>(observableRules, p -> true));
-    }
-    
     private void setFilteredRules(FilteredList<Text> list) {
         filter_field.textProperty().addListener((observable, oldValue, newValue) -> {
             list.setPredicate(String -> {
@@ -110,26 +91,27 @@ public class RulesPresenter extends AnchorPane implements DataListener {
 
         rules_list.setItems((FilteredList<Text>) list);
     }
-    
-    public void onEntityClicked() {
-    	String result = "";
-    	String selection = rules_list.selectionModelProperty().getValue().getSelectedItem().getText();
-    	if (selection.contains("\n")) {
-    		result = selection.substring(0, selection.indexOf("\n"));
-    	} else {
-	    	List<RuleDetails> l = ts.getRuleDetails(selection);
-	    	result = RuleDetails.toString(l);
-    	}
-    	for (int i = 0; i < observableRules.size(); i++) {
-    		if (observableRules.get(i).equals(selection)) {
-    			observableRules.set(i,  new Text(result));
-    		}
-    	}
+
+    private void onEntityClicked() {
+        Text result = new Text("");
+        Text selection = rules_list.selectionModelProperty().getValue().getSelectedItem();
+        if (selection.getText().contains("\n")) {
+            result.setText(selection.getText().substring(0, selection.getText().indexOf("\n")));
+        } else {
+            List<RuleDetails> l = ts.getRuleDetails(selection.getText());
+            result.setText(RuleDetails.toString(l));
+        }
+        for (int i = 0; i < observableRules.size(); i++) {
+            if (observableRules.get(i).equals(selection)) {
+                observableRules.set(i, result);
+            }
+        }
     }
-    
+
     /**
      * Highlights the given rule in the Rules pane
-     * @param ruleId 
+     *
+     * @param ruleId
      */
     public void highlightActiveRule(int ruleId) {
         rules_list.getSelectionModel().select(ruleId);
@@ -140,24 +122,24 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     public void dataLoaded() {
         observableRules = ts.allObservableRules();
         observableBreakpoints = ts.allObservableBreakpoints();
-        
+
         rules_list.setItems(observableRules);
         setFilteredRules(new FilteredList<>(observableRules, p -> true));
     }
-    
-        @Override
+
+    @Override
     public void dataClosed() {
         observableBreakpoints = FXCollections.observableArrayList();
         observableRules = FXCollections.observableArrayList();
         rules_list.setItems(observableRules);
         filter_field.clear();
     }
-        
+
     public void setNextRule(String nextRule) {
-    	for ( Text txt : rules_list.getItems()) {
-    		if (txt.getText().equals(nextRule)) {
-    			txt.setFill(Color.BLUE);
-    		}
-    	}
+        for (Text txt : rules_list.getItems()) {
+            if (txt.getText().equals(nextRule)) {
+                txt.setFill(Color.BLUE);
+            }
+        }
     }
 }
