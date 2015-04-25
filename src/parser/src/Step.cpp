@@ -9,6 +9,18 @@ using namespace std;
 
 sqlite3_stmt* Step::StepsInsertStmt = NULL;
 sqlite3_stmt* Step::StepsUpdateStmt = NULL;
+sqlite3_stmt* Step::CompiledInsertStmt = NULL;
+sqlite3_stmt* Step::CompiledFirstInsertStmt = NULL;
+
+bool Step::firstWrite = true;
+
+std::string Step::left_flat = "";
+std::string Step::right_flat = "";
+
+size_t Step::lastIndent = 0;
+std::deque<std::string> Step::left;
+std::deque<std::string> Step::right;
+Step::SplitStep Step::prev = {"","",""};
 
 /** Removes all content before the last space
 *   @param s The string to strip
@@ -35,6 +47,42 @@ Step::Step(vector<string> &buf) {
 				cookies.addCookie(lstrip(buf[ln]));
 			}
 		}
+	}
+
+	if (this->begin) { //if it's a start do the compile
+
+		if (lastIndent < indent) {
+			SplitStep s = prev;
+			left.push_front(s.left);
+			right.push_back(s.right);
+			
+			left_flat = "";
+			for (auto substr : left) {
+				left_flat += substr;
+			}
+			right_flat = "";
+			for (auto substr : right) {
+				right_flat += substr;
+			}
+		}
+		else if (lastIndent > indent) {
+			left.pop_front();
+			right.pop_back();
+
+			left_flat = "";
+			for (auto substr : left) {
+				left_flat += substr;
+			}
+			right_flat = "";
+			for (auto substr : right) {
+				right_flat += substr;
+			}
+		}
+
+		compiledInsert(left_flat, data, right_flat);
+
+		prev = rowSplit();
+		lastIndent = indent;
 	}
 }
 
@@ -165,6 +213,62 @@ void Step::initPreparedStatements(sqlite3* db) {
 		cout << "Error " << rc << " creating steps update statement" << endl << StepUpdateTemplate;
 		RuntimeError("Error creating steps update statement");
 	}
+
+	rc = sqlite3_prepare_v2(db, CompiledInsertTemplate, -1, &CompiledInsertStmt, 0);
+	if (rc != SQLITE_OK){
+		cout << "Error " << rc << " creating compiled steps insert statement" << endl << CompiledInsertTemplate;
+		RuntimeError("Error creating compiled steps insert statement");
+	}
+
+	rc = sqlite3_prepare_v2(db, CompiledFirstInsertTemplate, -1, &CompiledFirstInsertStmt, 0);
+	if (rc != SQLITE_OK){
+		cout << "Error " << rc << " creating compiled steps first insert statement" << endl << CompiledFirstInsertTemplate;
+		RuntimeError("Error creating compiled steps first insert statement");
+	}
+}
+
+void Step::compiledInsert(std::string l, std::string c, std::string r) {
+	assert(CompiledInsertStmt);
+	assert(CompiledFirstInsertStmt);
+	int rc;
+
+	sqlite3_stmt* stmt;
+	if (firstWrite) {
+		firstWrite = false;
+		stmt = CompiledFirstInsertStmt;
+	}
+	else {
+		stmt = CompiledInsertStmt;
+	}
+
+	rc = sqlite3_reset(stmt);
+	if (rc != SQLITE_OK) {
+		cout << "Error " << rc << " resetting statement" << endl;
+		RuntimeError("Error resetting statement");
+	}
+
+	if (l.length() == 0) {
+		sqlite3_bind_text(stmt, 1, "", 0, SQLITE_STATIC);
+	}
+	else {
+		sqlite3_bind_text(stmt, 1, l.c_str(), l.length(), SQLITE_STATIC);
+	}
+
+	if (c.length() == 0) {
+		sqlite3_bind_text(stmt, 2, "", 0, SQLITE_STATIC);
+	}
+	else {
+		sqlite3_bind_text(stmt, 2, c.c_str(), c.length(), SQLITE_STATIC);
+	}
+
+	if (r.length() == 0) {
+		sqlite3_bind_text(stmt, 3, "", 0, SQLITE_STATIC);
+	}
+	else {
+		sqlite3_bind_text(stmt, 3, r.c_str(), r.length(), SQLITE_STATIC);
+	}
+
+	assert(sqlite3_step(stmt) == SQLITE_DONE);
 }
 
 void Step::CreateStepTable(sqlite3* db) {
@@ -178,8 +282,59 @@ void Step::CreateStepTable(sqlite3* db) {
 		sqlite3_free(errMsg);
 		RuntimeError("Error creating table");
 	}
+
+	rc = sqlite3_exec(db, CompiledSchema, NULL, 0, &errMsg);
+	if (rc != SQLITE_OK){
+		fprintf(stderr, "SQL error: %s\n", errMsg);
+		sqlite3_free(errMsg);
+		RuntimeError("Error creating table");
+	}
+
+	rc = sqlite3_exec(db, CompiledTableFixAutoincrement, NULL, 0, &errMsg);
+	if (rc != SQLITE_OK){
+		fprintf(stderr, "SQL error: %s\n", errMsg);
+		sqlite3_free(errMsg);
+		RuntimeError("Error modifying CompiledStatements autoincrement");
+	}
+
 	initPreparedStatements(db);
 	
 	ActiveRuleManager::CreateActiveRuleTable(db);
 	CookieManager::CreateCookieTable(db);
 }
+
+Step::SplitStep Step::getSection(std::string &s, size_t minOffset) {
+	size_t count = -1;
+	size_t start = 0;
+	size_t stop = s.length();
+	bool found = false;
+	for (size_t offset = minOffset - 1; offset < s.length(); offset++) {
+		if (s[offset] == '[') {
+			if (!found) {
+				start = offset + 1;
+			}
+			found = true;
+			count++;
+		}
+		else if (s[offset] == ']') {
+			if (!found) {
+				fprintf(stderr, "Warning: found closing brace before opening brace at %ld (started at %ld) in %s\n", offset, minOffset, s.c_str());
+				return{ "", s, "" };
+			}
+			count--;
+			if (count == 0) {
+				stop = offset + 1;
+				break;
+			}
+		}
+	}
+	return {s.substr(0, start), s.substr(start, stop - start), s.substr(stop)};
+}
+
+Step::SplitStep Step::rowSplit() {
+	std::string cookie = cookies.cookieList[cookies.cookieList.size() - 1];
+	cookie = cookie.substr(0, cookie.find('['));
+	size_t offset = data.find_first_of(cookie);
+	return getSection(data, offset);
+}
+

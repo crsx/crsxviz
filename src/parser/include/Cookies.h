@@ -79,6 +79,11 @@ public:
 	*   @note Frees the memory returned by getBlob()
 	*/
 	~BlobCookie();
+
+	/** The list of cookie strings contained in the cookie blob
+	*   Used for simplicity of lookup 
+	*/
+	std::vector<std::string> cookieList;
 	
 private:
 	/** The blob of memory used to store the cookie pointers when getBlob() is called

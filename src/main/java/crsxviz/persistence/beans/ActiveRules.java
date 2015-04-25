@@ -237,13 +237,13 @@ public class ActiveRules implements Serializable {
         try {
             c.setActiveRuleId(r.getInt("ActiveRuleID"));
             c.setArgs(r.getString("Args"));
-            c.setBreakpoint(r.getBoolean("Breakpoint"));
             c.setEnv(r.getString("Env"));
             c.setResultType(r.getString("ResultType"));
             c.setUsedInTrace(r.getString("UsedInTrace"));
             c.setValue(r.getString("Value"));
         } catch (SQLException e) {
             System.err.println("Error loading ActiveRule from ResultSet");
+            e.printStackTrace();
             return null;
         }
         return c;

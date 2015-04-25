@@ -31,7 +31,7 @@ public class Runner {
 		return totalLen;
 	}
     
-    public String run(String exeName, String wrapper, String term, String dbOutPath) throws IOException {
+    public String run(String exeName, String crsDir, String wrapper, String term, String dbOutPath) throws IOException {
     	String parserPath;
     	try {
     		parserPath = getParserPath();
@@ -67,13 +67,16 @@ public class Runner {
         if (dbOutPath == null) {
             throw new IllegalArgumentException("Database output path cannot be NULL");
         }
+        if (crsDir == null) {
+        	throw new IllegalArgumentException("CRS file directory path cannot be NULL");
+        }
 
         String cmd = exeName;
         if (wrapper != null && wrapper.length() > 1) {
             cmd += " wrapper=\"" + wrapper + "\"";
         }
         cmd += " term=\"" + term + "\"";
-        cmd = cmd + " crsxviz | " + parserPath + " " + dbOutPath;
+        cmd = cmd + " crsxviz | " + parserPath + " " + dbOutPath + " " + crsDir;
 
         try {
             System.out.println("Running `" + cmd + "`");

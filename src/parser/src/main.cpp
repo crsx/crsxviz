@@ -7,6 +7,9 @@
 #include <include/Step.h>
 #include <errno.h>
 #include <include/RuntimeError.h>
+#include <include/CrsD.h>
+#include <dirent.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -39,16 +42,41 @@ void optimizeDB(sqlite3* db) {
 /** Prints program usage and exits
 */
 void usage(char* argv0) {
-	cout << "Usage: " << argv0 << " <database> [inputfile]" << endl;
+	cout << "Usage: " << argv0 << " <database> <crs file directory> [inputfile]" << endl;
 	exit(-1);
+}
+
+vector<string> getCrsFiles(string basepath) {
+	vector<string> tmp;
+	
+	DIR *dp;
+	struct dirent *dirp;
+	if ((dp = opendir(basepath.c_str())) == NULL) {
+		RuntimeError("Failed to open CRS file directory")
+	}
+
+	while ((dirp = readdir(dp)) != NULL) {
+		string fname = string(dirp->d_name);
+		if (fname.find(".crs") != string::npos && fname.find(".crsD") == string::npos) {
+			tmp.push_back(string(basepath).append("/").append(fname).append("D"));
+		}
+	}
+	closedir(dp);
+
+	return tmp;
 }
 
 /** Program entry point
 */
 int main(int argc, char* argv[]) {
+	vector<string> crsfiles;
 	char* dbpath = NULL;
-	if (argc >= 2 && argc <= 3) {
+	if (argc >= 3 && argc <= 4) {
 		dbpath = argv[1];
+		crsfiles = getCrsFiles(string(argv[2]));
+		if (crsfiles.size() == 0) {
+			RuntimeError("No .crs files found in specified directory")
+		}
 	} else {
 		usage(argv[0]);
 	}
@@ -73,12 +101,26 @@ int main(int argc, char* argv[]) {
 	optimizeDB(db);
 
 	istream * src;
-	if (argc == 3) {
-		cout << "Loading from " << argv[2] << endl;
-		src = new ifstream(argv[2], ios_base::in);
+	if (argc == 4) {
+		cout << "Loading from " << argv[3] << endl;
+		src = new ifstream(argv[3], ios_base::in);
 	} else {
 		cout << "Running on stdin" << endl;
 		src = &cin;
+	}
+
+	if (chdir(argv[2]) != 0) {
+		cout << "Error " << errno << " while changing directories to " << argv[2] << endl;
+		RuntimeError("Error while changing directories");
+	}
+
+	for (string file : crsfiles) {
+		string cmd = "make ";
+		cmd.append(file);
+		if (system(cmd.c_str()) != 0) {
+			cout << "Error while compiling " << file.c_str() << endl;
+			RuntimeError("Error while compiling crs file");
+		}
 	}
 
 	vector<string> buf;
@@ -114,6 +156,11 @@ int main(int argc, char* argv[]) {
                 buf.clear();
 	}
 	cout << "Result: " << lastLine << endl;
+
+	Step::compiledInsert("", lastLine, "");
+
+	CrsDFile dispatch(crsfiles);
+	dispatch.write(db);
 
 	sqlite3_close(db);
 }

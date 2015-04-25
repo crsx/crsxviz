@@ -3,12 +3,8 @@ package crsxviz.application.rules;
 import crsxviz.application.Utilities;
 import crsxviz.persistence.DataListener;
 import crsxviz.persistence.beans.RuleDetails;
+import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.services.IDataService;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -18,8 +14,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.text.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RulesPresenter extends AnchorPane implements DataListener {
 
@@ -41,13 +42,13 @@ public class RulesPresenter extends AnchorPane implements DataListener {
 
     private void initialize() {
         final FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(RulesPresenter.class.getResource("rules.fxml"));
+        loader.setLocation(getClass().getResource("rules.fxml"));
         loader.setController(this);
         loader.setRoot(this);
         try {
             loader.load();
         } catch (IOException ex) {
-            Logger.getLogger(RulesPresenter.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
         }
         
         presenter = loader.<RulesPresenter>getController();
@@ -76,7 +77,7 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         this.ts = service;
         ts.addListener(this);
     }
-
+    
     private void setFilteredRules(FilteredList<Text> list) {
         filter_field.textProperty().addListener((observable, oldValue, newValue) -> {
             list.setPredicate(String -> {
@@ -89,7 +90,7 @@ public class RulesPresenter extends AnchorPane implements DataListener {
             });
         });
 
-        rules_list.setItems((FilteredList<Text>) list);
+        rules_list.setItems(list);
     }
 
     private void onEntityClicked() {
@@ -110,8 +111,8 @@ public class RulesPresenter extends AnchorPane implements DataListener {
 
     /**
      * Highlights the given rule in the Rules pane
-     *
-     * @param ruleId
+     * 
+     * @param ruleId id of the rule to be highlighted
      */
     public void highlightActiveRule(int ruleId) {
         rules_list.getSelectionModel().select(ruleId);
@@ -134,12 +135,10 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         rules_list.setItems(observableRules);
         filter_field.clear();
     }
+        
 
-    public void setNextRule(String nextRule) {
-        for (Text txt : rules_list.getItems()) {
-            if (txt.getText().equals(nextRule)) {
-                txt.setFill(Color.BLUE);
-            }
-        }
+    public void setNextRule(int nextRule) {
+     	rules_list.getItems().get(nextRule).setFill(Color.BLUE);
+       	rules_list.getItems().get(nextRule).setFont(Font.font("System", FontWeight.BOLD, 12));
     }
 }

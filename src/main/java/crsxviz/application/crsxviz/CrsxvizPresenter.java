@@ -2,13 +2,12 @@ package crsxviz.application.crsxviz;
 
 
 import crsxviz.application.breakpoints.BreakpointsPresenter;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import static crsxviz.application.crsxrunner.Controller.showError;
 import crsxviz.application.crsxrunner.RunnerDialog;
 import crsxviz.application.rules.RulesPresenter;
 import crsxviz.application.terms.TermsPresenter;
 import crsxviz.persistence.services.IDataService;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -16,6 +15,7 @@ import java.util.ResourceBundle;
 import javafx.fxml.Initializable;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import static crsxviz.application.crsxrunner.Controller.showError;
 
 public class CrsxvizPresenter implements Initializable {
 

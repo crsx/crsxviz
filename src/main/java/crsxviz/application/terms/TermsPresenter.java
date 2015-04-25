@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -58,14 +57,14 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     private IDataService ts;
 
-    private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
+	private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
 
-    String precedingLastString = "";
-    String precedingTerm = "";
-
-    // Controls progress through the trace by providing means to pause
-    // in a given location, used primarily to pause on breakpoints
-    private boolean proceed;
+	private String precedingLastString = "";
+	private String precedingTerm = "";
+	
+	// Controls progress through the trace by providing means to pause
+	// in a given location, used primarily to pause on breakpoints
+	private boolean proceed;
 
     private List<Steps> steps;
     private List<ActiveRules> rules;
@@ -210,7 +209,7 @@ public class TermsPresenter extends AnchorPane implements DataListener {
         if (currentStep < totalSteps && proceed) {
             Steps s = steps.get(currentStep);
             RulesPresenter.getPresenter().highlightActiveRule(s.getActiveRuleId());
-            String nextRule = rules.get(steps.get(currentStep + 1).getActiveRuleId()).getValue();
+            int nextRule = steps.get(currentStep + 1).getActiveRuleId();
             RulesPresenter.getPresenter().setNextRule(nextRule);
             if (currentStep < totalSteps) {
                 s = steps.get(currentStep);

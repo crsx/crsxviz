@@ -170,17 +170,16 @@ public class Steps implements Serializable {
             c.setActiveRuleId(r.getInt("ActiveRuleID"));
             c.setCompleteAllocs(r.getInt("CompleteAllocs"));
             c.setCompleteData(r.getString("CompleteData"));
-            c.setCompleteDataDisplayed(r.getBoolean("COMPLETEDATADISPLAYED"));
             c.setCompleteFrees(r.getInt("CompleteFrees"));
             c.setCookies(r.getBytes("Cookies"));
             c.setIndentation(r.getInt("Indentation"));
             c.setStartAllocs(r.getInt("StartAllocs"));
             c.setStartData(r.getString("StartData"));
-            c.setStartDataDisplayed(r.getBoolean("STARTDATADISPLAYED"));
             c.setStartFrees(r.getInt("StartFrees"));
             c.setStepNum(r.getInt("StepNum"));
         } catch (SQLException e) {
             System.err.println("Error loading Step from ResultSet");
+            e.printStackTrace();
             return null;
         }
         return c;
