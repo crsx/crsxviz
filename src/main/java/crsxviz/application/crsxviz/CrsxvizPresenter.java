@@ -16,12 +16,16 @@ import javafx.fxml.Initializable;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import static crsxviz.application.crsxrunner.Controller.showError;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 public class CrsxvizPresenter implements Initializable {
 
     private IDataService ts;
 
-    private String dbpath;
+    private StringProperty dbpath;
 
     private static RulesPresenter rulesPresenter;
     private static TermsPresenter termsPresenter;
@@ -29,14 +33,23 @@ public class CrsxvizPresenter implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        dbpath = new SimpleStringProperty(null);
+        
         rulesPresenter = RulesPresenter.getPresenter();
         termsPresenter = TermsPresenter.getPresenter();
         breakpointsPresenter = BreakpointsPresenter.getPresenter();
+        
+        dbpath.addListener((observable, oldValue, newValue) -> {
+            if (observable.getValue() == null)
+                termsPresenter.offConfiguration();
+            else
+                termsPresenter.onConfiguration();
+        });
     }
     
     @FXML
     void onOpenFile(ActionEvent event) {
-        if (dbpath != null) {
+        if (dbpath.getValue() != null) {
             showError("Error!", "A file already open.\nPlease close it before opening a new one");
         } else {
             System.out.println("Opening file...");
@@ -46,13 +59,13 @@ public class CrsxvizPresenter implements Initializable {
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("All formats", "*"));
             File selectedFile = fileChooser.showOpenDialog(new Stage());
             if (selectedFile == null) {
-                dbpath = null;
+                dbpath.setValue(null);
                 System.out.println("Browse aborted");
             } else {
                 if (selectedFile.exists() && selectedFile.canRead()) {
-                    dbpath = selectedFile.getAbsolutePath();
+                    dbpath.setValue(selectedFile.getAbsolutePath());
                     System.out.println("File opened OK");
-                    loadDb(dbpath);
+                    loadDb(dbpath.getValue());
                 } else {
                     showError("Error!", "Specified file is not readable");
                 }
@@ -62,7 +75,7 @@ public class CrsxvizPresenter implements Initializable {
 
     @FXML
     void onRunParser(ActionEvent event) throws IOException {
-        if (dbpath != null) {
+        if (dbpath.getValue() != null) {
             showError("Error!", "A file already open.\nPlease close it before opening a new one");
         } else {
             System.out.println("Running parser...");
@@ -71,8 +84,8 @@ public class CrsxvizPresenter implements Initializable {
             if (d.processingRan()) {
                 if (d.getOutFile() != null) {
                     System.out.println("Parser dialog returned database file " + d.getOutFile().getAbsolutePath());
-                    dbpath = d.getOutFile().getAbsolutePath();
-                    loadDb(dbpath);
+                    dbpath.setValue(d.getOutFile().getAbsolutePath());
+                    loadDb(dbpath.getValue());
                 } else {
                     showError("Error!", "RunnerDialog claims processingRan, but no file was returned.");
                 }
@@ -85,9 +98,9 @@ public class CrsxvizPresenter implements Initializable {
     @FXML
     void onCloseFile(ActionEvent event) {
         System.out.println("Closing file...");
-        if (dbpath == null) 
+        if (dbpath.getValue() == null) 
             showError("Error!", "Cannot close, no files are open");
-        dbpath = null;
+        dbpath.setValue(null);
         ts.dataClosed();
     }
     
@@ -124,5 +137,9 @@ public class CrsxvizPresenter implements Initializable {
             ts.setDataName(db);
             this.setService(ts);
         }
+    }
+    
+    public BooleanBinding isVisualizerRunning() {
+        return Bindings.isNotNull(dbpath);
     }
 }

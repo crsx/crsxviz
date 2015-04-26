@@ -57,14 +57,14 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     private IDataService ts;
 
-	private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
+    private int lastIndent = 0, currentStep = -1, previousSliderValue = 0;
 
-	private String precedingLastString = "";
-	private String precedingTerm = "";
-	
-	// Controls progress through the trace by providing means to pause
-	// in a given location, used primarily to pause on breakpoints
-	private boolean proceed;
+    private String precedingLastString = "";
+    private String precedingTerm = "";
+
+    // Controls progress through the trace by providing means to pause
+    // in a given location, used primarily to pause on breakpoints
+    private boolean proceed;
 
     private List<Steps> steps;
     private List<ActiveRules> rules;
@@ -72,7 +72,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
     private Stack<TreeItem<Text>> nodeStack;
 
     private ObservableList<Text> observableBreakpoints;
-    private ObservableList<Text> observableRules;
     
     public static TermsPresenter presenter;
 
@@ -92,12 +91,8 @@ public class TermsPresenter extends AnchorPane implements DataListener {
         }
         
         presenter = loader.<TermsPresenter>getController();
-
-        trace_label.setText("No trace file opened");
-        initialSliderState();
-        step_specifier.setText("");
-        step_specifier.setEditable(true);
-        step_specifier.setFocusTraversable(false);
+        
+        this.offConfiguration();
     }
     
     public static TermsPresenter getPresenter() {
@@ -106,14 +101,8 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onRun(ActionEvent event) {
-        sliderOn();
+        this.onConfiguration();
         run.setDisable(true);
-        resume.setDisable(false);
-        terminate.setDisable(false);
-        step_over.setDisable(false);
-        step_specifier.setText("");
-        step_specifier.setEditable(true);
-        step_specifier.setFocusTraversable(false);
         currentStep = -1;
         step(1);
     }
@@ -126,18 +115,8 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onTerminate(ActionEvent event) {
-        terms_tree.setRoot(null);
+        this.offConfiguration();
         run.setDisable(false);
-        resume.setDisable(true);
-        terminate.setDisable(true);
-        step_into.setDisable(true);
-        step_return.setDisable(true);
-        step_over.setDisable(true);
-        step_back.setDisable(true);
-        slider.setDisable(true);
-        step_specifier.setText("");
-        step_specifier.setEditable(false);
-        step_specifier.setFocusTraversable(false);
     }
 
     @FXML
@@ -545,6 +524,60 @@ public class TermsPresenter extends AnchorPane implements DataListener {
             step(stepsToAdvance);
         }
     }
+    
+    public void offConfiguration() {
+        observableBreakpoints = FXCollections.observableArrayList();
+        steps = null;
+        rules = null;
+        totalSteps = lastIndent = 0;
+        currentStep = -1;
+        terms_tree.setRoot(null);
+        run.setDisable(true);
+        terminate.setDisable(true);
+        step_into.setDisable(true);
+        step_over.setDisable(true);
+        step_return.setDisable(true);
+        step_back.setDisable(true);
+        resume.setDisable(true);
+        trace_label.setText("No trace file opened");
+        step_specifier.setText("");
+        step_specifier.setEditable(false);
+        step_specifier.setFocusTraversable(false);
+        terms_tree.setRoot(null);
+        initialSliderState();
+    }
+    
+    public void onConfiguration() {
+        steps = ts.allSteps();
+        rules = ts.allRules();
+        totalSteps = steps.size();
+        for (Steps step : steps) {
+            System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
+        }
+        currentStep = -1;
+        lastIndent = 0;
+
+        String label = ts.getDataName();
+        if (!label.isEmpty()) {
+            trace_label.setText("Debugging " + label);
+            observableBreakpoints = ts.allObservableBreakpoints();
+
+            sliderOn();
+            step_specifier.setText("");
+            step_specifier.setEditable(true);
+            step_specifier.setFocusTraversable(false);
+            step_return.setDisable(false);
+            step_into.setDisable(false);
+            step_over.setDisable(false);
+            run.setDisable(false);
+            resume.setDisable(false);
+            terminate.setDisable(false);
+            proceed = true;
+            onStepInto(null);
+            onStepInto(null);
+            onStepBack();
+        }
+    }
 
     /**
      * Sets the slider to the initial state which is disabled
@@ -630,51 +663,11 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @Override
     public void dataClosed() {
-        observableBreakpoints = FXCollections.observableArrayList();
-        observableRules = FXCollections.observableArrayList();
-        steps = null;
-        rules = null;
-        totalSteps = lastIndent = 0;
-        currentStep = -1;
-        terms_tree.setRoot(null);
-        run.setDisable(true);
-        terminate.setDisable(true);
-        step_into.setDisable(true);
-        step_over.setDisable(true);
-        step_return.setDisable(true);
-        resume.setDisable(true);
-        trace_label.setText("No trace file opened");
-        initialSliderState();
+        this.offConfiguration();
     }
 
     @Override
     public void dataLoaded() {
-        steps = ts.allSteps();
-        rules = ts.allRules();
-        totalSteps = steps.size();
-        for (Steps step : steps) {
-            System.out.println("Step " + step.getStepNum() + " Indentation level " + step.getIndentation() + " : " + step.getStartData());
-        }
-        currentStep = -1;
-        lastIndent = 0;
-
-        String label = ts.getDataName();
-        if (!label.isEmpty()) {
-            trace_label.setText("Debugging " + label);
-            observableRules = ts.allObservableRules();
-            observableBreakpoints = ts.allObservableBreakpoints();
-
-            sliderOn();
-            step_return.setDisable(false);
-            step_into.setDisable(false);
-            step_over.setDisable(false);
-            run.setDisable(false);
-            resume.setDisable(false);
-            terminate.setDisable(false);
-            proceed = true;
-            onStepInto(null);
-            onStepInto(null);
-            onStepBack();
-        }
+        this.onConfiguration();
     }
 }
