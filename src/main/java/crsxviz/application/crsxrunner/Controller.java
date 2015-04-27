@@ -9,6 +9,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import javax.print.attribute.standard.MediaSize.Other;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
@@ -34,6 +36,8 @@ public class Controller {
         this.stage = s;
     }
 
+    String outDb = null;
+    
     @FXML
     private ResourceBundle resources;
 
@@ -282,12 +286,13 @@ public class Controller {
         try {
             Runner r = new Runner();
             String output = r.run(exeFile.getAbsolutePath(), crsDir.getAbsolutePath(), wrapper, inTerm, outFile.getAbsolutePath());
+            outDb = outFile.getAbsolutePath();
             lblStatus.setText("Completed");
             processingRan = true;
             Alert alert = new Alert(AlertType.INFORMATION);
             alert.setTitle("Processing Completed");
             alert.setHeaderText(null);
-            alert.setContentText("Processing completed. Output term: \n" + output);
+            alert.setContentText("Processing completed.");
             alert.showAndWait();
         } catch (Exception e) {
             lblStatus.setText("Error!");
@@ -335,8 +340,8 @@ public class Controller {
     }
 
     public File getOutFile() {
-        String path = txtOutPath.getText();
-        if (path.length() == 0) {
+        String path = outDb;
+        if (outDb == null || path.length() == 0) {
             return null;
         }
         File outFile = new File(path);
