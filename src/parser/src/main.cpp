@@ -153,6 +153,7 @@ int main(int argc, char* argv[]) {
 		buf.pop_back(); //remove result line
 		Step r = Step(buf);
                 r.pushToDB();
+				r.pushToDB();
                 buf.clear();
 	}
 	cout << "Result: " << lastLine << endl;
