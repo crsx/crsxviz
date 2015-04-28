@@ -103,8 +103,8 @@ public class RulesPresenter extends AnchorPane implements DataListener {
             result.setText(RuleDetails.toString(l));
         }
         for (int i = 0; i < observableRules.size(); i++) {
-            if (observableRules.get(i).equals(selection)) {
-                observableRules.set(i, result);
+            if (observableRules.get(i).getText().equals(selection.getText())) {
+                observableRules.get(i).setText(result.getText());
             }
         }
     }
