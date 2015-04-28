@@ -188,8 +188,11 @@ public class TermsPresenter extends AnchorPane implements DataListener {
         if (currentStep < totalSteps && proceed) {
             Steps s = steps.get(currentStep);
             RulesPresenter.getPresenter().highlightActiveRule(s.getActiveRuleId());
-            int nextRule = steps.get(currentStep - 1).getActiveRuleId();
-            RulesPresenter.getPresenter().setNextRule(nextRule);
+            if (currentStep < steps.size() - 1)
+            {
+            	int nextRule = steps.get(currentStep + 1).getActiveRuleId();
+            	RulesPresenter.getPresenter().setNextRule(nextRule);
+            }
             if (currentStep < totalSteps) {
                 s = steps.get(currentStep);
                 step_over.setDisable(false);

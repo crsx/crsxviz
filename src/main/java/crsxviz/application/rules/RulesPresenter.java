@@ -138,6 +138,11 @@ public class RulesPresenter extends AnchorPane implements DataListener {
         
 
     public void setNextRule(int nextRule) {
+    	for (int i = 0; i < rules_list.getItems().size(); i++)
+    	{
+    		rules_list.getItems().get(i).setFill(Color.BLACK);
+           	rules_list.getItems().get(i).setFont(Font.font("System", FontWeight.NORMAL, 12));
+    	}
      	rules_list.getItems().get(nextRule).setFill(Color.BLUE);
        	rules_list.getItems().get(nextRule).setFont(Font.font("System", FontWeight.BOLD, 12));
     }
