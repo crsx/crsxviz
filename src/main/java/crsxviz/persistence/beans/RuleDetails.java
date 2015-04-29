@@ -36,7 +36,7 @@ public class RuleDetails {
 	public static String toString(List<RuleDetails> d) {
 		if (d == null)
 			throw new IllegalArgumentException("List must be specified");
-		if (d.size() == 0)
+		if (d.isEmpty())
 			return "";
 		
 		StringBuilder s = new StringBuilder();
