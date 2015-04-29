@@ -120,20 +120,28 @@ private:
 	CompleteAllocs = ?, CompleteFrees = ?, CompleteData = ?
 	WHERE StepNum = ?)";
 
+	/** The table schema for the CompiledSteps table
+	*/
 	static constexpr const char * CompiledSchema = R"(CREATE TABLE `CompiledSteps`(
 	id INTEGER PRIMARY KEY   AUTOINCREMENT,
 	left TEXT,
 	center TEXT,
 	right TEXT);)";
 
+	/** Prepared statement template for doing inserts into CompiledSteps table
+	*/
 	static constexpr const char * CompiledInsertTemplate = R"(INSERT INTO `CompiledSteps`
 	(`left`, `center`, `right`)
 	VALUES (?, ?, ?);)";
 
+	/** Prepared statement template for doing the first step insert into CompiledSteps
+	*/
 	static constexpr const char * CompiledFirstInsertTemplate = R"(INSERT INTO `CompiledSteps`
 	(`id`, `left`, `center`, `right`)
 	VALUES (0,?, ?, ?);)";
 
+	/** SQL command for fixing the initial index of the CompiledSteps table to 0
+	*/
 	static constexpr const char * CompiledTableFixAutoincrement = R"(INSERT INTO `SQLITE_SEQUENCE`
 	(seq, name) VALUES ('-1', 'CompiledSteps');)";
 
@@ -153,6 +161,8 @@ private:
 	*/
 	void parseStepHeader (std::string &s);
 
+	/** A tuple for storing the sections of a compiled step term context
+	*/
 	typedef struct SplitStep_s {
 		std::string left;
 		std::string center;
@@ -165,14 +175,35 @@ private:
 	*/
 	SplitStep getSection(std::string &s, size_t minOffset = 0);
 
+	/** Splits step into the data before and after the currently active rule indicator
+	*/
 	SplitStep rowSplit();
 
+	/** The indentation of the last step that was processed
+	*/
 	static size_t lastIndent;
+
+	/** The left side of the current full context term (treated as a stack)
+	*/
 	static std::deque<std::string> left;
+
+	/** The right side of the current full context term (treated as a reversed stack)
+	*/
 	static std::deque<std::string> right;
+
+	/** The last step that was processed 
+	*/
 	static Step::SplitStep prev;
+	
+	/** Preprocessed snapshot of the flattened version of the left side of the context term stack
+	*/
 	static std::string left_flat;
+	
+	/** Preprocessed snapshot of the flattened version of the right side of the context term stack
+	*/
 	static std::string right_flat;
 
+	/** Flag for determining which type of insert to use for CompiledSteps
+	*/
 	static bool firstWrite;
 };

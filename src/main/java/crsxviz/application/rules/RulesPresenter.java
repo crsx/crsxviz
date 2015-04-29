@@ -102,8 +102,8 @@ public class RulesPresenter extends AnchorPane implements DataListener {
             result.setText(RuleDetails.toString(l));
         }
         for (int i = 0; i < observableRules.size(); i++) {
-            if (observableRules.get(i).equals(selection)) {
-                observableRules.set(i, result);
+            if (observableRules.get(i).getText().equals(selection.getText())) {
+                observableRules.get(i).setText(result.getText());
             }
         }
     }
@@ -136,13 +136,16 @@ public class RulesPresenter extends AnchorPane implements DataListener {
     }
         
 
-    public void setNextRule(int nextRule) {
+    public void setNextRule(int nextRule, Color color) {
     	for (int i = 0; i < rules_list.getItems().size(); i++)
     	{
-    		rules_list.getItems().get(i).setFill(Color.BLACK);
-           	rules_list.getItems().get(i).setFont(Font.font("System", FontWeight.NORMAL, 12));
+    		if (rules_list.getItems().get(i).getFill() == color)
+    		{
+	    		rules_list.getItems().get(i).setFill(Color.BLACK);
+	           	rules_list.getItems().get(i).setFont(Font.font("System", FontWeight.NORMAL, 12));
+    		}
     	}
-     	rules_list.getItems().get(nextRule).setFill(Color.BLUE);
+     	rules_list.getItems().get(nextRule).setFill(color);
        	rules_list.getItems().get(nextRule).setFont(Font.font("System", FontWeight.BOLD, 12));
     }
 }
