@@ -42,7 +42,7 @@
                 <TermsPresenter id="terms" fx:id="terms" />
                 
                 <!-- Right Side of content -->
-                <SplitPane orientation="VERTICAL">
+                <SplitPane dividerPositions=".35" orientation="VERTICAL">
                     <items>
                         
                         <BreakpointsPresenter id="breakpoints" fx:id="breakpoints" />

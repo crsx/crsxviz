@@ -53,6 +53,11 @@ public class BreakpointsPresenter extends AnchorPane implements DataListener {
         presenter = loader.<BreakpointsPresenter>getController();
     }
     
+    /**
+     * Used to attain a static reference to this presenter
+     * 
+     * @return Presenter object representing this presenter
+     */
     public static BreakpointsPresenter getPresenter() {
         return presenter;
     }
@@ -93,6 +98,11 @@ public class BreakpointsPresenter extends AnchorPane implements DataListener {
         System.out.println("Removed breakpoint: " + breakpoint.getText());
     }
 
+    /**
+     * Sets the service to use for pulling data into the application
+     * 
+     * @param service service conforming to IDataService interface
+     */
     public void setService(IDataService service) {
         this.ts = service;
         ts.addListener(this);

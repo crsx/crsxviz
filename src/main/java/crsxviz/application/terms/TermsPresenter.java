@@ -62,10 +62,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
     private String precedingLastString = "";
     private String precedingTerm = "";
 
-    // Controls progress through the trace by providing means to pause
-    // in a given location, used primarily to pause on breakpoints
-    private boolean proceed;
-
     private List<Steps> steps;
     private List<ActiveRules> rules;
     private int totalSteps;
@@ -95,6 +91,11 @@ public class TermsPresenter extends AnchorPane implements DataListener {
         this.offConfiguration();
     }
     
+    /**
+     * Used to attain a static reference to this presenter
+     * 
+     * @return Presenter object representing this presenter
+     */
     public static TermsPresenter getPresenter() {
         return presenter;
     }
@@ -109,7 +110,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onResume(ActionEvent event) {
-        proceed = true;
         jumpToNextStep();
     }
 
@@ -121,7 +121,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onStepInto(ActionEvent event) {
-        proceed = true;
         if (currentStep <= totalSteps) {
             step(1);
         }
@@ -129,7 +128,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onStepOver(ActionEvent event) {
-        proceed = true;
         if (currentStep <= totalSteps) {
             if (lastIndent == 0) {
                 step(1);
@@ -155,7 +153,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onStepReturn(ActionEvent event) {
-        proceed = true;
         if (currentStep <= totalSteps) {
             if (lastIndent == 0) {
                 step(1);
@@ -174,7 +171,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
 
     @FXML
     void onSliderClick() {
-        proceed = true;
         slider.setValue(Math.round(slider.getValue()));
         int currentSliderValue = (int) slider.getValue();
         int tempPreviousSliderValue = previousSliderValue;
@@ -192,7 +188,7 @@ public class TermsPresenter extends AnchorPane implements DataListener {
         if (currentStep > totalSteps - 1) {
             currentStep = totalSteps - 1;
         }
-        if (currentStep < totalSteps && proceed) {
+        if (currentStep < totalSteps) {
             Steps s = steps.get(currentStep);
             RulesPresenter.getPresenter().setNextRule(s.getActiveRuleId(), Color.GREEN);
             if (currentStep < steps.size() - 1)
@@ -525,11 +521,12 @@ public class TermsPresenter extends AnchorPane implements DataListener {
     void jumpToNextStep() {
         if (!observableBreakpoints.isEmpty()) {
             int stepsToAdvance = 0;
-            while (currentStep < totalSteps - 1 && proceed) {
+            while (currentStep < totalSteps - 1 && currentStep + stepsToAdvance < totalSteps - 1) {
                 Steps step = steps.get(currentStep + stepsToAdvance);
                 String rule = rules.get(step.getActiveRuleId()).getValue();
                 stepsToAdvance++;
-                proceed = !(Utilities.contains(observableBreakpoints, rule));
+                if ( Utilities.contains(observableBreakpoints, rule) )
+                    break;
             }
             step(stepsToAdvance);
         }
@@ -582,7 +579,6 @@ public class TermsPresenter extends AnchorPane implements DataListener {
             run.setDisable(false);
             resume.setDisable(false);
             terminate.setDisable(false);
-            proceed = true;
             onStepInto(null);
             onStepInto(null);
             onStepBack();

@@ -3,9 +3,6 @@ package crsxviz.application;
 import javafx.collections.ObservableList;
 import javafx.scene.text.Text;
 
-/**
- * Created by nathanielward on 4/23/15.
- */
 public class Utilities {
 
     /**
@@ -17,9 +14,6 @@ public class Utilities {
      * @return true if str is in list, false otherwise
      */
     public static boolean contains(ObservableList<Text> list, String str) {
-        for (Text text : list)
-            if (text.getText().equals(str))
-                return true;
-        return false;
+        return list.stream().anyMatch((text) -> (text.getText().equals(str)));
     }
 }

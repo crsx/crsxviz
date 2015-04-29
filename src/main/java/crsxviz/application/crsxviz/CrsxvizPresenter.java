@@ -139,6 +139,13 @@ public class CrsxvizPresenter implements Initializable {
         }
     }
     
+    /**
+     * Property to record the current running state of the application.
+     * The application is defined to be running if there is a valid
+     * data service loaded i.e. a valid database is open and being read.
+     * 
+     * @return true if there is a valid data service, false otherwise
+     */
     public BooleanBinding isVisualizerRunning() {
         return Bindings.isNotNull(dbpath);
     }
