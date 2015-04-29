@@ -135,8 +135,15 @@ public class TermsPresenter extends AnchorPane implements DataListener {
                 step(1);
             } else {
                 int stepsToAdvance = 0;
-                Steps s = steps.get(currentStep);
-                int currentIndent = lastIndent;
+                Steps s = null;
+                if(currentStep <= 0){
+                	s = steps.get(currentStep);
+                }
+                else{
+                	s = steps.get(currentStep - 1);
+                }
+                int currentIndent = s.getIndentation();
+                s = steps.get(currentStep);
                 while (s.getIndentation() > currentIndent) {
                     stepsToAdvance++;
                     s = steps.get(currentStep + stepsToAdvance);
