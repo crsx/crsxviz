@@ -28,6 +28,13 @@ public class Steps implements Serializable {
     private List<Integer> cookies;
     private boolean startDataDisplayed, completeDataDisplayed;
 
+    public Steps(int stepNum, int indentation,String startData, String completeData) {
+        this.stepNum = stepNum;
+        this.indentation = indentation;
+        this.startData = startData;
+        this.completeData = completeData;
+    }
+
     public boolean isStartDataDisplayed() {
         return startDataDisplayed;
     }

@@ -21,7 +21,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <snapshots>
                 <enabled>true</enabled>
-           </snapshots>
+            </snapshots>
         </repository>
     </repositories>
     
@@ -116,7 +116,7 @@
                     <include>**/*.properties</include>
                 </includes>
             </resource>
-			<resource>
+            <resource>
                 <directory>bin</directory>
                 <includes>
                     <include>**/*</include>

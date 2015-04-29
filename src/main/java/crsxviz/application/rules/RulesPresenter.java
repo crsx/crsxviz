@@ -3,7 +3,6 @@ package crsxviz.application.rules;
 import crsxviz.application.Utilities;
 import crsxviz.persistence.DataListener;
 import crsxviz.persistence.beans.RuleDetails;
-import crsxviz.persistence.services.DataService;
 import crsxviz.persistence.services.IDataService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

@@ -12,15 +12,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
+import javafx.scene.control.TextInputDialog;
 
 public class BreakpointsPresenter extends AnchorPane implements DataListener {
 
@@ -57,8 +58,9 @@ public class BreakpointsPresenter extends AnchorPane implements DataListener {
     }
 
     @FXML
-    void setNewBreakpoint() {
+    void setNewBreakpoint() throws InterruptedException, ExecutionException {
         TextInputDialog dialog = new TextInputDialog();
+        dialog.getEditor().setId("breakpointText");
         dialog.setTitle("Set New Breakpoint by RegEx");
         dialog.setContentText("Enter your RegEx Rule: ");
         dialog.setHeaderText(null);

@@ -38,6 +38,21 @@ public class ActiveRules implements Serializable {
     public ActiveRules() {
     }
 
+    public ActiveRules(int activeRuleId, String value) {
+        if (this.activeRuleId == null) {
+            _activeRuleId = activeRuleId;
+        } else {
+            this.activeRuleId.set(activeRuleId);
+        }
+        
+        if (this.value == null) {
+            _value = value;
+        } else {
+            this.value.set(value);
+        }
+    }
+    
+
     public int getActiveRuleId() {
         return (activeRuleId == null) ? _activeRuleId : activeRuleId.get();
     }
