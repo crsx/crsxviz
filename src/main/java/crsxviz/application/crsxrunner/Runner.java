@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 
 public class Runner {
@@ -80,18 +81,29 @@ public class Runner {
 
         try {
             System.out.println("Running `" + cmd + "`");
-            Process p = Runtime.getRuntime().exec(cmd);
-            BufferedReader cmdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            File tmpFile = File.createTempFile("crsxrunner", ".sh", new File("./"));
+            tmpFile.setExecutable(true);
+            tmpFile.deleteOnExit();
+            PrintStream fs = new PrintStream(tmpFile);
+            fs.println("#!/bin/sh");
+            fs.println(cmd);
+            fs.println();
+            fs.close();
+            
+            Process p = Runtime.getRuntime().exec("/bin/sh " + tmpFile.getAbsolutePath());
+
             if (p.isAlive()) {
                 System.out.print("Waiting for processing to complete");
             }
             while (p.isAlive()) {
                 System.out.print(".");
-                Thread.sleep(1000);
+                Thread.sleep(500);
             }
             System.out.println("\nProcessing completed");
             String out = "";
             String tmp;
+
+            BufferedReader cmdOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
             while ((tmp = cmdOut.readLine()) != null) {
                 out += tmp;
             }

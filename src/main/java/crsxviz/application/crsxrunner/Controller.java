@@ -341,15 +341,12 @@ public class Controller {
 
     public File getOutFile() {
         String path = outDb;
+        if (outDb == null)
+        	outDb = txtOutPath.getText();
         if (outDb == null || path.length() == 0) {
             return null;
         }
-        File outFile = new File(path);
-        if (outFile.exists() && outFile.canRead()) {
-            return outFile;
-        } else {
-            return null;
-        }
+        return new File(outDb);
     }
 
     public boolean processingRan() {
