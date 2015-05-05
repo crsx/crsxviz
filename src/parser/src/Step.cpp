@@ -12,6 +12,8 @@ sqlite3_stmt* Step::StepsUpdateStmt = NULL;
 sqlite3_stmt* Step::CompiledInsertStmt = NULL;
 sqlite3_stmt* Step::CompiledFirstInsertStmt = NULL;
 
+unsigned long long Step::lastStepNum = 0;
+
 bool Step::firstWrite = true;
 
 std::string Step::left_flat = "";
@@ -48,7 +50,9 @@ Step::Step(vector<string> &buf) {
 			}
 		}
 	}
-
+	
+	lastStepNum = stepNum;
+	
 	if (this->begin) { //if it's a start do the compile
 
 		if (lastIndent < indent) {
@@ -84,6 +88,44 @@ Step::Step(vector<string> &buf) {
 		prev = rowSplit();
 		lastIndent = indent;
 	}
+}
+
+void Step::_FinalizeDatabase() {
+	assert(StepsInsertStmt);
+	int rc;
+
+	rc = sqlite3_reset(StepsInsertStmt);
+	if (rc != SQLITE_OK) {
+		cout << "Error " << rc << " resetting statement" << endl;
+		RuntimeError("Error resetting statement");
+	}
+
+	string dat = " ";
+	
+	sqlite3_bind_int64(StepsInsertStmt, 1, lastStepNum + 1);
+	sqlite3_bind_int(StepsInsertStmt, 2, 1);
+	sqlite3_bind_int(StepsInsertStmt, 3, 1);
+	sqlite3_bind_int64(StepsInsertStmt, 4, 0);
+	sqlite3_bind_int64(StepsInsertStmt, 5, 0);
+	sqlite3_bind_text(StepsInsertStmt, 6, dat.c_str(), dat.length(), SQLITE_STATIC);
+	sqlite3_bind_text(StepsInsertStmt, 7, dat.c_str(), dat.length(), SQLITE_STATIC);
+	
+	assert(sqlite3_step(StepsInsertStmt) == SQLITE_DONE);
+	
+	assert(StepsUpdateStmt);
+
+	rc = sqlite3_reset(StepsUpdateStmt);
+	if (rc != SQLITE_OK) {
+		cout << "Error " << rc << " resetting statement" << endl;
+		RuntimeError("Error resetting statement");
+	}
+
+	sqlite3_bind_int64(StepsUpdateStmt, 1, 0);
+	sqlite3_bind_int64(StepsUpdateStmt, 2, 0);
+	sqlite3_bind_text(StepsUpdateStmt, 3, dat.c_str(), dat.length(), SQLITE_STATIC);
+	sqlite3_bind_int64(StepsUpdateStmt, 4, lastStepNum + 1);
+	
+	assert(sqlite3_step(StepsUpdateStmt) == SQLITE_DONE);
 }
 
 void Step::stepInsert() {
@@ -143,7 +185,7 @@ void Step::stepUpdate() {
 	}
 
 	sqlite3_bind_int64(StepsUpdateStmt, 4, stepNum);
-
+	
 	assert(sqlite3_step(StepsUpdateStmt) == SQLITE_DONE);
 }
 

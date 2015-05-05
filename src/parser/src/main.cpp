@@ -153,9 +153,11 @@ int main(int argc, char* argv[]) {
 		buf.pop_back(); //remove result line
 		Step r = Step(buf);
                 r.pushToDB();
-				r.pushToDB();
                 buf.clear();
 	}
+	
+	Step::_FinalizeDatabase();
+	
 	cout << "Result: " << lastLine << endl;
 
 	Step::compiledInsert("", lastLine, "");

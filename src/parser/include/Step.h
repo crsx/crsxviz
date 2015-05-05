@@ -11,6 +11,9 @@ extern "C" {
 class Step {
 public:
 	
+	/** Initializes the Step table
+	*	@param db The database object to use
+	*/
 	static void CreateStepTable(sqlite3* db);
 
 	/** Initialize a new step from a list of lines
@@ -19,6 +22,11 @@ public:
 	*/
 	Step (std::vector<std::string> &buf);
 
+	/** Creates a garbage step to use for an end of table pad.
+	*	@note This is a hack. Fix the processing in the GUI to not require this
+	*/
+	static void _FinalizeDatabase();
+	
 	/** Chooses the proper statement to run and executes it
 	*   @throws runtime_error There was an error inserting the DB into the database
 	*/
@@ -67,6 +75,12 @@ public:
 	static void compiledInsert(std::string, std::string, std::string);
 	
 private:
+		
+	/** The step number identifier
+	*/
+	static unsigned long long lastStepNum;
+	
+
 	/** Initializes Step static prepared statements for use with the DB
 	*   @param db the database to use when creating the prepared statements
 	*   @throws invalid_argument The db was not opened or was null
